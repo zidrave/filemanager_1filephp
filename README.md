@@ -18,3 +18,8 @@ Un sencillo pero potente administrador de archivos en php (no usa sql) requiere 
 Si desea mejorarlo lo puede hacer gracias
 
 esta es la version 1.0beta
+
+
+
+![image](https://github.com/user-attachments/assets/443d9e76-a7a6-4548-9370-efad1dd8d717)
+
