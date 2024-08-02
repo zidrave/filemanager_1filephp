@@ -327,10 +327,10 @@ echo "</ul>\n";
 ?>
 
 <hr> 
-File manager privado
+File manager public! Version publica 1.0b en <a href='https://zidrave.net/' target='_black'>http://zidrave.net</a>
 <hr>
 notas: el archivo ping.php hace ping a una ip de google y guarda datos en lageos.txt y lageos.php tambien usamnos plantillalageos.txt 
 <br>
-<a href='?editFile=index3.php'><b>😍 EDIT THIS SCRIPT 🛠️</b></a>
+<a href='?editFile=index3.php'><b>😍 EDIT THIS SCRIPT 🛠️</b></a> - <a href='https://github.com/zidrave/filemanager_1filephp/' target='_black'><b>😍 Ver Proyecto GitHub 🛠️</b></a>
 </body>
 </html>
