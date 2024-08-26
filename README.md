@@ -13,7 +13,7 @@ Un sencillo pero potente administrador de archivos en php (no usa sql) requiere 
 
 Si desea mejorarlo lo puede hacer gracias
 
-esta es la version 1.0beta
+Ya estamos en la version 4.0
 
 
 
