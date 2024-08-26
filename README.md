@@ -16,7 +16,8 @@ Si desea mejorarlo lo puede hacer gracias
 
 Ya estamos en la version 4.0
 
-
+Link para descargar:
+https://github.com/zidrave/filemanager_1filephp/blob/main/file4.php 
 
 ![image](https://github.com/user-attachments/assets/443d9e76-a7a6-4548-9370-efad1dd8d717)
 
