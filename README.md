@@ -4,7 +4,7 @@
 ![image](https://github.com/user-attachments/assets/3259c2a7-7c6b-4c78-9bad-e60f5f349fec)
 
 
-
+[![Miniatura de mi video](https://i.ytimg.com/vi/wvbwX_QGi48/hqdefault.jpg)](https://www.youtube.com/watch?v=wvbwX_QGi48)
 
 
 A simple but powerful file manager in PHP (does not use SQL) requires creating the /uploads/ folder with only 777 permissions.
