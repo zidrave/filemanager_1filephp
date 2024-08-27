@@ -1,9 +1,9 @@
 <!--
            ,______________________________________       
-          |_________________,----------._ [____]  ""-,__  __....-----=====
+        - |_________________,----------._ [____]  ""-,__  __....-----=====
                         (_(||||||||||||)___________/   ""                |
                            `----------' zIDRAvE[ ))"-,                   |
-                     FILE MANAGER V4.0          ""    `,  _,--....___    |
+                     FILE MANAGER V4.1          ""    `,  _,--....___    |
                      https://github.com/zidrave/        `/           """"
 
 -->
@@ -128,6 +128,28 @@ $scriptfm = strtoupper($scriptfm); #pasar a mayuscula papi
       display: inline-block; /* Muestra el elemento como un bloque en línea */
     }
 
+
+
+.enlacez {
+  background-color: #2c4c5e;  
+  color: white;
+  padding: 5px 10px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  border-radius: 5%;
+  transition-duration: 0.4s;   
+
+}
+
+.enlacez:hover {
+  background-color: #000000; 
+  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+}
+
+
+
     .formtext {
      background-color: #c9d4da; /* Azul oscuro */
      color: #0c2b3d; /* Blanco */
@@ -141,16 +163,55 @@ $scriptfm = strtoupper($scriptfm); #pasar a mayuscula papi
      padding: 5px; /* Espacio interno */
      }
 
+   
+
+        .mensaje {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #f0f0f0;
+            padding: 20px;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+        .mensaje:target {
+            display: block;
+        }
+        .cerrar {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .cerrar:hover {
+            background-color: #0056b3;
+        }
+        .trigger {
+            cursor: pointer;
+            color: blue;
+            text-decoration: underline;
+        }
 
     </style>
 </head>
 <body>
 
-<!--
-<div class="mensajex">
-    <h2>⚠️test alert. <br>   </h2> 
-</div>
--->
+
+
+
+
+
+
+
+
+
+
 
 <?php
 #edicion privada del script mas puton y util para mi 
@@ -260,14 +321,14 @@ if (isset($_POST['createFolder'])) {
     }
 }
 
-// Eliminar carpeta
+// Eliminar carpeta /////////////////////////////////////////////////////////////////////////////////////////////////////BORRAR FOLDER
 #$elfolder=$_GET['deleteFolder'];
 #$elfolder=$_POST['deleteFolder'];
 
 if (isset($_POST['deleteFolder'])) {
     $elfolder=$_POST['deleteFolder'];
-#    $folderToDelete = $uploadDir . $_POST['deleteFolder'];
-    $folderToDelete = $elfolder;
+    $folderToDelete = "$uploadDir$elfolder"; //$uploadDir$item
+#    $folderToDelete = "$elfolder";
     if (is_dir($folderToDelete)) {
         rmdir($folderToDelete);
         echo "$alertaini ⚠️Carpeta eliminada solo si estaba vacia. $alertafin";
@@ -278,8 +339,8 @@ if (isset($_POST['deleteFolder'])) {
 
 if (isset($_GET['deleteFolder'])) {
     $elfolder=$_GET['deleteFolder'];
-#    $folderToDelete = $uploadDir . $_GET['deleteFolder'];
-    $folderToDelete = $elfolder;
+    $folderToDelete = $uploadDir . $_GET['deleteFolder'];
+#     $folderToDelete = $elfolder;
     if (is_dir($folderToDelete)) {
         rmdir($folderToDelete);
         echo "$alertaini ⚠️Carpeta eliminada solo si estaba vacia. $alertafin";
@@ -293,8 +354,10 @@ if (isset($_GET['deleteFolder'])) {
 
 // Editar o crear archivo
 if (isset($_GET['editFile'])) {
-#    $fileToEdit = $uploadDir . $_GET['editFile'];
+#    $fileToEdit = $uploadDir . $_GET['editFile']; //uploads$carpetaz/
+#    $fileToEdit = $_GET['editFile'];
     $fileToEdit = $_GET['editFile'];
+    $fileToEdit = "uploads$carpetaz/$fileToEdit";
     if (file_exists($fileToEdit)) {
         $fileContent = file_get_contents($fileToEdit);
     } else {
@@ -309,6 +372,7 @@ if (isset($_GET['editFile'])) {
 if (isset($_POST['saveFile'])) {
 #    $fileToSave = $uploadDir . $_POST['fileName'];
     $fileToSave = $_POST['fileName'];
+    $fileToSave = "uploads$carpetaz/$fileToSave";
     $c = $_POST['c'];
     $newContent = $_POST['fileContent'];
     file_put_contents($fileToSave, $newContent);
@@ -321,10 +385,10 @@ if (isset($_POST['saveFile'])) {
 
 // Renombrar archivo
 if (isset($_POST['renameFile'])) {
-#    $oldName = $uploadDir . $_POST['oldName'];
-    $oldName = $_POST['oldName'];
-#    $newName = $uploadDir . $_POST['newName'];
-    $newName = $_POST['newName'];
+    $oldName = $uploadDir . $_POST['oldName'];
+#    $oldName = $_POST['oldName'];
+    $newName = $uploadDir . $_POST['newName'];
+#    $newName = $_POST['newName'];
     if (file_exists($oldName)) {
         if (rename($oldName, $newName)) {
             echo "$alertaini ⚠️ Archivo renombrado. $alertafin ";
@@ -456,7 +520,7 @@ $items = scandir($uploadDir);
 
 
     <header>
-        <h1> 🌀 File Manager   -  <?php echo "$scriptfm";?> <a href='<?php echo "$scriptfile";?>.php'> Raiz: / </a>  
+        <h1> 🌀 File Manager   -  <?php echo "$scriptfm";?> <a href='<?php echo "$scriptfile";?>.php' class='enlacez' role='button'> Inicio:  </a> / 
 
 <?php
 foreach ($partes as $parte) {
@@ -467,12 +531,12 @@ foreach ($partes as $parte) {
         
         // Generar el enlace
 
-        echo " <a href='$scriptfile.php?c=" . $acumulado . "'>" . $parte . " </a> <b>/</b> ";
+        echo " <a href='$scriptfile.php?c=" . $acumulado . "' class='enlacez' role='button'>" . $parte . " </a> <b>/</b> ";
         }
     }
 ?>
 
- <a href='?'>🏠</a>   <a href='?c=<?php echo "$carpetaz";?>/../'>↩️</a> </h1>
+ <a href='?'>🏠</a>   <a href='?c=<?php echo "$carpetaz";?>/../'>↩️</a>   <a href='?creartexto=txt&c=<?php echo "$carpetaz";?>/'>📝</a> <a href='?crearelfolder=folder&c=<?php echo "$carpetaz";?>/'> 🗂️ </a>  <a href='?eliminarcarpeta=eliminar&c=<?php echo "$carpetaz";?>/'>❌</a></h1>
     </header>
 
 
@@ -496,18 +560,105 @@ foreach ($partes as $parte) {
         </form>
     <?php endif; ?>
 
- 
-
 <?php
-$archivoacambiarnombre=$_GET['archivoacambiarnombre'];
+///////////////////////////////////////// CREAR FOLDER ////////////
+$crearelfolder=$_GET['crearelfolder'];
 ?>
 
+<?php if (isset($crearelfolder)): ?>
 
-<?php if (isset($archivoacambiarnombre)): ?>
+       <br>
+	<div class="tabla">
+		<div class="fila">
+			<div class="celda"> 
+
+   <h2> 🗂️ Crear Carpeta</h2>
+    <form action="" method="post">
+        Nombre de la carpeta:
+        <input type="text" name="createFolder" required class="formtext">
+        <input type="submit" value="Crear Carpeta">
+    </form>
+
+
+     <br>
+			</div>
+		</div>
+	</div> <br>
+
+
+<?php endif; ?>
+
+
+
+ 
+<?php
+///////////////////////////////////////// CREAR TEXTO ////////////
+$creartexto=$_GET['creartexto'];
+?>
+
+<?php if (isset($creartexto)): ?>
+
+       <br>
+	<div class="tabla">
+		<div class="fila">
+			<div class="celda"> 
+
+    <h2> 📝 Crear Archivo</h2>
+    <form action="" method="get">
+        Nombre del archivo:
+<!--        <input type="text" name="editFile" value='<?php echo "uploads$carpetaz/";?>' required class="formtext"> -->
+        <input type="text" name="editFile" value='' required class="formtext"> 
+        <input type="hidden" name="c" value='<?php echo "$carpetaz";?>' >
+        <input type="submit" value="Crear Archivo">
+    </form>
+
+
+     <br>
+			</div>
+		</div>
+	</div> <br>
+
+
+<?php endif; ?>
 
 
 
 
+
+
+<?php
+//////////////////////////////////// ELIMINAR CARPETA PREGUNTANDO  ////////////
+$eliminarcarpeta=$_GET['eliminarcarpeta'];
+?>
+
+<?php if (isset($eliminarcarpeta)): ?>
+
+       <br>
+	<div class="tabla">
+		<div class="fila">
+			<div class="celda"> 
+       <h2> ❌ Eliminar Carpeta (solo si esta vacia)</h2>
+    <form action="" method="get">
+        Nombre de la carpeta:
+        <input type="text" name="deleteFolder" value='' required class="formtext">
+        <input type="hidden" name="c" value="<?php echo "$carpetap";?>" >
+        <input type="submit" value="Eliminar Carpeta">
+    </form>
+     <br>
+			</div>
+		</div>
+	</div> <br>
+
+
+<?php endif; ?>
+
+
+
+
+<?php
+//////////////////////////////////// cambiar nombre  ////////////
+$archivoacambiarnombre=$_GET['archivoacambiarnombre'];
+ if (isset($archivoacambiarnombre)): ?>
 
        <br>
 	<div class="tabla">
@@ -528,8 +679,6 @@ $archivoacambiarnombre=$_GET['archivoacambiarnombre'];
 			</div>
 		</div>
 	</div> <br>
-
-
 <?php endif; ?>
 
 
@@ -605,18 +754,13 @@ $comprimir=$_GET['comprimir'];
 		<div class="celda"> </div>
     </div>
 
-       <!-- inicio del bucle -->
+
 
         <?php
+/////////// inicio del bucle
 echo " 
-    <div class='fila'>
-        <div class='celda'> <a href='?c=$carpetaz/'>📁 <b> . </b></a> </div>
-        <div class='celda'>Carpeta</div>
-        <div class='celda'>  Null </div>
-        <div class='celda'>  Null </div>
-        <div class='celda'>  Sistema </div>
-	<div class='celda'>   </div>
-    </div>
+
+
  ";
 
 
@@ -643,12 +787,17 @@ echo "
         <div class='celda'>  $fileModTime </div>
         <div class='celda'>  $filePerms </div>
         <div class='celda'>  $fileOwner </div>
-	<div class='celda'>  [<a href='?archivoacambiarnombre=$uploadDir$item&c=$carpetaz/'>🖊️</a>] [<a href='?deleteFolder=$uploadDir$item&c=$carpetaz/'>❌</a>] <!-- [<a href='?comprimir=$uploadDir$item&c=$carpetaz/'>🗃️</a>] --> </div>
+<!--	<div class='celda'>  [<a href='?archivoacambiarnombre=$uploadDir$item&c=$carpetaz/'>🖊️</a>] [<a href='?deleteFolder=$uploadDir$item&c=$carpetaz/'>❌</a>] --> 
+	<div class='celda'>  [<a href='?archivoacambiarnombre=$item&c=$carpetaz/'>🖊️</a>] [<a href='?deleteFolder=$item&c=$carpetaz/'>❌</a>] 
+<!-- [<a href='?comprimir=$uploadDir$item&c=$carpetaz/'>🗃️</a>] --> </div>
     </div>
  ";
 
                 } else {
                  $fileSize = filesize($uploadDir . $item);
+
+
+
 echo " 
     <div class='fila'>
         <div class='celda'> 📄 <a href='$uploadDir$item' target='_black'>$item </a> </div>
@@ -656,10 +805,25 @@ echo "
         <div class='celda'>  $fileModTime </div>
         <div class='celda'>  $filePerms </div>
         <div class='celda'>  $fileOwner </div>
-	<div class='celda'>  [<a href='?editFile=$uploadDir$item&c=$carpetaz/'>✏️</a>] [<a href='?archivoacambiarnombre=$uploadDir$item&c=$carpetaz/'>🖊️</a>] [<a href='?deleteFile=$uploadDir$item&c=$carpetaz/'>❌</a>] [<a href='?comprimir=$uploadDir$item&c=$carpetaz/'>🗃️</a>] </div>
+	<div class='celda'>  [<a href='?editFile=$item&c=$carpetaz/'>✏️</a>] [<a href='?archivoacambiarnombre=$item&c=$carpetaz/'>🖊️</a>] [<a href='#eliminar_$item'>❌</a>] [<a href='?comprimir=$uploadDir$item&c=$carpetaz/'>🗃️</a>] </div>
     </div>
  ";
 
+//zona de confirmaciones para eliminacion 
+
+ echo "
+        <div id='eliminar_$item' class='mensaje'>
+            <center>
+                <p><b>¿Está seguro de eliminar?</b></p><br>
+                <p><h2>$item</h2></p><br>
+                <a class='cerrar' href='?deleteFile=$uploadDir$item&c=$carpetaz/'>Eliminar Ahora</a> 
+                <a class='cerrar' href='#'>Cancelar</a>
+            </center>
+        </div>";
+ echo "
+        <div id='null' class='mensaje'>
+        <!-- Esto solo es para que no se desordene los colores de las filas-->
+        </div>";
 
 
                 }
@@ -668,7 +832,7 @@ echo "
         
 
 
-echo " 
+echo " <!--
     <div class='fila'>
         <div class='celda'> <a href='?'>📁 <b> / </b></a> </div>
         <div class='celda'>Carpeta</div>
@@ -676,10 +840,10 @@ echo "
         <div class='celda'>  Null </div>
         <div class='celda'>  Sistema </div>
 	<div class='celda'>   </div>
-    </div>
+    </div>  -->
  ";
 
-echo " 
+echo " <!--
     <div class='fila'>
         <div class='celda'> <a href='?c=$carpetaz/'>📁 <b> . </b></a> </div>
         <div class='celda'>Carpeta</div>
@@ -688,6 +852,7 @@ echo "
         <div class='celda'>  Sistema </div>
 	<div class='celda'>   </div>
     </div>
+    -->
  ";
 
 echo " 
@@ -699,13 +864,20 @@ echo "
         <div class='celda'>  Sistema </div>
 	<div class='celda'>   </div>
     </div>
+   
  ";
 
 ?>
     <!-- fin del bucle -->
 </div> <hr>
 
-
+<!--
+   <h2>Crear Carpeta</h2>
+    <form action="" method="post">
+        Nombre de la carpeta:
+        <input type="text" name="createFolder" required class="formtext">
+        <input type="submit" value="Crear Carpeta">
+    </form>
 
     <h2>Editar o crear Archivo</h2>
     <form action="" method="get">
@@ -716,20 +888,15 @@ echo "
     </form>
 
 
-   <h2>Crear Carpeta</h2>
-    <form action="" method="post">
-        Nombre de la carpeta:
-        <input type="text" name="createFolder" required class="formtext">
-        <input type="submit" value="Crear Carpeta">
-    </form>
-<!--
+  
+
     <h2>Eliminar Archivo</h2>
     <form action="" method="get">
         Nombre del archivo:
         <input type="text" name="deleteFile" required class="formtext">
         <input type="submit" value="Eliminar Archivo">
     </form>
--->
+
 
     <h2>Eliminar Carpeta (solo si esta vacia)</h2>
     <form action="" method="get">
@@ -738,8 +905,12 @@ echo "
         <input type="hidden" name="c" value="<?php echo "$carpetap";?>" >
         <input type="submit" value="Eliminar Carpeta">
     </form>
+-->
 
- <hr>
+
+
+
+
 
 <?php
 function formatSize($bytes) {
@@ -816,7 +987,7 @@ File manager public! Version publica 1.0b en <a href='https://zidrave.net/' targ
 <footer> 
 Notas: Utilitario simple y potente para la gestion de archivos en servidores web sin panel. 
 <br>
-<a href='?editFile=<?php echo "$scriptfile";?>.php'  class='naranja' role='button'><b>😍 EDIT THIS SCRIPT 🛠️</b></a>   
+<a href='?editFile=/../<?php echo "$scriptfile";?>.php'  class='naranja' role='button'><b>😍 EDIT THIS SCRIPT 🛠️</b></a>   
 <a href='https://github.com/zidrave/filemanager_1filephp/' target='_black' class='azulin' role='button'><b>😍 View Proyect GitHub 🛠️</b></a>
 <a href='https://www.youtube.com/@zidrave' target='_black2' class='naranja' role='button'><b>▶️ Youtube 🔴</b></a> 
 <a href='https://www.tiktok.com/@zidrave' target='_black3' class='azulin' role='button'><b>▶️ Tiktok 🟣</b></a> 
