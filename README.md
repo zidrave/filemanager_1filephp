@@ -16,7 +16,13 @@ Un sencillo pero potente administrador de archivos en php (no usa sql) requiere 
 
 Si desea mejorarlo lo puede hacer gracias
 
-Ya estamos en la version 4.1
+Ya estamos en la version 4.3
+
+Cambios agregados
+==========================================
+Ahora tiene login para mas seguridad!
+comprecion zip tanto para archivos y carpetas con opcion de contraseñas
+==========================================
 
 Link para descargar:
 https://github.com/zidrave/filemanager_1filephp/blob/main/file4.php 
