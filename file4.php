@@ -348,6 +348,70 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['fileToUpload'])) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+///////
+if (isset($_GET['fupdate'])) {
+#echo " $alertaini ⚠️ Actualizando Sistema Listo $alertafin <br>";
+$furl = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/file4.php';
+
+// Ruta del archivo local que se va a reemplazar
+$rutaArchivoLocal = 'file4.php';
+
+// Descargar el archivo desde GitHub
+$fcontenido = file_get_contents($furl);
+
+if ($fcontenido === FALSE) {
+    die(" $alertaini ⚠️No se pudo descargar el archivo desde GitHub. $alertafin <br>");
+}
+
+// Reemplazar el archivo local con el contenido descargado
+if (file_put_contents($rutaArchivoLocal, $fcontenido) === FALSE) {
+    die(" $alertaini ⚠️ No se pudo actualizar el archivo.  $alertafin ");
+}
+
+echo "El archivo se ha actualizado correctamente.";
+
+    echo "<a href='?c=$carpetaz/' class='naranja' role='button'> <b>RECARGAR </b></a>";
+    exit;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ///////
 if (isset($_GET['fexit'])) {
 $_SESSION['loggedin'] = false;
@@ -671,7 +735,7 @@ foreach ($partes as $parte) {
     }
 ?>
 
- <a href='?'>🏠</a>   <a href='?c=<?php echo "$carpetaz";?>/../'>↩️</a>   <a href='?mod=creartexto&c=<?php echo "$carpetaz";?>/'>📝</a> <a href='?mod=crearcarpeta&c=<?php echo "$carpetaz";?>/'> 🗂️ </a>  <a href='?mod=eliminarcarpeta&c=<?php echo "$carpetaz";?>/'>❌</a> <a href='?mod=config&c=<?php echo "$carpetaz";?>/'>⚙️ </a> </h1>
+ <a href='?'>🏠</a>   <a href='?c=<?php echo "$carpetaz";?>/../'>↩️</a>   <a href='?mod=creartexto&c=<?php echo "$carpetaz";?>/'>📝</a> <a href='?mod=crearcarpeta&c=<?php echo "$carpetaz";?>/'> 🗂️ </a>  <a href='?mod=eliminarcarpeta&c=<?php echo "$carpetaz";?>/'>❌</a> <a href='?mod=config&c=<?php echo "$carpetaz";?>/'>⚙️ </a> <a href='?mod=update&c=<?php echo "$carpetaz";?>/'> 🔄 </a></h1>
     </header>
 
 
@@ -702,12 +766,71 @@ foreach ($partes as $parte) {
 
 
 
+
+
+
+
+
+
+
+
 <?php
 
 ///////////////////////////////////////// CONFIGURAR SISTEMA /////////////////////////⚙️⚙️⚙️⚙️⚙️⚙️⚙️⚙️⚙️⚙️⚙️⚙️⚙️⚙️⚙️⚙️⚙️
 #$mod=$_GET['mod'];
 $mod = isset($_GET['mod']) ? $_GET['mod'] : '';
 ?>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<?php if ($mod == "update"): ?>
+
+       <br>
+	<div class="tabla">
+		<div class="fila">
+			<div class="celda"> 
+
+   <h2> 🔄 Actualizacion: </h2>
+
+<br>
+<form action="?fupdate=ok&c=<?php echo "$carpetaz/";?>" method="post">
+        A continuacion procederemos a actualizar este sistema a su ultima version. <br><br>
+        <input type="submit" value="Actualizar a la Ultima Version"> 
+        <a href='?c=<?php echo "$carpetaz";?>/' class='azulin'>Cancelar </a><br>
+
+
+    </form>
+
+
+     <br>
+			</div>
+		</div>
+	</div> <br>
+
+
+<?php endif; ?>
+
+
+
+
+
+
+
+
+
 
 <?php if ($mod == "config"): ?>
 
@@ -1236,7 +1359,7 @@ echo "</ul>\n";
 
 
 <hr> 
-File manager ! Version Gratis 4.3 en <a href='https://zidrave.net/' target='_black'>http://zidrave.net</a>
+File manager ! Version Gratis 4.3.1 en <a href='https://zidrave.net/' target='_black'>http://zidrave.net</a>
 <hr>
 <footer> 
 Notas: Utilitario simple y potente para la gestion de archivos en servidores web sin panel. 
