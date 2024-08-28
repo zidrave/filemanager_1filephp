@@ -3,7 +3,7 @@
         - |_________________,----------._ [____]  ""-,__  __....-----=====
                         (_(||||||||||||)___________/   ""                |
                            `----------' zIDRAvE[ ))"-,                   |
-                     FILE MANAGER V4.3          ""    `,  _,--....___    |
+                     FILE MANAGER V4.3.1        ""    `,  _,--....___    |
                      https://github.com/zidrave/        `/           """"
 
 -->
@@ -1360,11 +1360,19 @@ echo "</ul>\n";
 
 <hr> 
 File manager ! Version Gratis 4.3.1 en <a href='https://zidrave.net/' target='_black'>http://zidrave.net</a>
+
+
 <hr>
 <footer> 
 Notas: Utilitario simple y potente para la gestion de archivos en servidores web sin panel. 
 <br>
-<a href='?editFile=/../<?php echo "$scriptfile";?>.php'  class='naranja' role='button'><b>😍 EDIT THIS SCRIPT 🛠️</b></a>   
+
+<?php
+if ($master === 'zidrave') {
+echo "<a href='?editFile=/../$scriptfile.php'  class='naranja' role='button'><b>😍 EDIT THIS SCRIPT 🛠️</b></a>   ";
+}
+?>
+
 <a href='https://github.com/zidrave/filemanager_1filephp/' target='_black' class='azulin' role='button'><b>😍 View Proyect GitHub 🛠️</b></a>
 <a href='https://www.youtube.com/@zidrave' target='_black2' class='naranja' role='button'><b>▶️ Youtube 🔴</b></a> 
 <a href='https://www.tiktok.com/@zidrave' target='_black3' class='azulin' role='button'><b>▶️ Tiktok 🟣</b></a> 
