@@ -1236,7 +1236,7 @@ echo "</ul>\n";
 
 
 <hr> 
-File manager ! Version Gratis 4.2 en <a href='https://zidrave.net/' target='_black'>http://zidrave.net</a>
+File manager ! Version Gratis 4.3 en <a href='https://zidrave.net/' target='_black'>http://zidrave.net</a>
 <hr>
 <footer> 
 Notas: Utilitario simple y potente para la gestion de archivos en servidores web sin panel. 
