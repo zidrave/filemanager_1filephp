@@ -3,7 +3,7 @@
         - |_________________,----------._ [____]  ""-,__  __....-----=====
                         (_(||||||||||||)___________/   ""                |
                            `----------' zIDRAvE[ ))"-,                   |
-                     FILE MANAGER V4.1          ""    `,  _,--....___    |
+                     FILE MANAGER V4.0          ""    `,  _,--....___    |
                      https://github.com/zidrave/        `/           """"
 
 -->
@@ -778,11 +778,75 @@ echo "
 
 
 
+
+#///agregando iconos personalzados ////
+       #if (is_dir($filePath)) {
+        if (is_dir($uploadDir . $item)) {
+            $fileType = 'folder';
+            $icon = '📂';
+        } else {
+            $fileType = 'file';
+            $fileSize = filesize($fullPath);
+            
+            // Asignar iconos basados en la extensión del archivo
+            $extension = pathinfo($item, PATHINFO_EXTENSION);
+            switch (strtolower($extension)) {
+                case 'jpg':
+                case 'jpeg':
+                case 'png':
+                case 'gif':
+                    $icon = '🖼️'; // Icono para imágenes
+                    break;
+                case 'php':
+                case 'exe':
+                case 'py':
+                case 'sh':
+                    $icon = '⚙️'; // Icono para ejecutables
+                    break;
+                case 'txt':
+                case 'json':
+                case 'rtf':
+                case 'ini':
+                case 'js':
+                case 'htm':
+                case 'html':
+                    $icon = '📝'; // Icono para archivos de texto
+                    break;
+                case 'pdf':
+                    $icon = '📕'; // Icono para archivos PDF
+                    break;
+                case 'doc':
+                case 'docx':
+                    $icon = '📘'; // Icono para archivos PDF
+                    break;
+                case 'zip':
+                case 'rar':
+                    $icon = '📚'; // Icono para archivos comprimidos
+                    break;
+                case 'mp3':
+                case 'wav':
+                    $icon = '🎵'; // Icono para archivos de audio
+                    break;
+                case 'mp4':
+                case 'mkv':
+                    $icon = '🎥'; // Icono para archivos de video
+                    break;
+                default:
+                    $icon = '📜'; // Icono genérico para otros archivos
+                    break;
+            }
+        }
+
+#///agregando iconos personalzados ////
+
+
+
+
                 if (is_dir($uploadDir . $item)) {
 
 echo " 
     <div class='fila'>
-        <div class='celda'> 📂 <a href='?c=$carpetaz/$item/'><b>$item</b>  </a> </div>
+        <div class='celda'> ◽ $icon <a href='?c=$carpetaz/$item/'><b>$item</b>  </a> </div>
         <div class='celda'>Carpeta</div>
         <div class='celda'>  $fileModTime </div>
         <div class='celda'>  $filePerms </div>
@@ -800,7 +864,7 @@ echo "
 
 echo " 
     <div class='fila'>
-        <div class='celda'> 📄 <a href='$uploadDir$item' target='_black'>$item </a> </div>
+        <div class='celda'> ◽ $icon <a href='$uploadDir$item' target='_black'>$item </a> </div>
         <div class='celda'> " . formatSize($fileSize) . " </div>
         <div class='celda'>  $fileModTime </div>
         <div class='celda'>  $filePerms </div>
@@ -834,7 +898,7 @@ echo "
 
 echo " <!--
     <div class='fila'>
-        <div class='celda'> <a href='?'>📁 <b> / </b></a> </div>
+        <div class='celda'> <a href='?'> ◽ 📁 <b> / </b></a> </div>
         <div class='celda'>Carpeta</div>
         <div class='celda'>  Null </div>
         <div class='celda'>  Null </div>
@@ -845,7 +909,7 @@ echo " <!--
 
 echo " <!--
     <div class='fila'>
-        <div class='celda'> <a href='?c=$carpetaz/'>📁 <b> . </b></a> </div>
+        <div class='celda'>  ◽ 📁 <a href='?c=$carpetaz/'> <b> . </b></a> </div>
         <div class='celda'>Carpeta</div>
         <div class='celda'>  Null </div>
         <div class='celda'>  Null </div>
@@ -857,7 +921,7 @@ echo " <!--
 
 echo " 
     <div class='fila'>
-        <div class='celda'> <a href='?c=$carpetaz/../'>📁 <b>.. </b></a> </div>
+        <div class='celda'> ◽  <a href='?c=$carpetaz/../'>📁 <b>.. </b></a> </div>
         <div class='celda'>Carpeta</div>
         <div class='celda'>  Null </div>
         <div class='celda'>  Null </div>
@@ -982,7 +1046,7 @@ echo "</ul>\n";
 
 
 <hr> 
-File manager public! Version publica 1.0b en <a href='https://zidrave.net/' target='_black'>http://zidrave.net</a>
+File manager ! Version Gratis 4.2 en <a href='https://zidrave.net/' target='_black'>http://zidrave.net</a>
 <hr>
 <footer> 
 Notas: Utilitario simple y potente para la gestion de archivos en servidores web sin panel. 
