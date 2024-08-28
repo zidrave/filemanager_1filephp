@@ -1,7 +1,8 @@
 ![image](https://github.com/user-attachments/assets/1e43e024-08a2-4cff-900c-75ebcb50e2cf)
 
 
-![image](https://github.com/user-attachments/assets/3259c2a7-7c6b-4c78-9bad-e60f5f349fec)
+ ![image](https://github.com/user-attachments/assets/353a58e3-b111-46a7-b026-0654963b60ec)
+
 
 
 [![Miniatura de mi video](https://i.ytimg.com/vi/wvbwX_QGi48/hqdefault.jpg)](https://www.youtube.com/watch?v=wvbwX_QGi48)
