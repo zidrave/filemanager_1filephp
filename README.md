@@ -17,12 +17,13 @@ Un sencillo pero potente administrador de archivos en php (no usa sql) requiere 
 
 Si desea mejorarlo lo puede hacer gracias
 
-Ya estamos en la version 4.3
+Ya estamos en la version 4.3.1
 
 Cambios agregados
 ==========================================
 + Ahora tiene login para mas seguridad!
 + Compresion zip tanto para archivos y carpetas con opcion de contraseñas
++ Actualizable y rapido
 ==========================================
 
 Puede evniar sus sugerencias a: zidravex@gmail.com
