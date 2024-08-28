@@ -20,9 +20,11 @@ Ya estamos en la version 4.3
 
 Cambios agregados
 ==========================================
-Ahora tiene login para mas seguridad!
-comprecion zip tanto para archivos y carpetas con opcion de contraseñas
++ Ahora tiene login para mas seguridad!
++ Compresion zip tanto para archivos y carpetas con opcion de contraseñas
 ==========================================
+
+Puede evniar sus sugerencias a: zidravex@gmail.com
 
 Link para descargar:
 https://github.com/zidrave/filemanager_1filephp/blob/main/file4.php 
