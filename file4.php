@@ -379,7 +379,7 @@ if (file_put_contents($rutaArchivoLocal, $fcontenido) === FALSE) {
     die(" $alertaini ⚠️ No se pudo actualizar el archivo.  $alertafin ");
 }
 
-echo "El archivo se ha actualizado correctamente.";
+echo " $alertaini ⚠️El Sistema se ha actualizado correctamente.  $alertafin";
 
     echo "<a href='?c=$carpetaz/' class='naranja' role='button'> <b>RECARGAR </b></a>";
     exit;
