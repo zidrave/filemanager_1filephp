@@ -1,14 +1,15 @@
 <!--
            ,______________________________________       
-        - |_________________,----------._ [____]  ""-,__  __....-----=====
+   - - - |_________________,----------._ [____]  ""-,__  __....-----=====
                         (_(||||||||||||)___________/   ""                |
                            `----------' zIDRAvE[ ))"-,                   |
-                     FILE MANAGER V4.3.1        ""    `,  _,--....___    |
+                     FILE MANAGER V4.3.2        ""    `,  _,--....___    |
                      https://github.com/zidrave/        `/           """"
 
 -->
 <?php
 #formato de mensajes de alerta
+$fversion="4.3.2";
 $alertaini=" <div class='mensajex'> <h2>";
 $alertafin="  </h2> </div> ";
 $scriptfile="file4";
@@ -808,7 +809,7 @@ $mod = isset($_GET['mod']) ? $_GET['mod'] : '';
 <br>
 <form action="?fupdate=ok&c=<?php echo "$carpetaz/";?>" method="post">
         A continuacion procederemos a actualizar este sistema a su ultima version. <br><br>
-        <input type="submit" value="Actualizar a la Ultima Version"> 
+        <input type="submit" value="Actualizar "> 
         <a href='?c=<?php echo "$carpetaz";?>/' class='azulin'>Cancelar </a><br>
 
 
@@ -1020,7 +1021,7 @@ $comprimir=$_GET['comprimir'];
           |_________________,----------._ [____]  ''-,__  __....-----====
                         (_(||||||||||||)___________/   ''                |
                            `----------' zIDRAvE[ ))'-,                   |
-                     FILE MANAGER V4.3          ''    `,  _,--....___    |
+                     FILE MANAGER V<?php echo "$fversion";?>        ''    `,  _,--....___    |
                      https://github.com/zidrave/        `/           ''''
 ...................................................................................
 2024
@@ -1043,7 +1044,7 @@ $comprimir=$_GET['comprimir'];
 <?php
 /////// USUARIO LOGEADO MENSAJE  ////////// 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 
 if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
-    echo "🙋‍♂️ Bienvenido <b>$master / [<a href=\"?fexit=1\">Cerrar</a>]</b>";
+    echo "🙋‍♂️ Bienvenido <b>$master / [<a href=\"?fexit=1\">Salir</a>]</b>";
   }
 ?>
 
@@ -1359,7 +1360,7 @@ echo "</ul>\n";
 
 
 <hr> 
-File manager ! Version Gratis 4.3.1 en <a href='https://zidrave.net/' target='_black'>http://zidrave.net</a>
+FILE MANAGER | Full Version <b><?php echo "$fversion";?> </b> gracias a <a href='https://zidrave.net/' target='_black'>http://zidrave.net</a>
 
 
 <hr>
