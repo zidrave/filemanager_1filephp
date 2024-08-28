@@ -3,7 +3,7 @@
         - |_________________,----------._ [____]  ""-,__  __....-----=====
                         (_(||||||||||||)___________/   ""                |
                            `----------' zIDRAvE[ ))"-,                   |
-                     FILE MANAGER V4.0          ""    `,  _,--....___    |
+                     FILE MANAGER V4.3          ""    `,  _,--....___    |
                      https://github.com/zidrave/        `/           """"
 
 -->
@@ -14,7 +14,58 @@ $alertafin="  </h2> </div> ";
 $scriptfile="file4";
 $scriptfm = $scriptfile;
 $scriptfm = strtoupper($scriptfm); #pasar a mayuscula papi
+$mod = isset($_GET['mod']) ? $_GET['mod'] : ''; // porsiacaso dejaremos esto aca todo sera pasado a mod
+$configFile = 'fconfig.json';
 
+
+
+//////// VERIFICAR SEGURIDAD /////////////////////////
+if (file_exists($configFile)) {
+session_start(); // Iniciar la sesión
+$configData = json_decode(file_get_contents($configFile), true);
+
+$seguridadcabeza = "<h1>🔒 SEGURIDAD </h1> <br>";
+#echo "$seguridadcabeza";
+
+      $master = $configData['fuser'];
+      $mastermail = $configData['fmail'];
+      $masterskin = $configData['fskin'];
+      $masterlang = $configData['flanguaje'];
+
+
+
+    // Si no existe una cookie de sesión, pedir nombre de usuario y contraseña
+    if (!isset($_SESSION['loggedin']) || !$_SESSION['loggedin']) {
+        // Verificar si se ha enviado el formulario de nombre de usuario y contraseña
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fuser']) && isset($_POST['fpass'])) {
+            // Comparar el nombre de usuario y la contraseña introducidos con los almacenados
+            if ($_POST['fuser'] === $configData['fuser'] && password_verify($_POST['fpass'], $configData['fpass'])) {
+                // Si el nombre de usuario y la contraseña son correctos, establecer la cookie de sesión
+                $_SESSION['loggedin'] = true;
+                echo "$seguridadcabeza";
+                echo " $alertaini 👍 Acceso Concedido . $alertafin<br>";
+                echo "<a href='?c=$carpetaz/' class='naranja' role='button'> <b>ENTRAR </b></a>";
+                exit; 
+            } else {
+                // Si el nombre de usuario o la contraseña son incorrectos, mostrar un mensaje de error
+                echo "$seguridadcabeza";
+                echo " <h2>🤨 Nombre de usuario o contraseña incorrectos. </h2>";
+                exit; 
+            }
+        } else {
+            echo "$seguridadcabeza";
+            echo '<form action="" method="post">';
+            echo ' <b>Usuario </b>: <input type="fuser" name="fuser" required> ';
+            echo ' <b>Contraseña </b>: <input type="password" name="fpass" required  placeholder="Ingrese su contraseña"> ';
+            echo '<input type="submit" value="Entrar"> ';
+            echo '</form> <hr>';
+            exit; 
+        }
+     
+    } 
+
+}
+//////// VERIFICAR SEGURIDAD FIN /////////////////////////
 ?>
 
 
@@ -155,12 +206,14 @@ $scriptfm = strtoupper($scriptfm); #pasar a mayuscula papi
      color: #0c2b3d; /* Blanco */
      border: 2px dotted black; /* Borde punteado negro de 2px */
      padding: 5px; /* Espacio interno */
+     margin: 3px;
      }
     .formtext2 {
      background-color: #a5b9c2; /* Azul oscuro */
      color: #0c2b3d; /* Blanco */
      border: 2px dotted black; /* Borde punteado negro de 2px */
      padding: 5px; /* Espacio interno */
+     margin: 3px;
      }
 
    
@@ -223,7 +276,8 @@ $activeDir = 'uploads';
 
 
 // para la lista de carpetas con links
-$getruta=$_GET['c'];
+#$getruta=$_GET['c'];
+$getruta = isset($_GET['c']) ? $_GET['c'] : '/';
 $rutax = "/$getruta";
 $partes = explode('/', trim($rutax, '/'));
 $acumulado = "/";
@@ -246,10 +300,6 @@ $acumulado = "/";
 #    $carpetap = $_POST['c'];
 
 if (isset($_GET['c'])) {
-
-
-
-
 
     $carpetax = $_GET['c'];
     $carpetap = $_GET['c'];
@@ -295,6 +345,70 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['fileToUpload'])) {
         echo " $alertaini ⚠️ No se permiten archivos PHP. $alertafin";
     }
 }
+
+
+
+///////
+if (isset($_GET['fexit'])) {
+$_SESSION['loggedin'] = false;
+echo " $alertaini ⚠️ cerrando session de $master. $alertafin <br>";
+
+    echo "<a href='?c=$carpetaz/' class='naranja' role='button'> <b>RECARGAR </b></a>";
+    exit;
+}
+
+
+
+
+
+///////Guardar Configracion /////////////////////////////////
+if (isset($_GET['fconfiguracion'])) {
+
+    // Recoger datos del formulario
+    $fuser = $_POST['fuser'];
+    $fpass = password_hash($_POST['fpass'], PASSWORD_DEFAULT); 
+    $fmail = $_POST['fmail'];
+    $fskin = $_POST['fskin'];
+    $flanguaje = $_POST['flanguaje'];
+
+
+    // Crear un array asociativo con los datos
+    $config = [
+        'fuser' => $fuser,
+        'fpass' => $fpass,
+        'fmail' => $fmail,
+        'fskin' => $fskin,
+        'flanguaje' => $flanguaje
+
+    ];
+
+    // Guardar los datos en el archivo "fconfig.json"
+    file_put_contents('fconfig.json', json_encode($config, JSON_PRETTY_PRINT));
+    echo "$alertaini ⚠️ Configuracion guardada. $alertafin";
+
+    echo "<a href='?c=$carpetaz/' class='naranja' role='button'> <b>RECARGAR </b></a>";
+    exit;
+}
+
+/////// BORRAR Configracion /////////////////////////////////
+if (isset($_GET['fborrarconfiguracion'])) {
+$_SESSION['loggedin'] = false;
+    if (file_exists('fconfig.json')) {
+        unlink('fconfig.json'); // Borrar el archivo "fconfig.json"
+        echo "$alertaini ⚠️ Configuración borrada correctamente. $alertafin";
+    } else {
+        echo "$alertaini ⚠️ No se encontró ninguna configuración para borrar. $alertafin";
+    }
+
+    echo "<a href='?c=$carpetaz/' class='naranja' role='button'> <b>RECARGAR </b></a>";
+    exit;
+}
+
+
+
+
+
+
 
 // Eliminar archivo
 if (isset($_GET['deleteFile'])) {
@@ -411,75 +525,91 @@ if (isset($_POST['renameFile'])) {
 
 
 
-////////////////// Comprimir  archivo o carpeta 🚀 🚀🚀🚀🚀🚀🚀🚀
+
+
+
+
+
+
+
+////////////////// Comprimir archivo o carpeta 🚀 🚀🚀🚀🚀🚀🚀🚀
 if (isset($_POST['compressFile'])) {
+    $namefilec = $_POST['archivoacomprimir'];
+    $namefilepass = $_POST['password'];
+    $descripcion = $_POST['descripcion'];
 
- $namefilec=$_POST['archivoacomprimir'];
- $namefilepass=$_POST['password'];
- $descripcion=$_POST['descripcion'];
-#  echo " $alertaini 
-# ⚠️ Archivo en compresion.<br>
-# $alertafin  ";
+    $nombreZipa = isset($_POST['archivoacomprimir']) ? $_POST['archivoacomprimir'] . '.zip' : 'archivo_protegido.zip';
+    $nombreZip = "uploads$getruta$nombreZipa";
+    $namefilepass = isset($_POST['password']) ? $_POST['password'] : '';
+    $descripcion = isset($_POST['descripcion']) ? $_POST['descripcion'] : '';
 
+    // Instanciar ZipArchive
+    $zip = new ZipArchive();
 
+    // Función para comprimir carpeta con contraseña
+    function comprimirCarpetaConContrasena($origen, $destino, $excluir = [], $contrasena) {
+        $zip = new ZipArchive();
 
+        if ($zip->open($destino, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            die("No se pudo crear el archivo ZIP.\n");
+        }
 
-
- 
-
-
-
-
-
-$nombreZip = isset($_POST['archivoacomprimir']) ? $_POST['archivoacomprimir'] . '.zip' : 'archivo_protegido.zip';
-$namefilepass = isset($_POST['password']) ? $_POST['password'] : '';
-$descripcion = isset($_POST['descripcion']) ? $_POST['descripcion'] : '';
-
-// Instanciar ZipArchive
-$zip = new ZipArchive();
-
-if ($zip->open($nombreZip, ZipArchive::CREATE) === TRUE) {
-    // Establecer la contraseña solo si no está vacía
-    if (!empty($namefilepass)) {
-        $zip->setPassword($namefilepass);
-    }
-
-    // Función para añadir archivos y carpetas recursivamente al ZIP
-    function agregarAlZip($carpeta, $zip, $rutaDentroDelZip = '') {
         $archivos = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($carpeta),
-            RecursiveIteratorIterator::LEAVES_ONLY
+            new RecursiveDirectoryIterator($origen, RecursiveDirectoryIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::SELF_FIRST
         );
 
         foreach ($archivos as $archivo) {
-            if (!$archivo->isDir()) {
-                // Obtener la ruta relativa dentro del ZIP
-                $rutaRelativa = $rutaDentroDelZip . substr($archivo->getRealPath(), strlen($carpeta) + 1);
-                // Añadir el archivo al ZIP
-                $zip->addFile($archivo->getRealPath(), $rutaRelativa);
-                // Aplicar cifrado si se estableció una contraseña
-                if (!empty($zip->getPassword())) {
-                    $zip->setEncryptionName($rutaRelativa, ZipArchive::EM_AES_256);
+            $rutaRelativa = str_replace($origen . '/', '', $archivo->getPathname());
+
+            $excluirArchivo = false;
+            foreach ($excluir as $itemExcluido) {
+                if (strpos($rutaRelativa, $itemExcluido) === 0) {
+                    $excluirArchivo = true;
+                    break;
                 }
             }
+
+            if (!$excluirArchivo) {
+                if ($archivo->isDir()) {
+                    $zip->addEmptyDir($rutaRelativa);
+                } else {
+                    $zip->addFile($archivo->getPathname(), $rutaRelativa);
+
+                    if ($contrasena) {
+                        $zip->setEncryptionName($rutaRelativa, ZipArchive::EM_AES_256, $contrasena);
+                    }
+                }
+            }
+        }
+
+        $zip->close();
+
+        if (!file_exists($destino)) {
+            echo "$alertaini ⚠️Error al comprimir la carpeta con contraseña.\n $alertafin";
+        } else {
+            #echo "$alertaini ⚠️ Carpeta comprimida y con Password en:\n $destino\n $alertafin ";
         }
     }
 
     // Verificar si se pasa un archivo o carpeta mediante POST
     if (isset($_POST['archivoacomprimir'])) {
-        $ruta = $_POST['archivoacomprimir'];
-
+        $ruta = "uploads$getruta" . $_POST['archivoacomprimir'];
         if (is_file($ruta)) {
             // Añadir un único archivo
+            $zip->open($nombreZip, ZipArchive::CREATE | ZipArchive::OVERWRITE);
             $zip->addFile($ruta, basename($ruta));
             if (!empty($namefilepass)) {
-                $zip->setEncryptionName(basename($ruta), ZipArchive::EM_AES_256);
+                $zip->setEncryptionName(basename($ruta), ZipArchive::EM_AES_256, $namefilepass);
             }
+            $zip->close();
+            echo "$alertaini ⚠️El archivo <b>$namefilec.zip</b> se ha creado correctamente. $alertafin";
         } elseif (is_dir($ruta)) {
             // Añadir una carpeta completa
-            agregarAlZip($ruta, $zip, basename($ruta) . '/');
+            comprimirCarpetaConContrasena($ruta, $nombreZip, [], $namefilepass);
+            echo "$alertaini ⚠️ La carpeta <b>$namefilec.zip</b> se ha creado correctamente. $alertafin";
         } else {
-            echo " $alertaini ⚠️ La ruta especificada no es válida. $alertafin ";
+            echo " $alertaini ⚠️ La ruta especificada no es válida $ruta . $alertafin ";
             exit;
         }
     } else {
@@ -487,28 +617,33 @@ if ($zip->open($nombreZip, ZipArchive::CREATE) === TRUE) {
         exit;
     }
 
-        // Agregar un comentario al archivo ZIP
-        if (!empty($descripcion)) {
+    // Agregar un comentario al archivo ZIP
+    if (!empty($descripcion)) {
+        $zip = new ZipArchive();
+        if ($zip->open($nombreZip) === TRUE) {
             $zip->setArchiveComment($descripcion);
+            $zip->close();
+        } else {
+            echo " $alertaini ⚠️ No se pudo abrir el archivo ZIP para agregar el comentario. $alertafin ";
         }
-
-    // Cerrar el archivo ZIP
-    $zip->close();
-    echo " $alertaini ⚠️ El archivo $nombreZip se ha creado correctamente. $alertafin ";
-} else {
-    echo " $alertaini ⚠️ No se pudo crear el archivo ZIP. $alertafin ";
-}
-
-
-
-
-
-
+    }
 
     echo "<a href='?c=$carpetap' class='naranja' role='button'><b>RECARGAR </b></a>";
     exit;
 }
-////////////////// Comprimir  archivo o carpeta 🚀 🚀🚀🚀🚀🚀🚀🚀
+////////////////// Comprimir archivo o carpeta 🚀 🚀🚀🚀🚀🚀🚀🚀
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // Listar archivos y carpetas
@@ -536,7 +671,7 @@ foreach ($partes as $parte) {
     }
 ?>
 
- <a href='?'>🏠</a>   <a href='?c=<?php echo "$carpetaz";?>/../'>↩️</a>   <a href='?creartexto=txt&c=<?php echo "$carpetaz";?>/'>📝</a> <a href='?crearelfolder=folder&c=<?php echo "$carpetaz";?>/'> 🗂️ </a>  <a href='?eliminarcarpeta=eliminar&c=<?php echo "$carpetaz";?>/'>❌</a></h1>
+ <a href='?'>🏠</a>   <a href='?c=<?php echo "$carpetaz";?>/../'>↩️</a>   <a href='?mod=creartexto&c=<?php echo "$carpetaz";?>/'>📝</a> <a href='?mod=crearcarpeta&c=<?php echo "$carpetaz";?>/'> 🗂️ </a>  <a href='?mod=eliminarcarpeta&c=<?php echo "$carpetaz";?>/'>❌</a> <a href='?mod=config&c=<?php echo "$carpetaz";?>/'>⚙️ </a> </h1>
     </header>
 
 
@@ -560,12 +695,62 @@ foreach ($partes as $parte) {
         </form>
     <?php endif; ?>
 
+
+
+
+
+
+
+
 <?php
-///////////////////////////////////////// CREAR FOLDER ////////////
-$crearelfolder=$_GET['crearelfolder'];
+
+///////////////////////////////////////// CONFIGURAR SISTEMA /////////////////////////⚙️⚙️⚙️⚙️⚙️⚙️⚙️⚙️⚙️⚙️⚙️⚙️⚙️⚙️⚙️⚙️⚙️
+#$mod=$_GET['mod'];
+$mod = isset($_GET['mod']) ? $_GET['mod'] : '';
 ?>
 
-<?php if (isset($crearelfolder)): ?>
+<?php if ($mod == "config"): ?>
+
+       <br>
+	<div class="tabla">
+		<div class="fila">
+			<div class="celda"> 
+
+   <h2> ⚙️ Configuracion </h2>
+    <form action="?fconfiguracion=ok&c=<?php echo "$carpetaz/";?>" method="post">
+        Zona para configurar este sistema, el cual creara un archivo <b>json</b> para mantener la configuracion, no lo borre por que perdera la seguridad y cambios de esta configuracion. <br><br>
+        <input type="text" name="fuser" required class="formtext" value="<?php echo "$master";?>"> Usuario<br>
+        <input type="text" name="fpass" required class="formtext"> Contraseña <br>
+        <input type="text" name="fmail" required class="formtext" value="<?php echo "$mastermail";?>"> Correo Electronico <br>
+        <input type="text" name="fskin" required class="formtext" value="white" readonly> theme <br>
+        <input type="text" name="flanguaje" required class="formtext" value="spanish" readonly> Idioma <br><br>
+
+        <input type="submit" value="Guardar configuracion"> <br><br>
+        <a href='?fborrarconfiguracion=1&c=<?php echo "$carpetaz";?>/' class='azulin'>Borrar Configuracion </a><br>
+
+
+    </form>
+
+
+     <br>
+			</div>
+		</div>
+	</div> <br>
+
+
+<?php endif; ?>
+
+
+
+
+
+<?php
+
+///////////////////////////////////////// CREAR FOLDER ////////////
+#$crearelfolder=$_GET['crearelfolder'];
+?>
+
+<?php if ($mod == "crearcarpeta"): ?>
 
        <br>
 	<div class="tabla">
@@ -596,7 +781,7 @@ $crearelfolder=$_GET['crearelfolder'];
 $creartexto=$_GET['creartexto'];
 ?>
 
-<?php if (isset($creartexto)): ?>
+<?php if ($mod == "creartexto"): ?>
 
        <br>
 	<div class="tabla">
@@ -628,10 +813,11 @@ $creartexto=$_GET['creartexto'];
 
 <?php
 //////////////////////////////////// ELIMINAR CARPETA PREGUNTANDO  ////////////
-$eliminarcarpeta=$_GET['eliminarcarpeta'];
+#$eliminarcarpeta=$_GET['eliminarcarpeta'];
 ?>
 
-<?php if (isset($eliminarcarpeta)): ?>
+
+<?php if ($mod == "eliminarcarpeta"): ?>
 
        <br>
 	<div class="tabla">
@@ -711,7 +897,7 @@ $comprimir=$_GET['comprimir'];
           |_________________,----------._ [____]  ''-,__  __....-----====
                         (_(||||||||||||)___________/   ''                |
                            `----------' zIDRAvE[ ))'-,                   |
-                     FILE MANAGER V4.0          ''    `,  _,--....___    |
+                     FILE MANAGER V4.3          ''    `,  _,--....___    |
                      https://github.com/zidrave/        `/           ''''
 ...................................................................................
 2024
@@ -731,8 +917,12 @@ $comprimir=$_GET['comprimir'];
 
 
 
-
-
+<?php
+/////// USUARIO LOGEADO MENSAJE  ////////// 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 
+if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
+    echo "🙋‍♂️ Bienvenido <b>$master / [<a href=\"?fexit=1\">Cerrar</a>]</b>";
+  }
+?>
 
         <br>
 	<div class="tabla">
@@ -852,8 +1042,8 @@ echo "
         <div class='celda'>  $filePerms </div>
         <div class='celda'>  $fileOwner </div>
 <!--	<div class='celda'>  [<a href='?archivoacambiarnombre=$uploadDir$item&c=$carpetaz/'>🖊️</a>] [<a href='?deleteFolder=$uploadDir$item&c=$carpetaz/'>❌</a>] --> 
-	<div class='celda'>  [<a href='?archivoacambiarnombre=$item&c=$carpetaz/'>🖊️</a>] [<a href='?deleteFolder=$item&c=$carpetaz/'>❌</a>] 
-<!-- [<a href='?comprimir=$uploadDir$item&c=$carpetaz/'>🗃️</a>] --> </div>
+	<div class='celda'>  [<a href='?archivoacambiarnombre=$item&c=$carpetaz/'>🖊️</a>] [<a href='?deleteFolder=$item&c=$carpetaz/'>❌</a>] [<a href='?comprimir=$item&c=$carpetaz/'>📚</a>]
+<!-- [<a href='?comprimir=$item&c=$carpetaz/'>📚</a>] --> </div>
     </div>
  ";
 
@@ -869,7 +1059,7 @@ echo "
         <div class='celda'>  $fileModTime </div>
         <div class='celda'>  $filePerms </div>
         <div class='celda'>  $fileOwner </div>
-	<div class='celda'>  [<a href='?editFile=$item&c=$carpetaz/'>✏️</a>] [<a href='?archivoacambiarnombre=$item&c=$carpetaz/'>🖊️</a>] [<a href='#eliminar_$item'>❌</a>] [<a href='?comprimir=$uploadDir$item&c=$carpetaz/'>🗃️</a>] </div>
+	<div class='celda'>  [<a href='?editFile=$item&c=$carpetaz/'>✏️</a>] [<a href='?archivoacambiarnombre=$item&c=$carpetaz/'>🖊️</a>] [<a href='#eliminar_$item'>❌</a>] [<a href='?comprimir=$item&c=$carpetaz/'>📚</a>] </div>
     </div>
  ";
 
