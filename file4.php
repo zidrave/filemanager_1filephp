@@ -17,15 +17,30 @@ $scriptfm = $scriptfile;
 $scriptfm = strtoupper($scriptfm); #pasar a mayuscula papi
 $mod = isset($_GET['mod']) ? $_GET['mod'] : ''; // porsiacaso dejaremos esto aca todo sera pasado a mod
 $configFile = 'fconfig.json';
+$expire_time = time() + 2592000;
 
 
+
+
+
+#$stylealert = "
+$stylealert = <<<EOD
+<!-- codigo para crear un style de las alertas y seguridad -->
+
+
+
+
+
+EOD;
+
+ 
 
 //////// VERIFICAR SEGURIDAD /////////////////////////
 if (file_exists($configFile)) {
-session_start(); // Iniciar la sesión
+#session_start(); // Iniciar la sesión
 $configData = json_decode(file_get_contents($configFile), true);
 
-$seguridadcabeza = "<h1>🔒 SEGURIDAD </h1> <br>";
+$seguridadcabeza = "$stylealert <h1>🔒 SEGURIDAD </h1> <br>";
 #echo "$seguridadcabeza";
 
       $master = $configData['fuser'];
@@ -36,16 +51,23 @@ $seguridadcabeza = "<h1>🔒 SEGURIDAD </h1> <br>";
 
 
     // Si no existe una cookie de sesión, pedir nombre de usuario y contraseña
-    if (!isset($_SESSION['loggedin']) || !$_SESSION['loggedin']) {
+#    if (!isset($_SESSION['loggedin']) || !$_SESSION['loggedin']) {
+#if (!isset($_SESSION['loggedin']) || !$_SESSION['loggedin'] || !isset($_COOKIE['loggedin']) || !$_COOKIE['loggedin'] ) {
+if (!isset($_COOKIE['loggedin']) || !$_COOKIE['loggedin'] ) {
+
         // Verificar si se ha enviado el formulario de nombre de usuario y contraseña
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fuser']) && isset($_POST['fpass'])) {
             // Comparar el nombre de usuario y la contraseña introducidos con los almacenados
             if ($_POST['fuser'] === $configData['fuser'] && password_verify($_POST['fpass'], $configData['fpass'])) {
                 // Si el nombre de usuario y la contraseña son correctos, establecer la cookie de sesión
-                $_SESSION['loggedin'] = true;
-                echo "$seguridadcabeza";
-                echo " $alertaini 👍 Acceso Concedido . $alertafin<br>";
-                echo "<a href='?c=$carpetaz/' class='naranja' role='button'> <b>ENTRAR </b></a>";
+                #$_SESSION['loggedin'] = true;
+                setcookie('loggedin', 'true', $expire_time, '/');
+                setcookie('PTM', 'laput', $expire_time, '/');
+
+                header("Location: $scriptfile.php");
+                #echo "$seguridadcabeza";
+                #echo " $alertaini 👍 Acceso Concedido . $alertafin<br>";
+                #echo "<a href='?c=$carpetaz/' class='naranja' role='button'> <b>ENTRAR </b></a>";
                 exit; 
             } else {
                 // Si el nombre de usuario o la contraseña son incorrectos, mostrar un mensaje de error
@@ -67,7 +89,71 @@ $seguridadcabeza = "<h1>🔒 SEGURIDAD </h1> <br>";
 
 }
 //////// VERIFICAR SEGURIDAD FIN /////////////////////////
+
+
+
+
+
+
+
+///////fexit////////////////////////
+if (isset($_GET['fexit'])) {
+#$_SESSION['loggedin'] = false;
+
+#setcookie('loggedin', 'true', $expire_time, '/');
+setcookie('loggedin', '', $expire_time, '/'); 
+header("Location: $scriptfile.php");
+#echo " Borrando cookie<br>";
+    # echo " $alertaini ⚠️ cerrando session de $master. $alertafin <br>";
+    # echo "<a href='?c=$carpetaz/' class='naranja' role='button'> <b>RECARGAR </b></a>";
+
+    exit;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/////// BORRAR Configracion /////////////////////////////////
+if (isset($_GET['fborrarconfiguracion'])) {
+#$_SESSION['loggedin'] = false;
+setcookie('loggedin', '', $expire_time, '/'); 
+setcookie('TESTCOOKIE', 'Borrarconfig', $expire_time, '/');
+    if (file_exists('fconfig.json')) {
+        unlink('fconfig.json'); // Borrar el archivo "fconfig.json"
+        #echo "$alertaini ⚠️ Configuración borrada correctamente. $alertafin";
+        header("Location: $scriptfile.php");
+    } else {
+        echo "$alertaini ⚠️ No se encontró ninguna configuración para borrar. $alertafin";
+    }
+
+    echo "<a href='?c=$carpetaz/' class='naranja' role='button'> <b>RECARGAR </b></a>";
+    exit;
+}
+
+
+
+
 ?>
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -78,8 +164,16 @@ $seguridadcabeza = "<h1>🔒 SEGURIDAD </h1> <br>";
     <title>File Manager V4</title>
     <style>
         body {
-		    background-color: #f0f0f0; /* Fondo gris claro */
+	    background-color: #f0f0f0; /* Fondo gris claro */
             font-family: Arial, sans-serif; /* Tipo de letra Arial */
+
+        }
+        a {
+            text-decoration: none;
+            color: #436074; /* Color azul para enlaces */
+        }
+        a:hover {
+            color: #FF0000; /* Cambia a rojo al pasar el mouse */
         }
 
         .tabla {
@@ -138,7 +232,8 @@ $seguridadcabeza = "<h1>🔒 SEGURIDAD </h1> <br>";
     }
 
     header {
-    background-color: #dedfdf; /* Gris oscuro */
+    background-color: #98a6b0; /* Gris oscuro */
+    background-image: linear-gradient(to bottom, #98a6b0, #c0cad1); /
     color: #000; /* Texto blanco */
     text-align: left; /* alineacion */
     width: 99%; /* Ocupa todo el ancho */
@@ -166,6 +261,14 @@ $seguridadcabeza = "<h1>🔒 SEGURIDAD </h1> <br>";
       background-color: #FFA500; /* Color naranja */
       color: #fff; /* Texto blanco */
       padding: 10px 20px; /* Espacio interno */
+      text-decoration: none; /* Quita el subrayado */
+      border-radius: 5px; /* Bordes redondeados */
+      display: inline-block; /* Muestra el elemento como un bloque en línea */
+    }
+   .snaranja {
+      background-color: #F99600; /* Color naranja */
+      color: #fff; /* Texto blanco */
+      padding: 5px 10px; /* Espacio interno */
       text-decoration: none; /* Quita el subrayado */
       border-radius: 5px; /* Bordes redondeados */
       display: inline-block; /* Muestra el elemento como un bloque en línea */
@@ -259,10 +362,24 @@ $seguridadcabeza = "<h1>🔒 SEGURIDAD </h1> <br>";
 
 
 
+<?php
+/////////verificar que exista algun usuario creado
+if (empty($master)) {
+    #echo "La variable \$master está vacía.";
+?>
 
 
 
-
+<table style="width: 100%; background-color: red;">
+    <tr>
+        <td style="text-align: left; padding: 10px; color: white;">
+            <b> ⚠️ Modo Inseguro </b>: Por favor crea una Contraseña en: <b> ⚙️ <a href="?mod=config" class='snaranja' role='button'>Configurar</a></b>
+        </td>
+    </tr>
+</table>
+<?php
+} /////////verificar que exista algun usuario creado
+?>
 
 
 
@@ -413,16 +530,6 @@ echo " $alertaini ⚠️El Sistema se ha actualizado correctamente.  $alertafin"
 
 
 
-///////
-if (isset($_GET['fexit'])) {
-$_SESSION['loggedin'] = false;
-echo " $alertaini ⚠️ cerrando session de $master. $alertafin <br>";
-
-    echo "<a href='?c=$carpetaz/' class='naranja' role='button'> <b>RECARGAR </b></a>";
-    exit;
-}
-
-
 
 
 
@@ -450,20 +557,6 @@ if (isset($_GET['fconfiguracion'])) {
     // Guardar los datos en el archivo "fconfig.json"
     file_put_contents('fconfig.json', json_encode($config, JSON_PRETTY_PRINT));
     echo "$alertaini ⚠️ Configuracion guardada. $alertafin";
-
-    echo "<a href='?c=$carpetaz/' class='naranja' role='button'> <b>RECARGAR </b></a>";
-    exit;
-}
-
-/////// BORRAR Configracion /////////////////////////////////
-if (isset($_GET['fborrarconfiguracion'])) {
-$_SESSION['loggedin'] = false;
-    if (file_exists('fconfig.json')) {
-        unlink('fconfig.json'); // Borrar el archivo "fconfig.json"
-        echo "$alertaini ⚠️ Configuración borrada correctamente. $alertafin";
-    } else {
-        echo "$alertaini ⚠️ No se encontró ninguna configuración para borrar. $alertafin";
-    }
 
     echo "<a href='?c=$carpetaz/' class='naranja' role='button'> <b>RECARGAR </b></a>";
     exit;
@@ -565,9 +658,8 @@ if (isset($_POST['saveFile'])) {
 // Renombrar archivo
 if (isset($_POST['renameFile'])) {
     $oldName = $uploadDir . $_POST['oldName'];
-#    $oldName = $_POST['oldName'];
     $newName = $uploadDir . $_POST['newName'];
-#    $newName = $_POST['newName'];
+
     if (file_exists($oldName)) {
         if (rename($oldName, $newName)) {
             echo "$alertaini ⚠️ Archivo renombrado. $alertafin ";
@@ -583,6 +675,26 @@ if (isset($_POST['renameFile'])) {
     }
 }
 
+
+// copiar archivo
+if (isset($_POST['copyFile'])) {
+    $oldName = $uploadDir . $_POST['oldName'];
+    $newName = $uploadDir . $_POST['newName'];
+
+    if (file_exists($oldName)) {
+        if (copy($oldName, $newName)) {
+            echo "$alertaini ⚠️ Archivo Copiado. $alertafin ";
+    echo "<a href='?c=$carpetap' class='naranja' role='button'><b>RECARGAR </b></a>";
+    exit;
+
+
+        } else {
+            echo " $alertaini ⚠️ Error al copiar el archivo. $alertafin ";
+        }
+    } else {
+        echo " $alertaini ⚠️ Archivo no encontrado. $alertafin  ";
+    }
+}
 
 
 
@@ -974,15 +1086,28 @@ $archivoacambiarnombre=$_GET['archivoacambiarnombre'];
 	<div class="tabla">
 		<div class="fila">
 			<div class="celda"> 
-    <h2>Renombrar o Mover Archivo</h2>
+    <h2> 🖊️ Renombrar o Mover Archivo</h2>
     <form action="" method="post">
         Nombre actual del archivo:
-        <input type="text" name="oldName" value="<?php echo "$archivoacambiarnombre";?>" required class="formtext">
+        <input type="text" name="oldName" value="<?php echo "$archivoacambiarnombre";?>"  readonly required class="formtext">
         Nuevo nombre del archivo:
         <input type="text" name="newName" value="<?php echo "$archivoacambiarnombre";?>" required class="formtext">
         <input type="hidden" name="c" value="<?php echo "$carpetap";?>" >
         <input type="submit" value="Renombrar Archivo" name="renameFile">
-    </form><br>
+    </form>
+<hr>
+    <h2> 🖊️ Copiar Archivo</h2>
+    <form action="" method="post">
+        Nombre actual del archivo:
+        <input type="text" name="oldName" value="<?php echo "$archivoacambiarnombre";?>"  readonly required class="formtext">
+        Nuevo nombre del archivo:
+        <input type="text" name="newName" value="<?php echo "$archivoacambiarnombre";?>" required class="formtext">
+        <input type="hidden" name="c" value="<?php echo "$carpetap";?>" >
+        <input type="submit" value="Copiar Archivo" name="copyFile">
+    </form> <br>
+
+<center> <a href="?c=<?php echo "$carpetap";?>" class='azulin'> Cancelar </a> </center>
+<br>
 
 
 
@@ -1043,7 +1168,9 @@ $comprimir=$_GET['comprimir'];
 
 <?php
 /////// USUARIO LOGEADO MENSAJE  ////////// 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 
-if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
+#if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
+
+if (isset($_COOKIE['loggedin']) && $_COOKIE['loggedin'] === 'true') {
     echo "🙋‍♂️ Bienvenido <b>$master / [<a href=\"?fexit=1\">Salir</a>]</b>";
   }
 ?>
@@ -1107,8 +1234,10 @@ echo "
             switch (strtolower($extension)) {
                 case 'jpg':
                 case 'jpeg':
+                case 'jfif':
+                case 'bmp':
                 case 'png':
-                case 'gif':
+                case 'gif': //
                     $icon = '🖼️'; // Icono para imágenes
                     break;
                 case 'php':
