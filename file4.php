@@ -1,6 +1,6 @@
 <!--
            ,______________________________________       
-   - - - |_________________,----------._ [____]  ""-,__  __....-----=====
+ - - - - |_________________,----------._ [____]  ""-,__  __....-----=====
                         (_(||||||||||||)___________/   ""                |
                            `----------' zIDRAvE[ ))"-,                   |
                      FILE MANAGER V4.3.2        ""    `,  _,--....___    |
@@ -26,9 +26,48 @@ $expire_time = time() + 2592000;
 #$stylealert = "
 $stylealert = <<<EOD
 <!-- codigo para crear un style de las alertas y seguridad -->
+<style>
+        body {
+	    background-color: #f0f0f0; /* Fondo gris claro */
+            font-family: Arial, sans-serif; /* Tipo de letra Arial */
 
+        }
+        a {
+            text-decoration: none;
+            color: #436074; /* Color azul para enlaces */
+        }
+        a:hover {
+            color: #FF0000; /* Cambia a rojo al pasar el mouse */
+        }
 
+    header {
+    background-color: #98a6b0; /* Gris oscuro */
+    background-image: linear-gradient(to bottom, #98a6b0, #c0cad1); /
+    color: #000; /* Texto blanco */
+    text-align: left; /* alineacion */
+    width: 99%; /* Ocupa todo el ancho */
+    padding: 10px; /* Añade un poco de espacio interno */
+    }
 
+    .formtext {
+     background-color: #c9d4da; /* Azul oscuro */
+     color: #0c2b3d; /* Blanco */
+     border: 2px dotted black; /* Borde punteado negro de 2px */
+     padding: 5px; /* Espacio interno */
+     margin: 3px;
+     }
+  /* Estilo para los botones de formulario */
+    button, input[type="submit"] {
+        background-color: #FFA500; /* Fondo naranja */
+        border: 3px solid #000; /* Borde negro grueso */
+        color: #fff; /* Texto blanco */
+        padding: 4px 8px; /* Espaciado interno */
+        font-size: 16px; /* Tamaño de fuente */
+        font-weight: bold; /* Texto en negrita */
+        cursor: pointer; /* Puntero en forma de mano al pasar sobre el botón */
+        border-radius: 4px; /* Bordes redondeados (opcional) */
+    }
+</style>
 
 
 EOD;
@@ -40,7 +79,7 @@ if (file_exists($configFile)) {
 #session_start(); // Iniciar la sesión
 $configData = json_decode(file_get_contents($configFile), true);
 
-$seguridadcabeza = "$stylealert <h1>🔒 SEGURIDAD </h1> <br>";
+$seguridadcabeza = "$stylealert <header> <h1>🌀 File Manager </h1></header> <br>";
 #echo "$seguridadcabeza";
 
       $master = $configData['fuser'];
@@ -73,6 +112,7 @@ if (!isset($_COOKIE['loggedin']) || !$_COOKIE['loggedin'] ) {
                 // Si el nombre de usuario o la contraseña son incorrectos, mostrar un mensaje de error
                 echo "$seguridadcabeza";
                 echo " <h2>🤨 Nombre de usuario o contraseña incorrectos. </h2>";
+               echo ' <hr> <small>Seguridad '.$scriptfile.' - 2024 </small>';
                 exit; 
             }
         } else {
@@ -81,7 +121,7 @@ if (!isset($_COOKIE['loggedin']) || !$_COOKIE['loggedin'] ) {
             echo ' <b>Usuario </b>: <input type="fuser" name="fuser" required> ';
             echo ' <b>Contraseña </b>: <input type="password" name="fpass" required  placeholder="Ingrese su contraseña"> ';
             echo '<input type="submit" value="Entrar"> ';
-            echo '</form> <hr>';
+            echo '</form> <hr> <small>Seguridad  '.$scriptfile.'  - 2024 </small>';
             exit; 
         }
      
@@ -241,7 +281,8 @@ setcookie('TESTCOOKIE', 'Borrarconfig', $expire_time, '/');
     }
 
     footer {
-    background-color: #dedfdf; /* Gris  */
+    background-color: #b9cad4; /* Gris  */
+    background-image: linear-gradient(to bottom,  #dee4e8 , #b9cad4); /
     color: #000; /* Texto blanco */
     text-align: left; /* alineacion */
     width: 99%; /* Ocupa todo el ancho */
