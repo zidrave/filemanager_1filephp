@@ -5,7 +5,7 @@
 #                           `----------' zIDRAvE[ ))"-,                   |
 #                     FILE MANAGER V4.3.3        ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
-#
+###########################
 
 
 #formato de mensajes de alerta
@@ -178,7 +178,8 @@ if (isset($_GET['guardax'])) {
   
   
  if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $texto = filter_var($_POST['texto'], FILTER_SANITIZE_STRING); // Sanitizar el texto
+    #$texto = filter_var($_POST['texto'], FILTER_SANITIZE_STRING); // Sanitizar el texto
+    $texto = $_POST['texto'];
       $filename = filter_var($_POST['miArchivo'], FILTER_SANITIZE_STRING); // Sanitizar el texto
       $carpeta = filter_var($_POST['miCarpeta'], FILTER_SANITIZE_STRING); // Sanitizar el texto
    # $texto = "$texto - $filename - $carpeta";
@@ -1129,7 +1130,7 @@ if (isset($_COOKIE['editor']) && $_COOKIE['editor'] === 'true') {
 
       $.ajax({
         type: "POST",
-        url: "<?php echo "$scriptfile";?>.php?guardax=1", // Aquí va la ruta a tu script PHP 
+        url: "file4.php?guardax=1", // Aquí va la ruta a tu script PHP 
         data: {
           texto: texto,
           miArchivo: miArchivo,
