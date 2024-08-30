@@ -1,15 +1,15 @@
-<!--
-           ,______________________________________       
- - - - - |_________________,----------._ [____]  ""-,__  __....-----=====
-                        (_(||||||||||||)___________/   ""                |
-                           `----------' zIDRAvE[ ))"-,                   |
-                     FILE MANAGER V4.3.2        ""    `,  _,--....___    |
-                     https://github.com/zidrave/        `/           """"
-
--->
 <?php
+#           ,______________________________________       
+#   - - - |_________________,----------._ [____]  ""-,__  __....-----=====
+#                        (_(||||||||||||)___________/   ""                |
+#                           `----------' zIDRAvE[ ))"-,                   |
+#                     FILE MANAGER V4.3.3        ""    `,  _,--....___    |
+#                     https://github.com/zidrave/        `/           """"
+#
+
+
 #formato de mensajes de alerta
-$fversion="4.3.2";
+$fversion="4.3.3";
 $alertaini=" <div class='mensajex'> <h2>";
 $alertafin="  </h2> </div> ";
 $scriptfile="file4";
@@ -18,7 +18,7 @@ $scriptfm = strtoupper($scriptfm); #pasar a mayuscula papi
 $mod = isset($_GET['mod']) ? $_GET['mod'] : ''; // porsiacaso dejaremos esto aca todo sera pasado a mod
 $configFile = 'fconfig.json';
 $expire_time = time() + 2592000;
-
+$tokenplus = "e%OIuFYeLpP3KZDq";
 
 
 
@@ -86,48 +86,59 @@ $seguridadcabeza = "$stylealert <header> <h1>🌀 File Manager </h1></header> <b
       $mastermail = $configData['fmail'];
       $masterskin = $configData['fskin'];
       $masterlang = $configData['flanguaje'];
+      $tokenhash  = $configData['fpass'];
+      $tokenhash  = "$tokenplus$tokenhash";
 
 
 
     // Si no existe una cookie de sesión, pedir nombre de usuario y contraseña
-#    if (!isset($_SESSION['loggedin']) || !$_SESSION['loggedin']) {
-#if (!isset($_SESSION['loggedin']) || !$_SESSION['loggedin'] || !isset($_COOKIE['loggedin']) || !$_COOKIE['loggedin'] ) {
-if (!isset($_COOKIE['loggedin']) || !$_COOKIE['loggedin'] ) {
 
-        // Verificar si se ha enviado el formulario de nombre de usuario y contraseña
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fuser']) && isset($_POST['fpass'])) {
-            // Comparar el nombre de usuario y la contraseña introducidos con los almacenados
-            if ($_POST['fuser'] === $configData['fuser'] && password_verify($_POST['fpass'], $configData['fpass'])) {
-                // Si el nombre de usuario y la contraseña son correctos, establecer la cookie de sesión
-                #$_SESSION['loggedin'] = true;
-                setcookie('loggedin', 'true', $expire_time, '/');
-                setcookie('PTM', 'laput', $expire_time, '/');
 
-                header("Location: $scriptfile.php");
-                #echo "$seguridadcabeza";
-                #echo " $alertaini 👍 Acceso Concedido . $alertafin<br>";
-                #echo "<a href='?c=$carpetaz/' class='naranja' role='button'> <b>ENTRAR </b></a>";
-                exit; 
-            } else {
-                // Si el nombre de usuario o la contraseña son incorrectos, mostrar un mensaje de error
-                echo "$seguridadcabeza";
-                echo " <h2>🤨 Nombre de usuario o contraseña incorrectos. </h2>";
-               echo ' <hr> <small>Seguridad '.$scriptfile.' - 2024 </small>';
-                exit; 
-            }
-        } else {
-            echo "$seguridadcabeza";
-            echo '<form action="" method="post">';
-            echo ' <b>Usuario </b>: <input type="fuser" name="fuser" required> ';
-            echo ' <b>Contraseña </b>: <input type="password" name="fpass" required  placeholder="Ingrese su contraseña"> ';
-            echo '<input type="submit" value="Entrar"> ';
-            echo '</form> <hr> <small>Seguridad  '.$scriptfile.'  - 2024 </small>';
-            exit; 
-        }
-     
-    } 
+
+
+// Verificar si se ha enviado el formulario de nombre de usuario y contraseña
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fuser']) && isset($_POST['fpass'])) {
+    // Comparar el nombre de usuario y la contraseña introducidos con los almacenados
+    if ($_POST['fuser'] === $configData['fuser'] && password_verify($_POST['fpass'], $configData['fpass'])) {
+        // Generar un nuevo hash basado en la IP u otro valor seguro
+        #$tokenhash = hash('sha256', $_SERVER['REMOTE_ADDR']); // Ejemplo usando la IP
+
+        // Si el nombre de usuario y la contraseña son correctos, establecer las cookies de sesión
+        setcookie('loggedin', 'true', $expire_time, '/');
+        setcookie('PTM', 'laput', $expire_time, '/');
+        setcookie('Hash', "$tokenhash", $expire_time, '/');
+
+        header("Location: $scriptfile.php");
+        exit; 
+    } else {
+        // Si el nombre de usuario o la contraseña son incorrectos, mostrar un mensaje de error
+        echo "$seguridadcabeza";
+        echo " <h2>🤨 Nombre de usuario o contraseña incorrectos. </h2>";
+        echo ' <hr> <small>Seguridad '.$scriptfile.' - 2024 </small>';
+        exit; 
+    }
+} else {
+    // Verificar si la cookie 'Hash' existe y coincide con el hash generado
+    if (isset($_COOKIE['Hash']) && $_COOKIE['Hash'] === "$tokenhash") {
+        // Si la cookie existe y es válida, no mostrar el formulario
+        #echo "Ya estás logueado.";
+        // Aquí puedes redirigir o mostrar contenido
+    } else {
+        // Si la cookie no existe o es inválida, mostrar el formulario de inicio de sesión
+        echo "$seguridadcabeza";
+        echo '<form action="" method="post">';
+        echo ' <b>Usuario </b>: <input type="text" name="fuser" required> ';
+        echo ' <b>Contraseña </b>: <input type="password" name="fpass" required placeholder="Ingrese su contraseña"> ';
+        echo '<input type="submit" value="Entrar"> ';
+        echo '</form> <hr> <small>Seguridad '.$scriptfile.' - 2024 </small>';
+     exit;
+    }
+}
 
 }
+
+
+
 //////// VERIFICAR SEGURIDAD FIN /////////////////////////
 
 
@@ -141,7 +152,8 @@ if (isset($_GET['fexit'])) {
 #$_SESSION['loggedin'] = false;
 
 #setcookie('loggedin', 'true', $expire_time, '/');
-setcookie('loggedin', '', $expire_time, '/'); 
+setcookie('loggedin', '', $expire_time, '/');
+setcookie('Hash', "", $expire_time, '/'); 
 header("Location: $scriptfile.php");
 #echo " Borrando cookie<br>";
     # echo " $alertaini ⚠️ cerrando session de $master. $alertafin <br>";
@@ -149,6 +161,95 @@ header("Location: $scriptfile.php");
 
     exit;
 }
+
+
+
+      
+      
+      
+      
+//////////////////////////////////
+///      Guardar X AJAX     //////
+//////////////////////////////////
+if (isset($_GET['guardax'])) {
+      
+#echo "Intentando guardar ajax";
+
+  
+  
+ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $texto = filter_var($_POST['texto'], FILTER_SANITIZE_STRING); // Sanitizar el texto
+      $filename = filter_var($_POST['miArchivo'], FILTER_SANITIZE_STRING); // Sanitizar el texto
+      $carpeta = filter_var($_POST['miCarpeta'], FILTER_SANITIZE_STRING); // Sanitizar el texto
+   # $texto = "$texto - $filename - $carpeta";
+
+    if (!empty($texto)) {
+        $archivo = "uploads$carpeta/$filename";
+        $fp = fopen($archivo, 'w');
+        fwrite($fp, $texto. "");
+        fclose($fp);
+        #echo "Texto guardado correctamente en $archivo - ---- $carpeta/$filename ---- el contenido que dice : $texto ";
+        echo "Texto guardado correctamente.";
+    } else {
+        echo "El texto está vacío.";
+    }
+} else {
+    echo "Solicitud no valida.";
+} 
+  
+  
+
+  
+
+  
+    exit;
+}
+//////////////////////////////////
+///  FIN Guardar X AJAX     //////
+//////////////////////////////////
+
+
+
+
+
+
+
+
+
+///////EDITOR PLUS COOKIEr////////////////////////
+
+$cokiruta=$_GET['c'];
+$cokifile=$_GET['editFile'];
+///////EDITOR PLUS COOKIEr////////////////////////
+if (isset($_GET['oneditor'])) {
+
+setcookie('editor', 'true', $expire_time, '/'); 
+#usleep(500000);
+header("Location: $scriptfile.php?editFile=$cokifile&c=$cokiruta/");
+exit;
+}
+
+///////EDITOR PLUS COOKIEr////////////////////////
+if (isset($_GET['offeditor'])) {
+
+setcookie('editor', '', $expire_time, '/'); 
+#usleep(500000);
+header("Location: $scriptfile.php?editFile=$cokifile&c=$cokiruta/");
+exit;
+}
+///////EDITOR PLUS COOKIEr////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -165,6 +266,7 @@ header("Location: $scriptfile.php");
 if (isset($_GET['fborrarconfiguracion'])) {
 #$_SESSION['loggedin'] = false;
 setcookie('loggedin', '', $expire_time, '/'); 
+setcookie('Hash', "", $expire_time, '/'); 
 setcookie('TESTCOOKIE', 'Borrarconfig', $expire_time, '/');
     if (file_exists('fconfig.json')) {
         unlink('fconfig.json'); // Borrar el archivo "fconfig.json"
@@ -324,7 +426,14 @@ setcookie('TESTCOOKIE', 'Borrarconfig', $expire_time, '/');
       display: inline-block; /* Muestra el elemento como un bloque en línea */
     }
 
-
+   .azulin2 {
+      background-color: #2c4c5e; /* Color naranja */
+      color: #fff; /* Texto blanco */
+      padding: 5px 10px; /* Espacio interno */
+      text-decoration: none; /* Quita el subrayado */
+      border-radius: 5px; /* Bordes redondeados */
+      display: inline-block; /* Muestra el elemento como un bloque en línea */
+    }
 
 .enlacez {
   background-color: #2c4c5e;  
@@ -440,16 +549,6 @@ $getruta = isset($_GET['c']) ? $_GET['c'] : '/';
 $rutax = "/$getruta";
 $partes = explode('/', trim($rutax, '/'));
 $acumulado = "/";
-#foreach ($partes as $parte) {
-#    if ($parte !== "") {
-#        // Construir la ruta acumulativa
-#        $acumulado .= $parte . '/';
-#        
-#        // Generar el enlace
-##        echo ' <a href="$scriptfile.php?c=' . urlencode($acumulado) . '">' . htmlspecialchars($parte) . ' <b>/</b></a> ';
-#        echo " <a href='$scriptfile.php?c=" . $acumulado . "'>" . $parte . " <b>/</b></a> ";
-#        }
-#    }
 
 
 
@@ -458,11 +557,15 @@ $acumulado = "/";
 
 #    $carpetap = $_POST['c'];
 
-if (isset($_GET['c'])) {
+#if (isset($_GET['c'])) {
+if (isset($getruta)) {
 
-    $carpetax = $_GET['c'];
-    $carpetap = $_GET['c'];
-    $carpetaz = $_GET['c'];
+    #$carpetax = $_GET['c'];
+    #$carpetap = $_GET['c'];
+    #$carpetaz = $_GET['c'];
+    $carpetax = $getruta;
+    $carpetap = $getruta;
+    $carpetaz = $getruta;
     $carpetaz = rtrim($carpetaz, '/');
     // Sanitización básica (considera usar funciones más robustas)
     $carpetax = filter_var($carpetax, FILTER_SANITIZE_STRING);
@@ -480,10 +583,13 @@ if (isset($_GET['c'])) {
     // Resto de tu lógica para subir archivos o realizar otras operaciones
 } else {
     // Manejar el caso en que no se proporciona el parámetro 'c'
- #   echo " ⚠️ FALTA el parámetro 'c' ";
+   echo " ⚠️ FALTA el parámetro 'c' ";
        }
-
-
+////correccion en caso que alguien ponga "c=" sin nada mas
+if ($uploadDir === "uploads") {
+    $uploadDir .= "/";
+}
+#echo "test mensaje: el valor de c es [$uploadDir]";
 
 if (!is_dir($uploadDir)) {
     mkdir($uploadDir, 0755);
@@ -524,7 +630,7 @@ if (isset($_GET['fupdate'])) {
 $furl = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/file4.php';
 
 // Ruta del archivo local que se va a reemplazar
-$rutaArchivoLocal = 'file4.php';
+$rutaArchivoLocal = '$scriptfile.php';
 
 // Descargar el archivo desde GitHub
 $fcontenido = file_get_contents($furl);
@@ -903,15 +1009,231 @@ foreach ($partes as $parte) {
         <input type="submit" value="Subir Archivo" name="submit">
     </form>
 
-    <?php if (isset($fileContent)): ?>
-        <h2>Editando: <?php echo htmlspecialchars($_GET['editFile']); ?></h2>
+<br>
+
+<?php if (isset($fileContent)): 
+ $textarea="ready";
+?>
+
+
+
+
+<?php
+////////////condicion para el boton editor plus ////////////////////////////////////
+if (isset($_COOKIE['editor']) && $_COOKIE['editor'] === 'true') {
+?>
+<b>  <a href="?offeditor=1&editFile=<?php echo htmlspecialchars($_GET['editFile']); ?>&c=<?php echo "$carpetaz";?>" class="azulin2"> Desactivar Editor Plus </a> </b>
+
+
+<?php
+
+  } else {
+?>
+
+<b>  <a href="?oneditor=1&editFile=<?php echo htmlspecialchars($_GET['editFile']); ?>&c=<?php echo "$carpetaz";?>" class="snaranja"> Activar Editor Plus </a> </b>
+
+<?php 
+}
+?>
+
+ <?php endif; ?>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<?php
+if (isset($textarea) && !empty($textarea)) {
+
+
+
+if (isset($_COOKIE['editor']) && $_COOKIE['editor'] === 'true') {
+
+#echo "opcion textarea1";
+?>
+<br>
+<h2> 📝 Editando: <?php echo htmlspecialchars($_GET['editFile']); ?> [Editor Plus]</h2>
+
+    <style>
+
+        .editor-wrapper {
+            display: flex;
+            border: 1px solid #ccc;
+            overflow: hidden;
+            height: 450px; /* Altura ajustada */
+            width: 1200px; /* Anchura ajustada */
+        }
+        .line-numbers {
+            background-color: #5e737d;
+            font-family: Fira Code, Consolas, Courier New, monospace;
+            padding: 8px 10px;
+            line-height: 1.25;
+            text-align: right;
+            user-select: none;
+            overflow: hidden;
+            color: #ffffff;
+        }
+        .code-editor {
+           font-family: Fira Code, Consolas, Courier New, monospace;
+            width: 100%;
+            border: none;
+            outline: none;
+            padding: 8px;
+            resize: none;
+            line-height: 1.5;
+            overflow-y: scroll;
+            white-space: nowrap;
+            background-color: #d7dfe0;
+        }
+        .editor-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+ 
+<div class="editor-wrapper">
+    <div class="editor-container">
+        <div class="line-numbers" id="lineNumbers">1</div>
+        <textarea id="codeEditor" class="code-editor" oninput="updateLineNumbers()" onscroll="syncScroll()"><?php echo htmlspecialchars($fileContent); ?></textarea>
+    </div>
+</div>
+
+
+
+
+
+            <input id="miArchivo" type="" name="miArchivo" value="<?php echo htmlspecialchars($_GET['editFile']); ?>" class="formtext">
+            <input id="miCarpeta"  type="hidden" name="miCarpeta" value='<?php echo "$carpetaz";?>' >
+            <button onclick="guardarTexto()">GUARDAR ARCHIVO</button> <a href="?mod=oneditor&editFile=<?php echo htmlspecialchars($_GET['editFile']); ?>&c=<?php echo "$carpetaz";?>/" class="azulin2">Descartar Cambios </a>  <a href="?c=<?php echo "$carpetaz";?>/" class="azulin2"> Cerrar </a> <br>
+ <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+
+
+ <script>
+    function guardarTexto() {
+      var texto = $('#codeEditor').val();
+      var miArchivo = $('#miArchivo').val();
+      var miCarpeta = $('#miCarpeta').val(); 
+
+      $.ajax({
+        type: "POST",
+        url: "<?php echo "$scriptfile";?>.php?guardax=1", // Aquí va la ruta a tu script PHP 
+        data: {
+          texto: texto,
+          miArchivo: miArchivo,
+          miCarpeta: miCarpeta
+        },
+        success: function(response) {
+          alert(response); // Puedes mostrar un mensaje de éxito o error
+        }
+      });
+    }
+  </script>
+
+<script>
+    function updateLineNumbers() {
+        const editor = document.getElementById('codeEditor');
+        const lines = editor.value.split('\n').length;
+        const lineNumbers = document.getElementById('lineNumbers');
+        
+        lineNumbers.innerHTML = Array.from({length: lines}, (_, i) => i + 1).join('<br>');
+    }
+
+    function syncScroll() {
+        const editor = document.getElementById('codeEditor');
+        const lineNumbers = document.getElementById('lineNumbers');
+        lineNumbers.scrollTop = editor.scrollTop;
+    }
+
+    // Inicializar line numbers en el caso de que textarea tenga contenido precargado
+    window.onload = updateLineNumbers;
+</script>
+
+
+
+<?php
+  } else {
+//aca debe ir el textareaviejo
+#echo "opcion textarea2";
+?>
+
+        <h2> 📝 Editando: <?php echo htmlspecialchars($_GET['editFile']); ?> [Editor Simple]</h2>
         <form action="" method="post">
             <textarea name="fileContent" rows="30" cols="165"  class="formtext" ><?php echo htmlspecialchars($fileContent); ?></textarea><br>
             <input type="hiddenx" name="fileName" value="<?php echo htmlspecialchars($_GET['editFile']); ?>" class="formtext">
             <input type="hidden" name="c" value='<?php echo "$carpetaz";?>' >
-            <input type="submit" name="saveFile" value="GUARDAR ARCHIVO">
+            <input type="submit" name="saveFile" value="GUARDAR ARCHIVO"> <a href="?mod=oneditor&editFile=<?php echo htmlspecialchars($_GET['editFile']); ?>&c=<?php echo "$carpetaz";?>/" class="azulin2">Descartar Cambios </a>  <a href="?c=<?php echo "$carpetaz";?>/" class="azulin2"> Cerrar </a>
+        </form>
+
+<?php
+}
+
+} //zona para cualquier textarea
+
+
+?>
+
+
+
+
+
+
+
+
+
+
+
+ <?php if (isset($nullfileContent)): ?>
+
+        <h2> 📝 Editando: <?php echo htmlspecialchars($_GET['editFile']); ?></h2>
+        <form action="" method="post">
+            <textarea name="fileContent" rows="30" cols="165"  class="formtext" ><?php echo htmlspecialchars($fileContent); ?></textarea><br>
+            <input type="hiddenx" name="fileName" value="<?php echo htmlspecialchars($_GET['editFile']); ?>" class="formtext">
+            <input type="hidden" name="c" value='<?php echo "$carpetaz";?>' >
+            <input type="submit" name="saveFile" value="GUARDAR ARCHIVO"> <a href="?mod=oneditor&editFile=<?php echo htmlspecialchars($_GET['editFile']); ?>&c=<?php echo "$carpetaz";?>" class="azulin2">Descartar Cambios </a>  <a href="?c=<?php echo "$carpetaz";?>/" class="azulin2"> Cerrar </a>
         </form>
     <?php endif; ?>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1209,7 +1531,6 @@ $comprimir=$_GET['comprimir'];
 
 <?php
 /////// USUARIO LOGEADO MENSAJE  ////////// 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 
-#if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
 
 if (isset($_COOKIE['loggedin']) && $_COOKIE['loggedin'] === 'true') {
     echo "🙋‍♂️ Bienvenido <b>$master / [<a href=\"?fexit=1\">Salir</a>]</b>";
@@ -1252,7 +1573,7 @@ echo "
         foreach ($items as $item) {
 
             if ($item != '.' && $item != '..') {
-
+$uploadDir = empty($uploadDir) ? '/' : $uploadDir; //arreglito aer
             $filePath = $uploadDir . $item;
             $filePerms = substr(sprintf('%o', fileperms($filePath)), -4);
             $fileOwner = posix_getpwuid(fileowner($filePath))['name'];
