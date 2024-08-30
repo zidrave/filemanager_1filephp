@@ -5,7 +5,7 @@
 #                           `----------' zIDRAvE[ ))"-,                   |
 #                     FILE MANAGER V4.3.3        ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
-###########################
+#
 
 
 #formato de mensajes de alerta
@@ -1130,7 +1130,7 @@ if (isset($_COOKIE['editor']) && $_COOKIE['editor'] === 'true') {
 
       $.ajax({
         type: "POST",
-        url: "file4.php?guardax=1", // Aquí va la ruta a tu script PHP 
+        url: "<?php echo "$scriptfile";?>.php?guardax=1", // Aquí va la ruta a tu script PHP 
         data: {
           texto: texto,
           miArchivo: miArchivo,
