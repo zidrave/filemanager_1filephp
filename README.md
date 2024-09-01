@@ -30,7 +30,7 @@ Cambios agregados
 Puede evniar sus sugerencias a: zidravex@gmail.com
 
 Link para descargar:
-https://github.com/zidrave/filemanager_1filephp/blob/main/file4.php 
+[https://github.com/zidrave/filemanager_1filephp/blob/main/file4.php ](https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/file4.php)
 
 ![image](https://github.com/user-attachments/assets/443d9e76-a7a6-4548-9370-efad1dd8d717)
 
