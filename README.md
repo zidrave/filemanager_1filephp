@@ -18,7 +18,7 @@ Un sencillo pero potente administrador de archivos en php (no usa sql) requiere 
 
 Si desea mejorarlo lo puede hacer gracias
 
-Ya estamos en la version 4.3.1
+Ya estamos en la version 4.3.3
 
 Cambios agregados
 ==========================================
