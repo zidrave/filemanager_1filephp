@@ -1,4 +1,4 @@
-<?php
+<?php 
 #           ,______________________________________       
 #   - - - |_________________,----------._ [____]  ""-,__  __....-----=====
 #                        (_(||||||||||||)___________/   ""                |
@@ -18,7 +18,7 @@ $scriptfm = strtoupper($scriptfm); #pasar a mayuscula papi
 $mod = isset($_GET['mod']) ? $_GET['mod'] : ''; // porsiacaso dejaremos esto aca todo sera pasado a mod
 $configFile = 'fconfig.json';
 $expire_time = time() + 2592000;
-$tokenplus = "e%OIuFYeLpP3KZDq";
+$tokenplus = "e%OIuFYeLpP3KZDq"; // cambie este codigo ni bien puedas
 
 
 
@@ -136,9 +136,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fuser']) && isset($_P
 }
 
 }
-
-
-
 //////// VERIFICAR SEGURIDAD FIN /////////////////////////
 
 
@@ -164,9 +161,66 @@ header("Location: $scriptfile.php");
 
 
 
-      
-      
-      
+
+
+
+
+
+
+
+
+
+///////////////////////////////////////
+///      SUBIR VARIOS X AJAX     //////
+///////////////////////////////////////
+if (isset($_GET['varios'])) {
+#$ruta = "($_GET['c']";
+$ruta = $_GET['c'];
+#echo "subiendo varios test en uploads$ruta";
+echo "
+<xscript>alert('subiendo varios test en uploads$ruta');</scriptx>
+";
+
+if (!empty($_FILES['files']['name'][0])) {
+    $uploadDir = 'uploads'.$ruta.'';
+    
+    // Crear el directorio de subida si no existe
+    if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0777, true);
+    }
+
+    foreach ($_FILES['files']['tmp_name'] as $key => $tmpName) {
+        $fileName = basename($_FILES['files']['name'][$key]);
+        $targetFile = $uploadDir . $fileName;
+
+        if (move_uploaded_file($tmpName, $targetFile)) {
+            echo "Archivo subido: $fileName\n";
+        } else {
+            echo "Error al subir el archivo: $fileName\n";
+        }
+    }
+} else {
+    echo "No se han recibido archivos.";
+}
+
+
+exit;
+}
+///////////////////////////////////////
+///      SUBIR VARIOS X AJAX     //////
+///////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
       
 //////////////////////////////////
 ///      Guardar X AJAX     //////
@@ -321,7 +375,7 @@ setcookie('TESTCOOKIE', 'Borrarconfig', $expire_time, '/');
 
         .tabla {
             display: table;
-            width: 80%;
+            width: 1000px;
             border-collapse: collapse;
             background-color: white; /* Fondo blanco para la tabla */
         }
@@ -350,8 +404,8 @@ setcookie('TESTCOOKIE', 'Borrarconfig', $expire_time, '/');
         }
         .celda4 {
             display: table-cell;
-            width: 260px; /* Ancho fijo para la celda2 */
-            padding: 3px;
+            width: 303px; /* Ancho fijo para la celda2 */
+            padding: 2px;
             border: 1px solid #ddd; /* Agrega un borde a la celda2 */
         }
         .fila:nth-child(even) {
@@ -556,6 +610,8 @@ $acumulado = "/";
 
 
 
+
+
 #    $carpetap = $_POST['c'];
 
 #if (isset($_GET['c'])) {
@@ -596,7 +652,7 @@ if (!is_dir($uploadDir)) {
     mkdir($uploadDir, 0755);
 }
 
-// Subir archivo
+/////////// Subir archivo basico ////////////////////////////////////////
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['fileToUpload'])) {
     $targetFile = $uploadDir . basename($_FILES['fileToUpload']['name']);
     $fileType = pathinfo($targetFile, PATHINFO_EXTENSION);
@@ -611,6 +667,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['fileToUpload'])) {
         echo " $alertaini ⚠️ No se permiten archivos PHP. $alertafin";
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -973,6 +1047,12 @@ if (isset($_POST['compressFile'])) {
 
 // Listar archivos y carpetas
 $items = scandir($uploadDir);
+
+
+
+
+
+
 ?>
 
 
@@ -999,7 +1079,146 @@ foreach ($partes as $parte) {
  <a href='?'>🏠</a>   <a href='?c=<?php echo "$carpetaz";?>/../'>↩️</a>   <a href='?mod=creartexto&c=<?php echo "$carpetaz";?>/'>📝</a> <a href='?mod=crearcarpeta&c=<?php echo "$carpetaz";?>/'> 🗂️ </a>  <a href='?mod=eliminarcarpeta&c=<?php echo "$carpetaz";?>/'>❌</a> <a href='?mod=config&c=<?php echo "$carpetaz";?>/'>⚙️ </a> <a href='?mod=update&c=<?php echo "$carpetaz";?>/'> 🔄 </a></h1>
     </header>
 
+<?php
+///////////////////////////// SUBIR ARCHIVOS AL SISTEMA 2 MODOS CLASICO Y MULTIPLE ////////////////////
+if (isset($_GET['uploadmultiple']) && $_GET['uploadmultiple'] === '1') {
+#echo "subir muchos files";
+?>
 
+
+
+
+
+    <style>
+        #drop-area {
+            width:85%;
+
+            padding: 30px;
+            border: 2px dashed #ccc;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            margin: 40px auto;
+        }
+        #drop-area.highlight {
+            border-color: #06c;
+        }
+        #file-list {
+            margin-top: 20px;
+        }
+        #progress-bar {
+            width: 75%;
+            background-color: #f3f3f3;
+            margin: 20px auto; /* Centrar horizontalmente */
+            height: 30px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        #progress-bar-fill {
+            height: 100%;
+            width: 0;
+            background-color: #06c;
+            text-align: center;
+            line-height: 30px;
+            color: white;
+        }
+    </style>
+
+	<div class="tabla">
+		<div class="fila">
+			<div class="celda">  
+
+
+    <div id="drop-area">
+        <h3>Arrastra y suelta tus archivos aquí</h3>
+        <p>O haz clic para seleccionarlos</p>
+        <input type="file" id="fileElem" multiple accept="*" style="display:none">
+        <button id="fileSelect">Seleccionar archivos</button>
+        <div id="file-list"></div>
+        <div id="progress-bar">
+            <div id="progress-bar-fill">0%</div>
+
+
+        </div>
+<center>   <a href="?c=<?php echo "$carpetaz";?>/" class="azulin2"> Cerrar </a>   </center>
+    </div>
+
+
+
+			</div>
+		</div>
+	</div> 
+
+
+    <script>
+        const dropArea = document.getElementById('drop-area');
+        const fileInput = document.getElementById('fileElem');
+        const fileList = document.getElementById('file-list');
+        const progressBarFill = document.getElementById('progress-bar-fill');
+
+        dropArea.addEventListener('dragover', (event) => {
+            event.preventDefault();
+            dropArea.classList.add('highlight');
+        });
+
+        dropArea.addEventListener('dragleave', () => {
+            dropArea.classList.remove('highlight');
+        });
+
+        dropArea.addEventListener('drop', (event) => {
+            event.preventDefault();
+            dropArea.classList.remove('highlight');
+            const files = event.dataTransfer.files;
+            handleFiles(files);
+        });
+
+        document.getElementById('fileSelect').addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', () => {
+            const files = fileInput.files;
+            handleFiles(files);
+        });
+
+        function handleFiles(files) {
+            const formData = new FormData();
+            for (const file of files) {
+                formData.append('files[]', file);
+                const li = document.createElement('li');
+                li.textContent = file.name;
+                fileList.appendChild(li);
+            }
+
+            // Enviar archivos al servidor con barra de progreso
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'file4.php?varios=1&c=<?php echo "$carpetax";?>', true);
+
+            xhr.upload.addEventListener('progress', (event) => {
+                if (event.lengthComputable) {
+                    const percentComplete = (event.loaded / event.total) * 100;
+                    progressBarFill.style.width = percentComplete + '%';
+                    progressBarFill.textContent = Math.round(percentComplete) + '%';
+                }
+            });
+
+            xhr.onload = () => {
+                if (xhr.status === 200) {
+                    alert('Archivos subidos con éxito!');
+                    console.log(xhr.responseText);
+                } else {
+                    alert('Error al subir los archivos.');
+                }
+            };
+
+            xhr.send(formData);
+        }
+    </script>
+
+
+
+<?php
+} else {
+?>
 
     <form action="" method="post" enctype="multipart/form-data">
         ✅ <b>Subir Archivo :</b>
@@ -1007,10 +1226,27 @@ foreach ($partes as $parte) {
         <label>
             <input type="checkbox" name="allowPhpUpload" value="yes"> Permitir archivos PHP
         </label>
-        <input type="submit" value="Subir Archivo" name="submit">
+        <input type="submit" value="Subir Archivo" name="submit">  <a href="?c=<?php echo "$carpetaz/";?>&uploadmultiple=1" class=azulin2> Subir multiples Archivos </a>
     </form>
 
 <br>
+<?php
+}
+/////////////// FIN ////////////// SUBIR ARCHIVOS AL SISTEMA 2 MODOS CLASICO Y MULTIPLE ////////////////////
+?>
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 <?php if (isset($fileContent)): 
  $textarea="ready";
@@ -1441,44 +1677,7 @@ $creartexto=$_GET['creartexto'];
 
 
 
-<?php
-//////////////////////////////////// cambiar nombre  ////////////
-$archivoacambiarnombre=$_GET['archivoacambiarnombre'];
- if (isset($archivoacambiarnombre)): ?>
 
-       <br>
-	<div class="tabla">
-		<div class="fila">
-			<div class="celda"> 
-    <h2> 🖊️ Renombrar o Mover Archivo</h2>
-    <form action="" method="post">
-        Nombre actual del archivo:
-        <input type="text" name="oldName" value="<?php echo "$archivoacambiarnombre";?>"  readonly required class="formtext">
-        Nuevo nombre del archivo:
-        <input type="text" name="newName" value="<?php echo "$archivoacambiarnombre";?>" required class="formtext">
-        <input type="hidden" name="c" value="<?php echo "$carpetap";?>" >
-        <input type="submit" value="Renombrar Archivo" name="renameFile">
-    </form>
-<hr>
-    <h2> 🖊️ Copiar Archivo</h2>
-    <form action="" method="post">
-        Nombre actual del archivo:
-        <input type="text" name="oldName" value="<?php echo "$archivoacambiarnombre";?>"  readonly required class="formtext">
-        Nuevo nombre del archivo:
-        <input type="text" name="newName" value="<?php echo "$archivoacambiarnombre";?>" required class="formtext">
-        <input type="hidden" name="c" value="<?php echo "$carpetap";?>" >
-        <input type="submit" value="Copiar Archivo" name="copyFile">
-    </form> <br>
-
-<center> <a href="?c=<?php echo "$carpetap";?>" class='azulin'> Cancelar </a> </center>
-<br>
-
-
-
-			</div>
-		</div>
-	</div> <br>
-<?php endif; ?>
 
 
 
@@ -1526,6 +1725,233 @@ $comprimir=$_GET['comprimir'];
 
 
 <?php endif; ?>
+
+
+
+
+
+
+
+
+
+
+
+<?php
+//////////////////////////////////// cambiar nombre  ////////////
+$archivoacambiarnombre=$_GET['archivoacambiarnombre'];
+$archivoacambiarnombre2 = "uploads$carpetap$archivoacambiarnombre";
+ if (isset($archivoacambiarnombre)):
+
+function xformatSize2($bytes) {
+    $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    $power = $bytes > 0 ? floor(log($bytes, 1024)) : 0;
+    return number_format($bytes / pow(1024, $power), 2, '.', ',') . ' ' . $units[$power];
+}
+
+ ?>
+
+
+
+
+
+
+
+
+
+<?php
+
+
+#///agregando iconos personalzados para info archivos////
+        if (is_dir($archivoacambiarnombre2)) {
+            $fileType = 'folder';
+            $icon = '📂';
+        } else {
+            $fileType = 'file';          
+            // Asignar iconos basados en la extensión del archivo
+            $extension = pathinfo($archivoacambiarnombre, PATHINFO_EXTENSION);
+            switch (strtolower($extension)) {
+                case 'jpg':
+                case 'jpeg':
+                case 'jfif':
+                case 'bmp':
+                case 'png':
+                case 'gif': //
+                    $icon = '🖼️'; // Icono para imágenes
+                    break;
+                case 'php':
+                case 'exe':
+                case 'py':
+                case 'sh':
+                    $icon = '⚙️'; // Icono para ejecutables
+                    break;
+                case 'txt':
+                case 'json':
+                case 'rtf':
+                case 'ini':
+                case 'js':
+                case 'htm':
+                case 'html':
+                    $icon = '📝'; // Icono para archivos de texto
+                    break;
+                case 'pdf':
+                    $icon = '📕'; // Icono para archivos PDF
+                    break;
+                case 'doc':
+                case 'docx':
+                    $icon = '📘'; // Icono para archivos PDF
+                    break;
+                case 'zip':
+                case 'rar':
+                    $icon = '📚'; // Icono para archivos comprimidos
+                    break;
+                case 'mp3':
+                case 'wav':
+                    $icon = '🎵'; // Icono para archivos de audio
+                    break;
+                case 'mp4':
+                case 'mkv':
+                    $icon = '🎥'; // Icono para archivos de video
+                    break;
+                default:
+                    $icon = '📜'; // Icono genérico para otros archivos
+                    break;
+            }
+        }
+
+#///agregando iconos personalzados ////
+
+
+
+?>
+      
+
+
+	<div class="tabla">
+		
+		<div class="fila">
+			<div class="celda"> 
+
+<center> <h1> <?php echo " $icon $archivoacambiarnombre";?> </h1> </center> 
+    <style>
+        .containerx {
+            width: 100%;
+            padding: 0px;
+            display: flex;
+            border: 1px solid black;
+        }
+        .column {
+            width: 50%;
+            padding: 5px;
+            border: 0px solid black;
+            box-sizing: border-box;
+        }
+    </style>
+<div class="containerx">
+    <div class="column">
+
+<?php
+
+$fileinfo="uploads$carpetap$archivoacambiarnombre";
+
+        // Obtener tamaño del archivo
+        $sizer = filesize($fileinfo);
+        $serverTime = date('d-m-Y H:i:s');
+        $fileType = filetype($fileinfo);
+        $md5Hash = md5_file($fileinfo);
+        // Obtener fechas importantes
+        $creationTimee = filectime($fileinfo);
+        $lastAccessTimee = fileatime($fileinfo);
+        $lastModificationTimee = filemtime($fileinfo);
+
+        // Obtener permisos del archivo
+        $permissions = substr(sprintf('%o', fileperms($fileinfo)), -4);
+
+        // Obtener el propietario y el grupo
+        $ownerID = fileowner($fileinfo);
+        $groupID = filegroup($fileinfo);
+        $ownerInfo = posix_getpwuid($ownerID);
+        $groupInfo = posix_getgrgid($groupID);
+
+        // Obtener el tipo MIME del archivo
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mimeType = finfo_file($finfo, $fileinfo);
+        finfo_close($finfo);
+
+
+
+        // Mostrar la información del archivo
+
+        echo "<h3> 🖊️ Info </h3>";
+        echo "<p><strong>▶️ Full Path:</strong> $fileinfo <br>";
+        echo "<p><strong>▶️ Tamaño del archivo:</strong> " . xformatSize2($sizer) . "</p>";
+        echo "<p><strong>▶️ Fecha de creación:</strong> " . date('d-m-Y H:i:s', $creationTimee) . "</p>";
+        echo "<p><strong>▶️ Fecha de último acceso:</strong> " . date('d-m-Y H:i:s', $lastAccessTimee) . "</p>";
+        echo "<p><strong>▶️ Fecha de última modificación:</strong> " . date('d-m-Y H:i:s', $lastModificationTimee) . "</p>";
+        echo "<p><strong>▶️ Permisos:</strong> " . $permissions . "</p>";
+        echo "<p><strong>▶️ Propietario:</strong> " . $ownerInfo['name'] . " (UID: $ownerID)</p>";
+        echo "<p><strong>▶️ Grupo:</strong> " . $groupInfo['name'] . " (GID: $groupID)</p>";
+        echo "<p><strong>▶️ Tipo MIME:</strong> " . $mimeType . "</p>";
+        echo "<p><strong>▶️ Hora actual del servidor:</strong> " . $serverTime . "</p>";
+        echo "<p><strong>▶️ Tipo de archivo:</strong> " . $fileType . "</p>";
+        echo "<p><strong>▶️ Hash MD5:</strong> " . $md5Hash . "</p>";
+
+
+ 
+
+?>
+    </div>
+    <div class="column">
+
+    <h3> 🖊️ Renombrar o mover</h3>
+    <form action="" method="post">
+        
+        <input type="hidden" name="oldName" value="<?php echo "$archivoacambiarnombre";?>"  readonly required class="formtext">
+         
+        <input type="text" name="newName" value="<?php echo "$archivoacambiarnombre";?>" required class="formtext">
+        <input type="hidden" name="c" value="<?php echo "$carpetap";?>" >
+        <input type="submit" value="Renombrar Archivo" name="renameFile">
+    </form>
+<hr>
+    <h3> 🖊️ Copiar Archivo</h3>
+    <form action="" method="post">
+        <input type="hidden" name="oldName" value="<?php echo "$archivoacambiarnombre";?>"  readonly required class="formtext">
+        
+        <input type="text" name="newName" value="<?php echo "$archivoacambiarnombre";?>" required class="formtext">
+        <input type="hidden" name="c" value="<?php echo "$carpetap";?>" >
+        <input type="submit" value="Copiar Archivo" name="copyFile">
+    </form>
+
+
+
+
+
+    </div>
+</div>
+
+
+<hr>
+  
+ 
+
+
+
+
+
+<br>
+
+<center> <a href="?c=<?php echo "$carpetap";?>" class='azulin'> Cerrar </a> </center>
+<br>
+
+
+
+			</div>
+		</div>
+	</div> <br>
+<?php endif; ?>
+
+
+
+
 
 
 
@@ -1578,13 +2004,15 @@ $uploadDir = empty($uploadDir) ? '/' : $uploadDir; //arreglito aer
             $filePath = $uploadDir . $item;
             $filePerms = substr(sprintf('%o', fileperms($filePath)), -4);
             $fileOwner = posix_getpwuid(fileowner($filePath))['name'];
-            $fileModTime = date("Y-m-d / H:i:s", filemtime($filePath));
+#            $fileModTime = date("Y-m-d / H:i", filemtime($filePath)); //d-m-Y H:i:s
+            $fileModTime = date("d-m-Y / H:i", filemtime($filePath)); //d-m-Y H:i:s
+
+
 
 
 
 
 #///agregando iconos personalzados ////
-       #if (is_dir($filePath)) {
         if (is_dir($uploadDir . $item)) {
             $fileType = 'folder';
             $icon = '📂';
