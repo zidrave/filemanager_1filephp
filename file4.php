@@ -5,14 +5,14 @@
 #                           `----------' zIDRAvE[ ))"-,                   |
 #                     FILE MANAGER V4.3.3        ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
-#
+# 1982
 
 
 #formato de mensajes de alerta
 $fversion="4.3.3";
 $alertaini=" <div class='mensajex'> <h2>";
 $alertafin="  </h2> </div> ";
-$scriptfile="file4";
+$scriptfile="file4"; //no cambiar este nombre por que se decalibran varias cosas
 $scriptfm = $scriptfile;
 $scriptfm = strtoupper($scriptfm); #pasar a mayuscula papi
 $mod = isset($_GET['mod']) ? $_GET['mod'] : ''; // porsiacaso dejaremos esto aca todo sera pasado a mod
@@ -705,7 +705,14 @@ if (isset($_GET['fupdate'])) {
 $furl = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/file4.php';
 
 // Ruta del archivo local que se va a reemplazar
+
 $rutaArchivoLocal = 'file4.php';
+if (isset($_GET['updatefile'])) {
+ #    echo "El parámetro 'updatefile' está presente en la URL.";
+      $validscript=$_GET['updatefile'];
+$rutaArchivoLocal= "$validscript.php";
+$rutaverificadora= "$validscript.php";
+}
 
 // Descargar el archivo desde GitHub
 $fcontenido = file_get_contents($furl);
@@ -719,7 +726,7 @@ if (file_put_contents($rutaArchivoLocal, $fcontenido) === FALSE) {
     die(" $alertaini ⚠️ No se pudo actualizar el archivo.  $alertafin ");
 }
 
-echo " $alertaini ⚠️El Sistema se ha actualizado correctamente.  $alertafin";
+echo " $alertaini ⚠️El Sistema se ha actualizado correctamente.   $alertafin";
 
     echo "<a href='?c=$carpetaz/' class='naranja' role='button'> <b>RECARGAR </b></a>";
     exit;
@@ -1519,7 +1526,7 @@ $mod = isset($_GET['mod']) ? $_GET['mod'] : '';
    <h2> 🔄 Actualizacion: </h2>
 
 <br>
-<form action="?fupdate=ok&c=<?php echo "$carpetaz/";?>" method="post">
+<form action="?fupdate=ok&c=<?php echo "$carpetaz/";?>&updatefile=<?php echo "$scriptfile";?>" method="post">
         A continuacion procederemos a actualizar este sistema a su ultima version. <br><br>
         <input type="submit" value="Actualizar "> 
         <a href='?c=<?php echo "$carpetaz";?>/' class='azulin'>Cancelar </a><br>
