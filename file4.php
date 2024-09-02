@@ -398,13 +398,13 @@ setcookie('TESTCOOKIE', 'Borrarconfig', $expire_time, '/');
         }
         .celda3 {
             display: table-cell;
-            width: 110px; /* Ancho fijo para la celda2 */
+            width: 85px; /* Ancho fijo para la celda2 */
             padding: 3px;
             border: 1px solid #ddd; /* Agrega un borde a la celda2 */
         }
         .celda4 {
             display: table-cell;
-            width: 303px; /* Ancho fijo para la celda2 */
+            width: 360px; /* Ancho fijo para la celda2 */
             padding: 2px;
             border: 1px solid #ddd; /* Agrega un borde a la celda2 */
         }
@@ -1920,11 +1920,24 @@ $fileinfo="uploads$carpetap$archivoacambiarnombre";
         <input type="hidden" name="c" value="<?php echo "$carpetap";?>" >
         <input type="submit" value="Copiar Archivo" name="copyFile">
     </form>
+<hr>
 
+<?php
 
+$archivoimagen = "$archivoacambiarnombre"; // Cambia esta variable según sea necesario
 
+// Obtiene la extensión del archivo
+$extension = strtolower(pathinfo($archivoimagen, PATHINFO_EXTENSION));
 
+// Verifica si la extensión es una de las deseadas
+if (in_array($extension, ['jpg', 'bmp', 'tiff', 'gif', 'jfif', 'jpeg', 'png'])) {
+#    echo "La extensión del archivo es .jpg, .bmp, .tiff o .gif";
+ echo "<a href='$fileinfo' target='_black69'><img src='$fileinfo' height='330' ></a>";
+} else {
+#    echo "La extensión del archivo no es .jpg, .bmp, .tiff o .gif";
+}
 
+?>
     </div>
 </div>
 
@@ -2095,10 +2108,15 @@ echo "
                  $fileSize = filesize($uploadDir . $item);
 
 
+$itemr = $item;
+if (strlen($itemr) > 33) {
+    $itemr = substr($itemr, -33);
+    $itemr = "➰".$itemr;
+}
 
 echo " 
     <div class='fila'>
-        <div class='celda'> ◽ $icon <a href='$uploadDir$item' target='_black'>$item </a> </div>
+        <div class='celda'> ◽ $icon <a href='$uploadDir$item' target='_black'>$itemr </a> </div>
         <div class='celda'> " . formatSize($fileSize) . " </div>
         <div class='celda'>  $fileModTime </div>
         <div class='celda'>  $filePerms </div>
@@ -2258,17 +2276,17 @@ $os = php_uname('s') . ' ' . php_uname('r');
 
 <?php
 // Mostrar información
-echo "<h2>Información del Sistema</h2>\n";
-echo "<ul>\n";
-echo "<li>Espacio usado: " . formatSize($diskUsed) . "</li>\n";
-echo "<li>Espacio disponible: " . formatSize($diskFree) . "</li>\n";
-echo "<li>Memoria usada: <b> " . formatSize($memUsed) . " </b></li>\n";
-echo "<li>Memoria total: <b>" . formatSize($memTotal) . " </b></li>\n";
-#echo "<li>Uso del procesador: " . $cpuLoad . " (carga promedio)</li>\n";
-echo "<li>Uso del procesador: <b> " . $cpuLoad . " (carga promedio) - " . $cpuUsage . " </b></li>\n";
-echo "<li>Temperatura del núcleo 0: <b> " . $coreTemp . "  </b></li>\n";
-echo "<li>Sistema operativo: " . $os . "</li>\n";
-echo "</ul>\n";
+echo "  <h2> 💫 Información del Sistema</h2>\n";
+echo " \n";
+echo " ✅ Espacio usado: " . formatSize($diskUsed) . "<br>\n";
+echo " ✅ Espacio disponible: " . formatSize($diskFree) . "<br>\n";
+echo " ✅ Memoria usada: <b> " . formatSize($memUsed) . " </b><br>\n";
+echo " ✅ Memoria total: <b>" . formatSize($memTotal) . " </b><br>\n";
+#echo "<li>Uso del procesador: " . $cpuLoad . " (carga promedio)<br>\n";
+echo " ✅ Uso del procesador: <b> " . $cpuLoad . " (carga promedio) - " . $cpuUsage . " </b><br>\n";
+echo " ✅ Temperatura del núcleo 0: <b> " . $coreTemp . "  </b><br>\n";
+echo " ✴️ Sistema operativo: " . $os . "</li>\n";
+echo " \n";
 
 ?>
 
