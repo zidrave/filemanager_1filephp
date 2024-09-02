@@ -5,7 +5,7 @@
 #                           `----------' zIDRAvE[ ))"-,                   |
 #                     FILE MANAGER V4.3.3        ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
-# 1984
+# 2018
 
 
 #formato de mensajes de alerta
@@ -455,6 +455,14 @@ setcookie('TESTCOOKIE', 'Borrarconfig', $expire_time, '/');
     border: 1px solid white; 
     }
 
+   .rojito {
+      background-color: #a60000;  
+      color: #fff;  
+      padding: 10px 20px; /* Espacio interno */
+      text-decoration: none; /* Quita el subrayado */
+      border-radius: 5px; /* Bordes redondeados */
+      display: inline-block; /* Muestra el elemento como un bloque en línea */
+    }
    .naranja {
       background-color: #FFA500; /* Color naranja */
       color: #fff; /* Texto blanco */
@@ -1704,10 +1712,10 @@ $comprimir=$_GET['comprimir'];
 	<div class="tabla">
 		<div class="fila">
 			<div class="celda"> 
-    <h2> 🗃️ Comprimir ZIP (beta)</h2>
+    <h2> 📚 Comprimir ZIP (<?php echo "$comprimir";?>)</h2>
     <form action="" method="post">
-        Nombre del archivo o carpeta:
-        <input type="text" name="archivoacomprimir" value="<?php echo "$comprimir";?>" required class="formtext" readonly>
+       Si no pone contraseña, no hay problema:<br>
+        <input type="hidden" name="archivoacomprimir" value="<?php echo "$comprimir";?>" required class="formtext" readonly>
         contraseña:
         <input type="text" name="password" value=""  class="formtext">
         <input type="hidden" name="c" value="<?php echo "$carpetap";?>" >
@@ -1944,7 +1952,7 @@ if (in_array($extension, ['jpg', 'bmp', 'tiff', 'gif', 'jfif', 'jpeg', 'png', 'w
 } else {
 #    echo "La extensión del archivo no es .jpg, .bmp, .tiff o .gif";
 }
-
+#echo "<br><a href='' class='snaranja'>Eliminar</a>";
 ?>
     </div>
 </div>
@@ -1960,7 +1968,7 @@ if (in_array($extension, ['jpg', 'bmp', 'tiff', 'gif', 'jfif', 'jpeg', 'png', 'w
 
 <br>
 
-<center> <a href="?c=<?php echo "$carpetap";?>" class='azulin'> Cerrar </a> </center>
+<center>  <a href="?comprimir=<?php echo "$archivoacambiarnombre";?>&c=<?php echo "$carpetap";?>" class='naranja'>   Comprimir </a>       <a href="?c=<?php echo "$carpetap";?>" class='azulin'>  Cerrar   </a>       <a href='?deleteFile=uploads<?php echo "$carpetap";?><?php echo "$archivoacambiarnombre";?>&c=<?php echo "$carpetap";?>' class='rojito' onclick="return confirm('¿Estás seguro de que deseas eliminar este archivo?');">  Eliminar</a> </center>
 <br>
 
 
