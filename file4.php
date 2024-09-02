@@ -5,7 +5,7 @@
 #                           `----------' zIDRAvE[ ))"-,                   |
 #                     FILE MANAGER V4.3.3        ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
-# 1982
+# 1984
 
 
 #formato de mensajes de alerta
@@ -15,10 +15,10 @@ $alertafin="  </h2> </div> ";
 $scriptfile="file4"; //no cambiar este nombre por que se decalibran varias cosas
 $scriptfm = $scriptfile;
 $scriptfm = strtoupper($scriptfm); #pasar a mayuscula papi
-$mod = isset($_GET['mod']) ? $_GET['mod'] : ''; // porsiacaso dejaremos esto aca todo sera pasado a mod
+$mod = isset($_GET['mod']) ? $_GET['mod'] : ''; // algunas cositas van con mod
 $configFile = 'fconfig.json';
 $expire_time = time() + 2592000;
-$tokenplus = "e%OIuFYeLpP3KZDq"; // cambie este codigo ni bien puedas
+$tokenplus = "e%OIuFYeLpP3KZDq"; // cambie este codigo ni bien pueda
 
 
 
@@ -1779,6 +1779,7 @@ function xformatSize2($bytes) {
             switch (strtolower($extension)) {
                 case 'jpg':
                 case 'jpeg':
+                case 'webp':
                 case 'jfif':
                 case 'bmp':
                 case 'png':
@@ -1889,7 +1890,7 @@ $fileinfo="uploads$carpetap$archivoacambiarnombre";
         // Mostrar la información del archivo
 
         echo "<h3> 🖊️ Info </h3>";
-        echo "<p><strong>▶️ Full Path:</strong> $fileinfo <br>";
+        echo "<p><strong>▶️ Full Path:</strong> <br><input type='text' id='campo' name='campo' value='$fileinfo' style='width: 460px;' class='formtext'><br>";
         echo "<p><strong>▶️ Tamaño del archivo:</strong> " . xformatSize2($sizer) . "</p>";
         echo "<p><strong>▶️ Fecha de creación:</strong> " . date('d-m-Y H:i:s', $creationTimee) . "</p>";
         echo "<p><strong>▶️ Fecha de último acceso:</strong> " . date('d-m-Y H:i:s', $lastAccessTimee) . "</p>";
@@ -1914,7 +1915,7 @@ $fileinfo="uploads$carpetap$archivoacambiarnombre";
         
         <input type="hidden" name="oldName" value="<?php echo "$archivoacambiarnombre";?>"  readonly required class="formtext">
          
-        <input type="text" name="newName" value="<?php echo "$archivoacambiarnombre";?>" required class="formtext">
+        <input type="text" name="newName" value="<?php echo "$archivoacambiarnombre";?>" required class="formtext" style='width: 250px;'>
         <input type="hidden" name="c" value="<?php echo "$carpetap";?>" >
         <input type="submit" value="Renombrar Archivo" name="renameFile">
     </form>
@@ -1923,7 +1924,7 @@ $fileinfo="uploads$carpetap$archivoacambiarnombre";
     <form action="" method="post">
         <input type="hidden" name="oldName" value="<?php echo "$archivoacambiarnombre";?>"  readonly required class="formtext">
         
-        <input type="text" name="newName" value="<?php echo "$archivoacambiarnombre";?>" required class="formtext">
+        <input type="text" name="newName" value="<?php echo "$archivoacambiarnombre";?>" required class="formtext" style='width: 250px;'>
         <input type="hidden" name="c" value="<?php echo "$carpetap";?>" >
         <input type="submit" value="Copiar Archivo" name="copyFile">
     </form>
@@ -1936,10 +1937,10 @@ $archivoimagen = "$archivoacambiarnombre"; // Cambia esta variable según sea ne
 // Obtiene la extensión del archivo
 $extension = strtolower(pathinfo($archivoimagen, PATHINFO_EXTENSION));
 
-// Verifica si la extensión es una de las deseadas
-if (in_array($extension, ['jpg', 'bmp', 'tiff', 'gif', 'jfif', 'jpeg', 'png'])) {
+// Verifica si la extensión es una de las deseadas webp
+if (in_array($extension, ['jpg', 'bmp', 'tiff', 'gif', 'jfif', 'jpeg', 'png', 'webp'])) {
 #    echo "La extensión del archivo es .jpg, .bmp, .tiff o .gif";
- echo "<a href='$fileinfo' target='_black69'><img src='$fileinfo' height='330' ></a>";
+ echo "<a href='$fileinfo' target='_black69'><img src='$fileinfo' height='250' ></a>";
 } else {
 #    echo "La extensión del archivo no es .jpg, .bmp, .tiff o .gif";
 }
@@ -2045,6 +2046,7 @@ $uploadDir = empty($uploadDir) ? '/' : $uploadDir; //arreglito aer
             switch (strtolower($extension)) {
                 case 'jpg':
                 case 'jpeg':
+                case 'webp':
                 case 'jfif':
                 case 'bmp':
                 case 'png':
@@ -2283,7 +2285,7 @@ $os = php_uname('s') . ' ' . php_uname('r');
 
 <?php
 // Mostrar información
-echo "  <h2> 💫 Información del Sistema</h2>\n";
+echo "  <h2> 🖥️ Información del Sistema</h2>\n";
 echo " \n";
 echo " ✅ Espacio usado: " . formatSize($diskUsed) . "<br>\n";
 echo " ✅ Espacio disponible: " . formatSize($diskFree) . "<br>\n";
