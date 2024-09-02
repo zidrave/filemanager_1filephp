@@ -705,7 +705,7 @@ if (isset($_GET['fupdate'])) {
 $furl = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/file4.php';
 
 // Ruta del archivo local que se va a reemplazar
-$rutaArchivoLocal = '$scriptfile.php';
+$rutaArchivoLocal = 'file4.php';
 
 // Descargar el archivo desde GitHub
 $fcontenido = file_get_contents($furl);
