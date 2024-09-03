@@ -5,7 +5,7 @@
 #                           `----------' zIDRAvE[ ))"-,                   |
 #                     FILE MANAGER V4.3.3        ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
-# 2018
+# 2025
 
 
 #formato de mensajes de alerta
@@ -457,6 +457,14 @@ setcookie('TESTCOOKIE', 'Borrarconfig', $expire_time, '/');
 
    .rojito {
       background-color: #a60000;  
+      color: #fff;  
+      padding: 10px 20px; /* Espacio interno */
+      text-decoration: none; /* Quita el subrayado */
+      border-radius: 5px; /* Bordes redondeados */
+      display: inline-block; /* Muestra el elemento como un bloque en línea */
+    }
+   .verde {
+      background-color: #04ab8a;  
       color: #fff;  
       padding: 10px 20px; /* Espacio interno */
       text-decoration: none; /* Quita el subrayado */
@@ -1729,7 +1737,7 @@ $comprimir=$_GET['comprimir'];
 ...................................................................................
 2024
 " >
-        <input type="submit" value="Comprimir" name="compressFile">
+        <input type="submit" value="Comprimir" name="compressFile">  <a href='?c=<?php echo "$carpetap";?>' class='azulin2'>Cancelar</a>
     </form><br>
 
 
@@ -1808,6 +1816,7 @@ function xformatSize2($bytes) {
                 case 'htm':
                 case 'html':
                     $icon = '📝'; // Icono para archivos de texto
+                    $editable = 'ok';
                     break;
                 case 'pdf':
                     $icon = '📕'; // Icono para archivos PDF
@@ -1819,6 +1828,7 @@ function xformatSize2($bytes) {
                 case 'zip':
                 case 'rar':
                     $icon = '📚'; // Icono para archivos comprimidos
+                    $comprimible = 'ok';
                     break;
                 case 'mp3':
                 case 'wav':
@@ -1908,7 +1918,7 @@ $fileinfo="uploads$carpetap$archivoacambiarnombre";
         echo "<p><strong>▶️ Grupo:</strong> " . $groupInfo['name'] . " (GID: $groupID)</p>";
         echo "<p><strong>▶️ Tipo MIME:</strong> " . $mimeType . "</p>";
         echo "<p><strong>▶️ Hora actual del servidor:</strong> " . $serverTime . "</p>";
-        echo "<p><strong>▶️ Tipo de archivo:</strong> " . $fileType . "</p>";
+#        echo "<p><strong>▶️ Tipo de archivo:</strong> " . $fileType . "</p>";
         echo "<p><strong>▶️ Hash MD5:</strong> " . $md5Hash . "</p>";
 
 
@@ -1968,7 +1978,20 @@ if (in_array($extension, ['jpg', 'bmp', 'tiff', 'gif', 'jfif', 'jpeg', 'png', 'w
 
 <br>
 
-<center>  <a href="?comprimir=<?php echo "$archivoacambiarnombre";?>&c=<?php echo "$carpetap";?>" class='naranja'>   Comprimir </a>       <a href="?c=<?php echo "$carpetap";?>" class='azulin'>  Cerrar   </a>       <a href='?deleteFile=uploads<?php echo "$carpetap";?><?php echo "$archivoacambiarnombre";?>&c=<?php echo "$carpetap";?>' class='rojito' onclick="return confirm('¿Estás seguro de que deseas eliminar este archivo?');">  Eliminar</a> </center>
+<center>   
+<?php if ($editable == "ok"): ?>
+
+ <a href="?editFile=<?php echo "$archivoacambiarnombre";?>&c=<?php echo "$carpetap";?>" class='naranja'>  Editar </a> 
+
+<?php endif; ?>
+
+
+<?php if (!$comprimible == "ok"): ?>
+             <a href="?comprimir=<?php echo "$archivoacambiarnombre";?>&c=<?php echo "$carpetap";?>" class='verde'>   Comprimir </a>     
+<?php endif; ?>
+
+  <a href="?c=<?php echo "$carpetap";?>" class='azulin'>  Cerrar   </a>       <a href='?deleteFile=uploads<?php echo "$carpetap";?><?php echo "$archivoacambiarnombre";?>&c=<?php echo "$carpetap";?>' class='rojito' onclick="return confirm('¿Estás seguro de que deseas eliminar este archivo?');">  Eliminar</a> </center>
+
 <br>
 
 
