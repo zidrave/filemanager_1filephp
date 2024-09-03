@@ -5,9 +5,11 @@
 #                           `----------' zIDRAvE[ ))"-,                   |
 #                     FILE MANAGER V4.3.3        ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
-# 2025
+# 2025 // 2
 
-
+$nombreMaquina = gethostname();
+$hashCompleto = hash('sha256', $nombreMaquina);
+$tokenhost = substr($hashCompleto, 0, 10);
 #formato de mensajes de alerta
 $fversion="4.3.3";
 $alertaini=" <div class='mensajex'> <h2>";
@@ -16,9 +18,12 @@ $scriptfile="file4"; //no cambiar este nombre por que se decalibran varias cosas
 $scriptfm = $scriptfile;
 $scriptfm = strtoupper($scriptfm); #pasar a mayuscula papi
 $mod = isset($_GET['mod']) ? $_GET['mod'] : ''; // algunas cositas van con mod
-$configFile = 'fconfig.json';
-$expire_time = time() + 2592000;
-$tokenplus = "e%OIuFYeLpP3KZDq"; // cambie este codigo ni bien pueda
+$expire_time = time() + 2592000; //valor puesto para 30 dias
+
+//////////////POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
+$tokenplus = "e%OfuFoeLpP3KZDq"; // cambie este valor es para darle mas seguridad a su script
+$configFile = 'fconfig.json'; //obligatorio cambiar el archivo config pero siempre con .json
+//////////////POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
 
 
 
@@ -80,14 +85,13 @@ if (file_exists($configFile)) {
 $configData = json_decode(file_get_contents($configFile), true);
 
 $seguridadcabeza = "$stylealert <header> <h1>🌀 File Manager </h1></header> <br>";
-#echo "$seguridadcabeza";
 
       $master = $configData['fuser'];
       $mastermail = $configData['fmail'];
       $masterskin = $configData['fskin'];
       $masterlang = $configData['flanguaje'];
       $tokenhash  = $configData['fpass'];
-      $tokenhash  = "$tokenplus$tokenhash";
+      $tokenhash  = "$tokenplus$tokenhost$tokenhash";
 
 
 
@@ -167,7 +171,10 @@ header("Location: $scriptfile.php");
 
 
 
-
+if (isset($_GET['test'])) {
+echo "prueba master es $master";
+exit;
+}
 
 
 ///////////////////////////////////////
@@ -226,8 +233,8 @@ exit;
 ///      Guardar X AJAX     //////
 //////////////////////////////////
 if (isset($_GET['guardax'])) {
-      
-#echo "Intentando guardar ajax";
+     
+#echo "guardando en ajax";
 
   
   
@@ -236,7 +243,6 @@ if (isset($_GET['guardax'])) {
     $texto = $_POST['texto'];
       $filename = filter_var($_POST['miArchivo'], FILTER_SANITIZE_STRING); // Sanitizar el texto
       $carpeta = filter_var($_POST['miCarpeta'], FILTER_SANITIZE_STRING); // Sanitizar el texto
-   # $texto = "$texto - $filename - $carpeta";
 
     if (!empty($texto)) {
         $archivo = "uploads$carpeta/$filename";
@@ -323,8 +329,8 @@ if (isset($_GET['fborrarconfiguracion'])) {
 setcookie('loggedin', '', $expire_time, '/'); 
 setcookie('Hash', "", $expire_time, '/'); 
 setcookie('TESTCOOKIE', 'Borrarconfig', $expire_time, '/');
-    if (file_exists('fconfig.json')) {
-        unlink('fconfig.json'); // Borrar el archivo "fconfig.json"
+    if (file_exists("$configFile")) {
+        unlink("$configFile"); // Borrar el archivo de configuracion
         #echo "$alertaini ⚠️ Configuración borrada correctamente. $alertafin";
         header("Location: $scriptfile.php");
     } else {
@@ -799,8 +805,8 @@ if (isset($_GET['fconfiguracion'])) {
 
     ];
 
-    // Guardar los datos en el archivo "fconfig.json"
-    file_put_contents('fconfig.json', json_encode($config, JSON_PRETTY_PRINT));
+    // Guardar los datos en el archivo de configuracion
+    file_put_contents("$configFile", json_encode($config, JSON_PRETTY_PRINT));
     echo "$alertaini ⚠️ Configuracion guardada. $alertafin";
 
     echo "<a href='?c=$carpetaz/' class='naranja' role='button'> <b>RECARGAR </b></a>";
@@ -1807,6 +1813,7 @@ function xformatSize2($bytes) {
                 case 'py':
                 case 'sh':
                     $icon = '⚙️'; // Icono para ejecutables
+                    $editable = 'ok';
                     break;
                 case 'txt':
                 case 'json':
