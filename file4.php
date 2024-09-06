@@ -5,7 +5,7 @@
 #                           `----------' zIDRAvE[ ))"-,                   |
 #                     FILE MANAGER V4.3.3        ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
-# 2025 // 2
+# 2025 .x
 
 $nombreMaquina = gethostname();
 $hashCompleto = hash('sha256', $nombreMaquina);
@@ -19,14 +19,21 @@ $scriptfm = $scriptfile;
 $scriptfm = strtoupper($scriptfm); #pasar a mayuscula papi
 $mod = isset($_GET['mod']) ? $_GET['mod'] : ''; // algunas cositas van con mod
 $expire_time = time() + 2592000; //valor puesto para 30 dias
+#$ippublic = file_get_contents('https://api.ipify.org/'); //solo con internet
+$miip = $_SERVER['REMOTE_ADDR'];
+$haship = hash('sha256', $miip);
+$archivo_bloqueo = 'bloqueo.lock';
 
 //////////////POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
 $tokenplus = "e%OfuFoeLpP3KZDq"; // cambie este valor es para darle mas seguridad a su script
 $configFile = 'fconfig.json'; //obligatorio cambiar el archivo config pero siempre con .json
 //////////////POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
 
-
-
+//////Esto es para Evitar logeos fallidos multiples mientras se falla en un logeo nadie mas entrara al sistema, este sistema es mono usuario y seguro.
+if (file_exists($archivo_bloqueo)) {
+echo "Sistema bloqueado temporalmente";
+exit;
+}
 
 #$stylealert = "
 $stylealert = <<<EOD
@@ -92,6 +99,7 @@ $seguridadcabeza = "$stylealert <header> <h1>🌀 File Manager </h1></header> <b
       $masterlang = $configData['flanguaje'];
       $tokenhash  = $configData['fpass'];
       $tokenhash  = "$tokenplus$tokenhost$tokenhash";
+      $tokenhash = md5($tokenhash);
 
 
 
@@ -103,27 +111,36 @@ $seguridadcabeza = "$stylealert <header> <h1>🌀 File Manager </h1></header> <b
 // Verificar si se ha enviado el formulario de nombre de usuario y contraseña
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fuser']) && isset($_POST['fpass'])) {
     // Comparar el nombre de usuario y la contraseña introducidos con los almacenados
-    if ($_POST['fuser'] === $configData['fuser'] && password_verify($_POST['fpass'], $configData['fpass'])) {
-        // Generar un nuevo hash basado en la IP u otro valor seguro
-        #$tokenhash = hash('sha256', $_SERVER['REMOTE_ADDR']); // Ejemplo usando la IP
-
-        // Si el nombre de usuario y la contraseña son correctos, establecer las cookies de sesión
+    if ($_POST['fuser'] === $configData['fuser'] && password_verify($_POST['fpass'], $configData['fpass']) ) {
+        // Si el nombre de usuario y la contraseña son correctos, establecer las cookies de sesión y guardamos nuestra ip hasheada en el config
         setcookie('loggedin', 'true', $expire_time, '/');
         setcookie('PTM', 'laput', $expire_time, '/');
         setcookie('Hash', "$tokenhash", $expire_time, '/');
+        $updateJSON = file_get_contents($configFile);
+        // Decodificar el JSON a un array asociativo
+        $updatedatos = json_decode($updateJSON, true);
+        // Modificar el valor de "fhash"
+        $updatedatos['fhash'] = $haship; //aqui va $haship
+        // Codificar el array modificado nuevamente a JSON
+        $nuevoJSON = json_encode($updatedatos, JSON_PRETTY_PRINT);
+        file_put_contents($configFile, $nuevoJSON);
 
         header("Location: $scriptfile.php");
         exit; 
     } else {
         // Si el nombre de usuario o la contraseña son incorrectos, mostrar un mensaje de error
+        // Crear el archivo de bloqueo
+        touch($archivo_bloqueo);
         echo "$seguridadcabeza";
         echo " <h2>🤨 Nombre de usuario o contraseña incorrectos. </h2>";
         echo ' <hr> <small>Seguridad '.$scriptfile.' - 2024 </small>';
+        sleep(7); //retardador antibrutos
+        unlink($archivo_bloqueo);
         exit; 
     }
 } else {
     // Verificar si la cookie 'Hash' existe y coincide con el hash generado
-    if (isset($_COOKIE['Hash']) && $_COOKIE['Hash'] === "$tokenhash") {
+    if (isset($_COOKIE['Hash']) && $_COOKIE['Hash'] === "$tokenhash" && $haship === $configData['fhash']) {
         // Si la cookie existe y es válida, no mostrar el formulario
         #echo "Ya estás logueado.";
         // Aquí puedes redirigir o mostrar contenido
@@ -135,6 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fuser']) && isset($_P
         echo ' <b>Contraseña </b>: <input type="password" name="fpass" required placeholder="Ingrese su contraseña"> ';
         echo '<input type="submit" value="Entrar"> ';
         echo '</form> <hr> <small>Seguridad '.$scriptfile.' - 2024 </small>';
+
      exit;
     }
 }
@@ -144,7 +162,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fuser']) && isset($_P
 
 
 
-
+//echo "mi ip es $miip y su hash es: $haship";
 
 
 
@@ -801,6 +819,7 @@ if (isset($_GET['fconfiguracion'])) {
         'fpass' => $fpass,
         'fmail' => $fmail,
         'fskin' => $fskin,
+        'fhash' => $haship,
         'flanguaje' => $flanguaje
 
     ];
