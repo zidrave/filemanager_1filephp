@@ -5,7 +5,12 @@
 #                           `----------' zIDRAvE[ ))"-,                   |
 #                     FILE MANAGER V4.3.3        ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
-# 2025 .x
+# 2025 .xx
+
+//////////////POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
+$tokenplus = "e%OfuFoeLRCpPZDq"; // cambie este valor es para darle mas seguridad a su script
+$configFile = 'fconfig.json'; //obligatorio cambiar el archivo config pero siempre con .json ejemplo x69cfg69x.json
+//////////////POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
 
 $nombreMaquina = gethostname();
 $hashCompleto = hash('sha256', $nombreMaquina);
@@ -24,16 +29,17 @@ $miip = $_SERVER['REMOTE_ADDR'];
 $haship = hash('sha256', $miip);
 $archivo_bloqueo = 'bloqueo.lock';
 
-//////////////POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
-$tokenplus = "e%OfuFoeLpP3KZDq"; // cambie este valor es para darle mas seguridad a su script
-$configFile = 'fconfig.json'; //obligatorio cambiar el archivo config pero siempre con .json
-//////////////POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
+
 
 //////Esto es para Evitar logeos fallidos multiples mientras se falla en un logeo nadie mas entrara al sistema, este sistema es mono usuario y seguro.
 if (file_exists($archivo_bloqueo)) {
 echo "Sistema bloqueado temporalmente";
 exit;
 }
+
+
+
+
 
 #$stylealert = "
 $stylealert = <<<EOD
