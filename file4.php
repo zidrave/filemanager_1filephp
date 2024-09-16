@@ -5,7 +5,7 @@
 #                           `----------' zIDRAvE[ ))"-,                   |
 #                     FILE MANAGER V4.3.3        ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
-# 2025 .xx
+# 202xxx .x
 
 //////////////POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
 $tokenplus = "e%OfuFoeLRCpPZDq"; // cambie este valor es para darle mas seguridad a su script
@@ -749,10 +749,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['fileToUpload'])) {
 if (isset($_GET['fupdate'])) {
 #echo " $alertaini ⚠️ Actualizando Sistema Listo $alertafin <br>";
 $furl = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/file4.php';
+$furlicon = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/favicon.ico';
 
 // Ruta del archivo local que se va a reemplazar
 
 $rutaArchivoLocal = 'file4.php';
+$rutaArchivoLocalicon = 'favicon.ico';
+
+
 if (isset($_GET['updatefile'])) {
  #    echo "El parámetro 'updatefile' está presente en la URL.";
       $validscript=$_GET['updatefile'];
@@ -762,6 +766,7 @@ $rutaverificadora= "$validscript.php";
 
 // Descargar el archivo desde GitHub
 $fcontenido = file_get_contents($furl);
+$fcontenidoicon = file_get_contents($furlicon);
 
 if ($fcontenido === FALSE) {
     die(" $alertaini ⚠️No se pudo descargar el archivo desde GitHub. $alertafin <br>");
@@ -772,6 +777,7 @@ if (file_put_contents($rutaArchivoLocal, $fcontenido) === FALSE) {
     die(" $alertaini ⚠️ No se pudo actualizar el archivo.  $alertafin ");
 }
 
+file_put_contents("favicon.ico", $fcontenidoicon);
 echo " $alertaini ⚠️El Sistema se ha actualizado correctamente.   $alertafin";
 
     echo "<a href='?c=$carpetaz/' class='naranja' role='button'> <b>RECARGAR </b></a>";
