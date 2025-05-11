@@ -56,9 +56,26 @@
     "savefile": "Save File",
     "discardchanges": "Discard Changes",
     "editing": "Editing",
+    "delete": "Delete",
+    "edit": "Edit",
+    "compress": "Compress",
+    "information": "Information",
+    "copyfile": "Copy File",
+    "renamefile": "Rename File",
+    "renamemove": "Rename or move",
+    "filesize": "File Size",
+    "creationdate": "Creation Date",
+    "lastaccessdate": "Last Access Date",
+    "lastmodifieddate": "Last Modified Date",
+    "group": "Group",
+    "mimetype": "MIME Type",
+    "currentservertime": "Current Server Time",
+    "fullpath": "Full Path",
+    "msgcompress": "If you don't put a password, there's no problem",
+    "msgsavefile": "Text saved successfully",
+    "activate": "Activate",
+    "desactivate": "Deactivate",
     "averageload": "average load",
-    "averageload": "average load",
-
 
 
 
