@@ -47,8 +47,14 @@
     "theme": "Theme",
     "language": "Languaje",
     "msgconfiguration": "Area to configure this system, which will create a JSON file to maintain the configuration. Do not delete it because you will lose the security and changes to this configuration",
+    "update": "Update",
+    "cancel": "Cancel",
+    "msgupdate": "Next we will proceed to update this system to its latest version",
     "averageload": "average load",
     "averageload": "average load",
+    "averageload": "average load",
+    "averageload": "average load",
+
 
 
 
