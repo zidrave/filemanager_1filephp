@@ -52,6 +52,10 @@
     "msgupdate": "Next we will proceed to update this system to its latest version",
     "okupdate": "The system has been updated successfully",
     "reload": "Reload",
+    "close": "Close",
+    "savefile": "Save File",
+    "discardchanges": "Discard Changes",
+    "editing": "Editing",
     "averageload": "average load",
     "averageload": "average load",
 
