@@ -86,7 +86,7 @@ $tl = array(
     'cancel' => 'Cancelar',
     'msgupdate' => 'A continuacion procederemos a actualizar este sistema a su ultima version',
     'okupdate' => 'El Sistema se ha actualizado correctamente',
-    'createdby' => 'creado por',
+    'reload' => 'Recargar',
     'createdby' => 'creado por',
     'createdby' => 'creado por',
 
@@ -1010,7 +1010,7 @@ file_put_contents("en.json", $fcontenidolang);
 file_put_contents("de.json", $fcontenidolang2);
 echo " $alertaini ⚠️ ".$tl['okupdate']."   $alertafin";
 
-    echo "<a href='?c=$carpetaz/' class='naranja' role='button'> <b>RECARGAR </b></a>";
+    echo "<a href='?c=$carpetaz/' class='naranja' role='button'> <b> ".$tl['reload']." </b></a>";
     exit;
 }
 
