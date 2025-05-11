@@ -87,8 +87,13 @@ $tl = array(
     'msgupdate' => 'A continuacion procederemos a actualizar este sistema a su ultima version',
     'okupdate' => 'El Sistema se ha actualizado correctamente',
     'reload' => 'Recargar',
+    'close' => 'Cerrar',
+    'savefile' => 'Guardar Archivo',
+    'discardchanges' => 'Descartar Cambios',
+    'editing' => 'Editando',
     'createdby' => 'creado por',
     'createdby' => 'creado por',
+
 
 
 
@@ -1598,7 +1603,7 @@ if (isset($_COOKIE['editor']) && $_COOKIE['editor'] === 'true') {
 #echo "opcion textarea1";
 ?>
 <br>
-<h2> 📝 Editando: <?php echo htmlspecialchars($_GET['editFile']); ?> [Editor Plus]</h2>
+<h2> 📝 <?php echo $tl['editing'];?>: <?php echo htmlspecialchars($_GET['editFile']); ?> [Editor Plus]</h2>
 
     <style>
 
@@ -1651,7 +1656,7 @@ if (isset($_COOKIE['editor']) && $_COOKIE['editor'] === 'true') {
 
             <input id="miArchivo" type="" name="miArchivo" value="<?php echo htmlspecialchars($_GET['editFile']); ?>" class="formtext">
             <input id="miCarpeta"  type="hidden" name="miCarpeta" value='<?php echo "$carpetaz";?>' >
-            <button onclick="guardarTexto()">GUARDAR ARCHIVO</button> <a href="?mod=oneditor&editFile=<?php echo htmlspecialchars($_GET['editFile']); ?>&c=<?php echo "$carpetaz";?>/" class="azulin2">Descartar Cambios </a>  <a href="?c=<?php echo "$carpetaz";?>/" class="azulin2"> Cerrar </a> <br>
+            <button onclick="guardarTexto()"> <?php echo $tl['savefile'];?></button> <a href="?mod=oneditor&editFile=<?php echo htmlspecialchars($_GET['editFile']); ?>&c=<?php echo "$carpetaz";?>/" class="azulin2"> <?php echo $tl['discardchanges'];?> </a>  <a href="?c=<?php echo "$carpetaz";?>/" class="azulin2"> <?php echo $tl['close'];?> </a> <br>
  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 
 
