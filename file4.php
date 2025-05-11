@@ -3,7 +3,7 @@
 #   - - - |_________________,----------._ [____]  ""-,__  __....-----=====
 #                        (_(||||||||||||)___________/   ""                |
 #                           `----------' zIDRAvE[ ))"-,                   |
-#                     FILE MANAGER V4.3.3        ""    `,  _,--....___    |
+#                     FILE MANAGER V4.3.4        ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
 # 202xxx .x
 
@@ -16,7 +16,7 @@ $nombreMaquina = gethostname();
 $hashCompleto = hash('sha256', $nombreMaquina);
 $tokenhost = substr($hashCompleto, 0, 10);
 #formato de mensajes de alerta
-$fversion="4.3.3";
+$fversion="4.3.4";
 $alertaini=" <div class='mensajex'> <h2>";
 $alertafin="  </h2> </div> ";
 $scriptfile="file4"; //no cambiar este nombre por que se decalibran varias cosas
@@ -31,15 +31,168 @@ $archivo_bloqueo = 'bloqueo.lock';
 
 
 
-//////Esto es para Evitar logeos fallidos multiples mientras se falla en un logeo nadie mas entrara al sistema, este sistema es mono usuario y seguro.
-if (file_exists($archivo_bloqueo)) {
-echo "Sistema bloqueado temporalmente";
-exit;
+//////////////idioma predeterminado ES ////////////////////
+$tl = array(
+    'home' => 'Inicio',
+    'uploadfile' => 'Subir Archivo',
+    'name' => 'Nombre',
+    'size' => 'Tamaño',
+    'modified' => 'Modificado',
+    'permissions' => 'Permisos',
+    'owner' => 'Propietario',
+    'welcome' => 'Bienvenido',
+    'exit' => 'Salir',
+    'foldercontent' => 'Contenido de la carpeta',
+    'allowphpfile' => 'Permitir archivos PHP',
+    'uploadmultiplefiles' => 'Subir multiples Archivos',
+    'systeminformation' => 'Informacion del Sistema',
+    'usedspace' => 'Espacio Usado',
+    'availablespace' => 'Espacio disponible',
+    'usedmemory' => 'Memoria usada',
+    'totalmemory' => 'Memoria total',
+    'processorusage' => 'Uso del procesador',
+    'coretemperature' => 'Temperatura del núcleo',
+    'operatingsystem' => 'Sistema operativo',
+    'description' => 'Notas: Utilitario simple y potente para la gestion de archivos en servidores web sin panel.',
+    'viewproyect' => 'Repositorio Github',
+    'editscript' => 'Editar Script',
+    'donatepaypal' => 'Donacion Paypal',
+    'averageload' => 'carga promedio',
+    'createdby' => 'creado por',
+    'folder' => 'Carpeta',
+    'system' => 'Sistema',
+    'deletenow' => 'Eliminar Ahora',
+    'qdelete' => 'Está seguro de eliminar',
+    'cancel' => 'Cancelar',
+    'thefile' => 'El Archivo',
+    'fileaction1' => 'ha sido subido exitosamente',
+    'createafile' => 'Crear Archivo',
+    'filename' => 'Nombre del archivo',
+    'createdby' => 'creado por',
+    'createfolder' => 'Crear Carpeta',
+    'foldername' => 'Nombre de la Carpeta',
+    'deletefolder' => 'Eliminar Carpeta',
+    'onlyempty' => 'Solo si esta vacio',
+    'configuration' => 'Configuracion',
+    'saveconfiguration' => 'Guardar Configuracion',
+    'deleteconfiguration' => 'Eliminar Configuracion',
+    'user' => 'Usuario',
+    'password' => 'Contraseña',
+    'email' => 'Correo Electronico',
+    'theme' => 'Tema',
+    'language' => 'Idioma',
+    'msgconfiguration' => 'Zona para configurar este sistema, el cual creara un archivo json para mantener la configuracion, no lo borre por que perdera la seguridad y cambios de esta configuracion',
+    'createdby' => 'creado por',
+    'createdby' => 'creado por',
+
+
+
+    'createdby' => 'creado por',
+    'selectlanguage' => 'Seleccionar Idioma'
+);
+
+
+
+// Verificar si la cookie 'language' está configurada
+if (isset($_COOKIE['language'])) {
+    // Si existe, usar el valor de la cookie para definir el idioma
+    $lang = $_COOKIE['language'];
+} else {
+    // Si no existe, usar el idioma por defecto (español)
+    $lang = 'es';
+    
+    // Crear la cookie 'language' con el valor por defecto
+    setcookie('language', $lang, $expire_time, '/');
+}
+
+
+// Función para cargar las traducciones desde el archivo JSON solo si se selecciona otro idioma
+function loadTranslations($lang) {
+    $file = __DIR__ . "/$lang.json";  // Ruta al archivo JSON
+    if (file_exists($file)) {
+        $json_data = file_get_contents($file);  // Leer el archivo JSON
+        return json_decode($json_data, true);   // Convertir JSON a array
+    }
+    return null;  // Si no existe el archivo, devolver null
 }
 
 
 
 
+
+
+// Obtener el idioma desde la URL (por defecto español)
+//$lang = isset($_GET['lang']) ? $_GET['lang'] : 'es';
+if (isset($_GET['lang'])) {
+$lang = $_GET['lang'];
+setcookie('language', "$lang", $expire_time, '/');
+} else {
+    // Si no existe el parámetro lang en la URL, verificar si la cookie 'language' está configurada
+    $lang = isset($_COOKIE['language']) ? $_COOKIE['language'] : 'es';  // Idioma por defecto 'es'
+}
+
+// Si el idioma no es español, cargar el archivo JSON correspondiente
+if ($lang !== 'es') {
+    $loadedTranslations = loadTranslations($lang);
+    if ($loadedTranslations !== null) {
+        $tl = $loadedTranslations;  // Sobrescribir las traducciones con las del archivo JSON
+    }
+}
+
+
+
+
+
+
+
+//////////////idioma////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+///DEFINIR COLOR POR DOMINIO
+// Obtener el nombre del dominio actual
+$host = $_SERVER['HTTP_HOST'];
+// Crear un hash MD5 a partir del dominio
+$hash = md5($host);
+// Tomar los primeros 6 caracteres del hash como color hexadecimal
+$colorHex = '#' . substr($hash, 0, 6);
+
+
+
+
+
+
+
+
+
+
+
+
+//////Esto es para Evitar logeos fallidos multiples mientras se falla en un logeo nadie mas entrara al sistema, este sistema es mono usuario y seguro.
+//if (file_exists($archivo_bloqueo)) {
+//echo "Sistema bloqueado temporalmente";
+//exit;
+//}
+
+if (file_exists($archivo_bloqueo) && $_COOKIE['loggedin'] !== 'true') {
+    echo "Sistema bloqueado temporalmente";
+    exit;
+}
 
 #$stylealert = "
 $stylealert = <<<EOD
@@ -97,7 +250,7 @@ if (file_exists($configFile)) {
 #session_start(); // Iniciar la sesión
 $configData = json_decode(file_get_contents($configFile), true);
 
-$seguridadcabeza = "$stylealert <header> <h1>🌀 File Manager </h1></header> <br>";
+$seguridadcabeza = "$stylealert <header> <h1> 🌀 File Manager </h1></header> <br>";
 
       $master = $configData['fuser'];
       $mastermail = $configData['fmail'];
@@ -410,10 +563,73 @@ setcookie('TESTCOOKIE', 'Borrarconfig', $expire_time, '/');
             background-color: white; /* Fondo blanco para la tabla */
         }
 
-        .fila {
-            display: table-row;
-            border-bottom: 1px solid #ddd;
-        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ .filasinfx {
+    display: table-row;
+    border-bottom: 1px solid #ddd;
+ }
+
+.fila {
+    display: table-row;
+    border-bottom: 1px solid #ddd;
+    position: relative; /* Necesario para pseudo-elementos */
+    overflow: hidden;
+    z-index: 1; /* Asegura que el contenido de la fila esté por encima del fondo */
+}
+
+.fila::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    height: 100%;
+    width: 100%;
+    background-color: #d5dfe2; /* Color de relleno */
+    transition: left 0.4s ease-in-out;
+    z-index: 0; /* El pseudo-elemento está por debajo del contenido */
+}
+
+.fila:hover::before {
+    left: 0; /* Efecto de relleno desde la izquierda */
+}
+
+.fila:nth-child(even):hover::before {
+    background-color: #d5dfe2 !important; /* Asegura el mismo color en filas pares */
+}
+
+/* Asegura que el contenido de la fila esté en el nivel superior */
+.fila * {
+    position: relative;
+    z-index: 1; /* Asegura que el texto, íconos, etc. se muestren por encima del fondo */
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
         .celda {
             display: table-cell;
@@ -439,7 +655,7 @@ setcookie('TESTCOOKIE', 'Borrarconfig', $expire_time, '/');
             border: 1px solid #ddd; /* Agrega un borde a la celda2 */
         }
         .fila:nth-child(even) {
-            background-color: #f2f2f2; /* Color de fondo para filas pares */
+            background-color: #f1f6f9; /* Color de fondo para filas pares */
         }
     /* Estilo para los botones de formulario */
     button, input[type="submit"] {
@@ -584,6 +800,7 @@ setcookie('TESTCOOKIE', 'Borrarconfig', $expire_time, '/');
             border: 1px solid #ccc;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             width: 300px;
+            z-index: 2;
         }
         .mensaje:target {
             display: block;
@@ -750,11 +967,13 @@ if (isset($_GET['fupdate'])) {
 #echo " $alertaini ⚠️ Actualizando Sistema Listo $alertafin <br>";
 $furl = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/file4.php';
 $furlicon = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/favicon.ico';
+$furlidioma = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/en.json';
 
 // Ruta del archivo local que se va a reemplazar
 
 $rutaArchivoLocal = 'file4.php';
 $rutaArchivoLocalicon = 'favicon.ico';
+$rutaArchivoLocallang = 'en.json';
 
 
 if (isset($_GET['updatefile'])) {
@@ -767,6 +986,7 @@ $rutaverificadora= "$validscript.php";
 // Descargar el archivo desde GitHub
 $fcontenido = file_get_contents($furl);
 $fcontenidoicon = file_get_contents($furlicon);
+$fcontenidolang = file_get_contents($furlidioma);
 
 if ($fcontenido === FALSE) {
     die(" $alertaini ⚠️No se pudo descargar el archivo desde GitHub. $alertafin <br>");
@@ -778,6 +998,7 @@ if (file_put_contents($rutaArchivoLocal, $fcontenido) === FALSE) {
 }
 
 file_put_contents("favicon.ico", $fcontenidoicon);
+file_put_contents("en.json", $fcontenidolang);
 echo " $alertaini ⚠️El Sistema se ha actualizado correctamente.   $alertafin";
 
     echo "<a href='?c=$carpetaz/' class='naranja' role='button'> <b>RECARGAR </b></a>";
@@ -933,7 +1154,7 @@ if (isset($_POST['saveFile'])) {
     echo "$alertaini  ⚠️ Archivo Guardado. $alertafin";
 
     $elarchivo = $_GET['editFile'];
-    echo "<a href='?editFile=$elarchivo&c=$c/' class='naranja' role='button'> <b>RECARGAR </b></a>";
+    echo "<a href='?editFile=$elarchivo&c=$c/' class='naranja' role='button'> <b> RECARGAR </b></a>";
     exit;
 }
 
@@ -1120,7 +1341,7 @@ $items = scandir($uploadDir);
 
 
     <header>
-        <h1> 🌀 File Manager   -  <?php echo "$scriptfm";?> <a href='<?php echo "$scriptfile";?>.php' class='enlacez' role='button'> Inicio:  </a> / 
+        <h1> 🌀 File Manager   -  <?php echo "$scriptfm";?> <a href='<?php echo "$scriptfile";?>.php' class='enlacez' role='button'> <?php echo $tl['home'];?>:  </a> / 
 
 <?php
 foreach ($partes as $parte) {
@@ -1138,6 +1359,14 @@ foreach ($partes as $parte) {
 
  <a href='?'>🏠</a>   <a href='?c=<?php echo "$carpetaz";?>/../'>↩️</a>   <a href='?mod=creartexto&c=<?php echo "$carpetaz";?>/'>📝</a> <a href='?mod=crearcarpeta&c=<?php echo "$carpetaz";?>/'> 🗂️ </a>  <a href='?mod=eliminarcarpeta&c=<?php echo "$carpetaz";?>/'>❌</a> <a href='?mod=config&c=<?php echo "$carpetaz";?>/'>⚙️ </a> <a href='?mod=update&c=<?php echo "$carpetaz";?>/'> 🔄 </a></h1>
     </header>
+
+
+
+
+<div style="width:100%; height:5px; background-color:<?php echo "$colorHex";?>;"></div>
+
+
+
 
 <?php
 ///////////////////////////// SUBIR ARCHIVOS AL SISTEMA 2 MODOS CLASICO Y MULTIPLE ////////////////////
@@ -1184,7 +1413,7 @@ if (isset($_GET['uploadmultiple']) && $_GET['uploadmultiple'] === '1') {
     </style>
 
 	<div class="tabla">
-		<div class="fila">
+		<div class="filasinfx">
 			<div class="celda">  
 
 
@@ -1281,12 +1510,12 @@ if (isset($_GET['uploadmultiple']) && $_GET['uploadmultiple'] === '1') {
 ?>
 
     <form action="" method="post" enctype="multipart/form-data">
-        ✅ <b>Subir Archivo :</b>
+        ✅ <b><?php echo $tl['uploadfile'];?> :</b>
         <input type="file" name="fileToUpload" id="fileToUpload" class="formtext2">
         <label>
-            <input type="checkbox" name="allowPhpUpload" value="yes"> Permitir archivos PHP
+            <input type="checkbox" name="allowPhpUpload" value="yes"> <?php echo $tl['allowphpfile'];?>
         </label>
-        <input type="submit" value="Subir Archivo" name="submit">  <a href="?c=<?php echo "$carpetaz/";?>&uploadmultiple=1" class=azulin2> Subir multiples Archivos </a>
+        <input type="submit" value="<?php echo $tl['uploadfile'];?>" name="submit">  <a href="?c=<?php echo "$carpetaz/";?>&uploadmultiple=1" class=azulin2> <?php echo $tl['uploadmultiplefiles'];?> </a>
     </form>
 
 <br>
@@ -1573,7 +1802,7 @@ $mod = isset($_GET['mod']) ? $_GET['mod'] : '';
 
        <br>
 	<div class="tabla">
-		<div class="fila">
+		<div class="filasinfx">
 			<div class="celda"> 
 
    <h2> 🔄 Actualizacion: </h2>
@@ -1609,20 +1838,20 @@ $mod = isset($_GET['mod']) ? $_GET['mod'] : '';
 
        <br>
 	<div class="tabla">
-		<div class="fila">
+		<div class="filasinfx">
 			<div class="celda"> 
 
-   <h2> ⚙️ Configuracion </h2>
+   <h2> ⚙️ <?php echo $tl['configuration'];?> </h2>
     <form action="?fconfiguracion=ok&c=<?php echo "$carpetaz/";?>" method="post">
-        Zona para configurar este sistema, el cual creara un archivo <b>json</b> para mantener la configuracion, no lo borre por que perdera la seguridad y cambios de esta configuracion. <br><br>
-        <input type="text" name="fuser" required class="formtext" value="<?php echo "$master";?>"> Usuario<br>
-        <input type="text" name="fpass" required class="formtext"> Contraseña <br>
-        <input type="text" name="fmail" required class="formtext" value="<?php echo "$mastermail";?>"> Correo Electronico <br>
-        <input type="text" name="fskin" required class="formtext" value="white" readonly> theme <br>
-        <input type="text" name="flanguaje" required class="formtext" value="spanish" readonly> Idioma <br><br>
+        <?php echo $tl['msgconfiguration'];?>. <br><br>
+        <input type="text" name="fuser" required class="formtext" value="<?php echo "$master";?>"> <?php echo $tl['user'];?> <br>
+        <input type="text" name="fpass" required class="formtext"> <?php echo $tl['password'];?> <br>
+        <input type="text" name="fmail" required class="formtext" value="<?php echo "$mastermail";?>"> <?php echo $tl['email'];?> <br>
+        <input type="text" name="fskin" required class="formtext" value="white" readonly>  <?php echo $tl['theme'];?> <br>
+        <input type="text" name="flanguaje" required class="formtext" value="spanish" readonly> <?php echo $tl['language'];?> <br><br>
 
-        <input type="submit" value="Guardar configuracion"> <br><br>
-        <a href='?fborrarconfiguracion=1&c=<?php echo "$carpetaz";?>/' class='azulin'>Borrar Configuracion </a><br>
+        <input type="submit" value="<?php echo $tl['saveconfiguration'];?>"> <br><br>
+        <a href='?fborrarconfiguracion=1&c=<?php echo "$carpetaz";?>/' class='azulin'> <?php echo $tl['deleteconfiguration'];?> </a><br>
 
 
     </form>
@@ -1650,14 +1879,14 @@ $mod = isset($_GET['mod']) ? $_GET['mod'] : '';
 
        <br>
 	<div class="tabla">
-		<div class="fila">
+		<div class="filasinfx">
 			<div class="celda"> 
 
-   <h2> 🗂️ Crear Carpeta</h2>
+   <h2> 🗂️  <?php echo $tl['createfolder'];?></h2>
     <form action="" method="post">
-        Nombre de la carpeta:
+         <?php echo $tl['foldername'];?>:
         <input type="text" name="createFolder" required class="formtext">
-        <input type="submit" value="Crear Carpeta">
+        <input type="submit" value="<?php echo $tl['createfolder'];?>">
     </form>
 
 
@@ -1681,16 +1910,15 @@ $creartexto=$_GET['creartexto'];
 
        <br>
 	<div class="tabla">
-		<div class="fila">
+		<div class="filasinfx">
 			<div class="celda"> 
 
-    <h2> 📝 Crear Archivo</h2>
+    <h2> 📝 <?php echo $tl['createfile'];?></h2>
     <form action="" method="get">
-        Nombre del archivo:
-<!--        <input type="text" name="editFile" value='<?php echo "uploads$carpetaz/";?>' required class="formtext"> -->
+        <?php echo $tl['filename'];?>:
         <input type="text" name="editFile" value='' required class="formtext"> 
         <input type="hidden" name="c" value='<?php echo "$carpetaz";?>' >
-        <input type="submit" value="Crear Archivo">
+        <input type="submit" value="<?php echo $tl['createfile'];?>">
     </form>
 
 
@@ -1717,14 +1945,14 @@ $creartexto=$_GET['creartexto'];
 
        <br>
 	<div class="tabla">
-		<div class="fila">
+		<div class="filasinfx">
 			<div class="celda"> 
-       <h2> ❌ Eliminar Carpeta (solo si esta vacia)</h2>
+       <h2> ❌ <?php echo $tl['deletefolder'];?> (<?php echo $tl['onlyempty'];?>)</h2>
     <form action="" method="get">
-        Nombre de la carpeta:
+        <?php echo $tl['foldername'];?>:
         <input type="text" name="deleteFolder" value='' required class="formtext">
         <input type="hidden" name="c" value="<?php echo "$carpetap";?>" >
-        <input type="submit" value="Eliminar Carpeta">
+        <input type="submit" value="<?php echo $tl['deletefolder'];?>">
     </form>
      <br>
 			</div>
@@ -1755,7 +1983,7 @@ $comprimir=$_GET['comprimir'];
 
        <br>
 	<div class="tabla">
-		<div class="fila">
+		<div class="filasinfx">
 			<div class="celda"> 
     <h2> 📚 Comprimir ZIP (<?php echo "$comprimir";?>)</h2>
     <form action="" method="post">
@@ -1892,7 +2120,7 @@ function xformatSize2($bytes) {
 
 	<div class="tabla">
 		
-		<div class="fila">
+		<div class="filasinfx">
 			<div class="celda"> 
 
 <center> <h1> <?php echo " $icon $archivoacambiarnombre";?> </h1> </center> 
@@ -2044,20 +2272,20 @@ if (in_array($extension, ['jpg', 'bmp', 'tiff', 'gif', 'jfif', 'jpeg', 'png', 'w
 
 
 
-
+ 
 
 <?php
 /////// USUARIO LOGEADO MENSAJE  ////////// 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 
 
 if (isset($_COOKIE['loggedin']) && $_COOKIE['loggedin'] === 'true') {
-    echo "🙋‍♂️ Bienvenido <b>$master / [<a href=\"?fexit=1\">Salir</a>]</b>";
+    echo "🙋‍♂️ ".$tl['welcome']." <b>$master / [<a href=\"?fexit=1\">".$tl['exit']."</a>]</b>";
   }
 ?>
 
         <br>
 	<div class="tabla">
-		<div class="fila">
-			<div class="celda"> Contenido de la Carpeta: <b><?php echo "$carpetaz/"; ?></b>
+		<div class="filasinfx">
+			<div class="celda"> <?php echo $tl['foldercontent']; ?>: <b><?php echo "$carpetaz/"; ?></b>
 			</div>
 		</div>
 	</div> <br>
@@ -2066,12 +2294,13 @@ if (isset($_COOKIE['loggedin']) && $_COOKIE['loggedin'] === 'true') {
    <div class="tabla">
   
     <div class="fila">
-        <div class="celda4"><b>Nombre </b></div>
-        <div class="celda3"><b>Tamaño</b></div>
-        <div class="celda2"><b>Modificado</b></div>
-        <div class="celda3"><b>Permisos</b></div>
-        <div class="celda3"><b>Propietario</b></div>
-		<div class="celda"> </div>
+        <div class="celda4"><b><?php echo $tl['name'];?></b></div>
+        <div class="celda3"><b><?php echo $tl['size'];?></b></div>
+        <div class="celda2"><b><?php echo $tl['modified'];?></b></div>
+        <div class="celda3"><b><?php echo $tl['permissions'];?></b></div>
+        <div class="celda3"><b><?php echo $tl['owner'];?></b></div>
+	<div class="celda"> _ </div>
+         
     </div>
 
 
@@ -2172,13 +2401,13 @@ $uploadDir = empty($uploadDir) ? '/' : $uploadDir; //arreglito aer
 echo " 
     <div class='fila'>
         <div class='celda'> ◽ $icon <a href='?c=$carpetaz/$item/'><b>$item</b>  </a> </div>
-        <div class='celda'>Carpeta</div>
+        <div class='celda'> ".$tl['folder']." </div>
         <div class='celda'>  $fileModTime </div>
         <div class='celda'>  $filePerms </div>
         <div class='celda'>  $fileOwner </div>
 <!--	<div class='celda'>  [<a href='?archivoacambiarnombre=$uploadDir$item&c=$carpetaz/'>🖊️</a>] [<a href='?deleteFolder=$uploadDir$item&c=$carpetaz/'>❌</a>] --> 
 	<div class='celda'>  [<a href='?archivoacambiarnombre=$item&c=$carpetaz/'>🖊️</a>] [<a href='?deleteFolder=$item&c=$carpetaz/'>❌</a>] [<a href='?comprimir=$item&c=$carpetaz/'>📚</a>]
-<!-- [<a href='?comprimir=$item&c=$carpetaz/'>📚</a>] --> </div>
+     </div>
     </div>
  ";
 
@@ -2208,10 +2437,10 @@ echo "
  echo "
         <div id='eliminar_$item' class='mensaje'>
             <center>
-                <p><b>¿Está seguro de eliminar?</b></p><br>
+                <p><b>¿ ".$tl['qdelete']." ?</b></p><br>
                 <p><h2>$item</h2></p><br>
-                <a class='cerrar' href='?deleteFile=$uploadDir$item&c=$carpetaz/'>Eliminar Ahora</a> 
-                <a class='cerrar' href='#'>Cancelar</a>
+                <a class='cerrar' href='?deleteFile=$uploadDir$item&c=$carpetaz/'>".$tl['deletenow']."</a> 
+                <a class='cerrar' href='#'>".$tl['cancel']."</a>
             </center>
         </div>";
  echo "
@@ -2229,10 +2458,10 @@ echo "
 echo " <!--
     <div class='fila'>
         <div class='celda'> <a href='?'> ◽ 📁 <b> / </b></a> </div>
-        <div class='celda'>Carpeta</div>
+        <div class='celda'> ".$tl['folder']." </div>
         <div class='celda'>  Null </div>
         <div class='celda'>  Null </div>
-        <div class='celda'>  Sistema </div>
+        <div class='celda'>  ".$tl['system']." </div>
 	<div class='celda'>   </div>
     </div>  -->
  ";
@@ -2240,10 +2469,10 @@ echo " <!--
 echo " <!--
     <div class='fila'>
         <div class='celda'>  ◽ 📁 <a href='?c=$carpetaz/'> <b> . </b></a> </div>
-        <div class='celda'>Carpeta</div>
+        <div class='celda'> ".$tl['folder']." </div>
         <div class='celda'>  Null </div>
         <div class='celda'>  Null </div>
-        <div class='celda'>  Sistema </div>
+        <div class='celda'>  ".$tl['system']." </div>
 	<div class='celda'>   </div>
     </div>
     -->
@@ -2252,10 +2481,10 @@ echo " <!--
 echo " 
     <div class='fila'>
         <div class='celda'> ◽  <a href='?c=$carpetaz/../'>📁 <b>.. </b></a> </div>
-        <div class='celda'>Carpeta</div>
+        <div class='celda'> ".$tl['folder']." </div>
         <div class='celda'>  Null </div>
         <div class='celda'>  Null </div>
-        <div class='celda'>  Sistema </div>
+        <div class='celda'>  ".$tl['system']." </div>
 	<div class='celda'>   </div>
     </div>
    
@@ -2265,41 +2494,6 @@ echo "
     <!-- fin del bucle -->
 </div> <hr>
 
-<!--
-   <h2>Crear Carpeta</h2>
-    <form action="" method="post">
-        Nombre de la carpeta:
-        <input type="text" name="createFolder" required class="formtext">
-        <input type="submit" value="Crear Carpeta">
-    </form>
-
-    <h2>Editar o crear Archivo</h2>
-    <form action="" method="get">
-        Nombre del archivo:
-        <input type="text" name="editFile" value='<?php echo "uploads$carpetaz/";?>' required class="formtext">
-        <input type="hidden" name="c" value='<?php echo "$carpetaz";?>' >
-        <input type="submit" value="Editar Archivo">
-    </form>
-
-
-  
-
-    <h2>Eliminar Archivo</h2>
-    <form action="" method="get">
-        Nombre del archivo:
-        <input type="text" name="deleteFile" required class="formtext">
-        <input type="submit" value="Eliminar Archivo">
-    </form>
-
-
-    <h2>Eliminar Carpeta (solo si esta vacia)</h2>
-    <form action="" method="get">
-        Nombre de la carpeta:
-        <input type="text" name="deleteFolder" value='<?php echo "uploads$carpetaz";?>/' required class="formtext">
-        <input type="hidden" name="c" value="<?php echo "$carpetap";?>" >
-        <input type="submit" value="Eliminar Carpeta">
-    </form>
--->
 
 
 
@@ -2349,21 +2543,22 @@ $os = php_uname('s') . ' ' . php_uname('r');
 
         <br>
 	<div class="tabla">
-		<div class="fila">
+		<div class="filasinfx">
 			<div class="celda"> 
 
 <?php
-// Mostrar información
-echo "  <h2> 🖥️ Información del Sistema</h2>\n";
+// Mostrar información  
+
+echo "  <h2> 🖥️ ".$tl['systeminformation']." </h2>\n";
 echo " \n";
-echo " ✅ Espacio usado: " . formatSize($diskUsed) . "<br>\n";
-echo " ✅ Espacio disponible: " . formatSize($diskFree) . "<br>\n";
-echo " ✅ Memoria usada: <b> " . formatSize($memUsed) . " </b><br>\n";
-echo " ✅ Memoria total: <b>" . formatSize($memTotal) . " </b><br>\n";
+echo " ✅ ".$tl['usedspace'].": " . formatSize($diskUsed) . "<br>\n";
+echo " ✅ ".$tl['availablespace'].": " . formatSize($diskFree) . "<br>\n";
+echo " ✅ ".$tl['usedmemory'].": <b> " . formatSize($memUsed) . " </b><br>\n";
+echo " ✅ ".$tl['totalmemory'].": <b>" . formatSize($memTotal) . " </b><br>\n";
 #echo "<li>Uso del procesador: " . $cpuLoad . " (carga promedio)<br>\n";
-echo " ✅ Uso del procesador: <b> " . $cpuLoad . " (carga promedio) - " . $cpuUsage . " </b><br>\n";
-echo " ✅ Temperatura del núcleo 0: <b> " . $coreTemp . "  </b><br>\n";
-echo " ✴️ Sistema operativo: " . $os . "</li>\n";
+echo " ✅ ".$tl['processorusage'].": <b> " . $cpuLoad . " (".$tl['averageload'].") - " . $cpuUsage . " </b><br>\n";
+echo " ✅ ".$tl['coretemperature'].": <b> " . $coreTemp . "  </b><br>\n";
+echo " ✴️ ".$tl['operatingsystem'].": " . $os . "</li>\n";
 echo " \n";
 
 ?>
@@ -2376,24 +2571,28 @@ echo " \n";
 
 
 <hr> 
-FILE MANAGER | Full Version <b><?php echo "$fversion";?> </b> gracias a <a href='https://zidrave.net/' target='_black'>http://zidrave.net</a>
+FILE MANAGER | Full Version <b><?php echo "$fversion";?> </b> <?php echo $tl['createdby'];?> <a href='https://zidrave.net/' target='_black'>http://zidrave.net</a><br>
 
 
 <hr>
+
+<?php echo $tl['selectlanguage'];?> [<a href="?lang=es">Español</a> | <a href="?lang=en">Ingles</a> | <a href="?lang=de">Aleman</a>] <br><br>
+
+
 <footer> 
-Notas: Utilitario simple y potente para la gestion de archivos en servidores web sin panel. 
-<br>
+ <?php echo $tl['description'];?>
+<br><br>
 
 <?php
 if ($master === 'zidrave') {
-echo "<a href='?editFile=/../$scriptfile.php'  class='naranja' role='button'><b>😍 EDIT THIS SCRIPT 🛠️</b></a>   ";
+echo "<a href='?editFile=/../$scriptfile.php'  class='naranja' role='button'><b>😍 ".$tl['editscript']." 🛠️</b></a>   ";
 }
 ?>
 
-<a href='https://github.com/zidrave/filemanager_1filephp/' target='_black' class='azulin' role='button'><b>😍 View Proyect GitHub 🛠️</b></a>
+<a href='https://github.com/zidrave/filemanager_1filephp/' target='_black' class='azulin' role='button'><b>😍 <?php echo $tl['viewproyect'];?> 🛠️</b></a>
 <a href='https://www.youtube.com/@zidrave' target='_black2' class='naranja' role='button'><b>▶️ Youtube 🔴</b></a> 
 <a href='https://www.tiktok.com/@zidrave' target='_black3' class='azulin' role='button'><b>▶️ Tiktok 🟣</b></a> 
-<a href='https://www.paypal.com/donate?business=zidravex@gmail.com&currency_code=USD' target='_black4' class='naranja' role='button'><b>💲 Donate Paypal 💲</b></a>     
+<a href='https://www.paypal.com/donate?business=zidravex@gmail.com&currency_code=USD' target='_black4' class='naranja' role='button'><b>💲 <?php echo $tl['donatepaypal'];?> 💲</b></a>     
 </footer> 
 </body>
 </html>
