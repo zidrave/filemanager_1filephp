@@ -91,8 +91,31 @@ $tl = array(
     'savefile' => 'Guardar Archivo',
     'discardchanges' => 'Descartar Cambios',
     'editing' => 'Editando',
+    'delete' => 'Eliminar',
+    'edit' => 'Editar',
+    'compress' => 'Comprimir',
+    'information' => 'Informacion',
+    'copyfile' => 'Copiar Archivo',
+    'renamefile' => 'Renombrar Archivo',
+    'renamemove' => 'Renombrar o Mover',
+    'filesize' => 'Tamaño de Archivo',
+    'creationdate' => 'Fecha de Creación',
+    'lastaccessdate' => 'Fecha de último acceso',
+    'lastmodifieddate' => 'Fecha de última modificación',
+    'group' => 'Grupo',
+    'mimetype' => 'Tipo MIME',
+    'currentservertime' => 'Hora actual del servidor',
+    'fullpath' => 'Ruta Completa',
+    'msgcompress' => 'Si no pone contraseña, no hay problema',
+    'msgsavefile' => 'Texto guardado correctamente',
+    'activate' => 'Activar',
+    'desactivate' => 'Desactivar',
     'createdby' => 'creado por',
     'createdby' => 'creado por',
+    'createdby' => 'creado por',
+    'createdby' => 'creado por',
+
+
 
 
 
@@ -438,7 +461,8 @@ if (isset($_GET['guardax'])) {
         fwrite($fp, $texto. "");
         fclose($fp);
         #echo "Texto guardado correctamente en $archivo - ---- $carpeta/$filename ---- el contenido que dice : $texto ";
-        echo "Texto guardado correctamente.";
+        //echo "Texto guardado correctamente.";
+        echo $tl['msgsavefile']; 
     } else {
         echo "El texto está vacío.";
     }
@@ -1562,7 +1586,7 @@ if (isset($_GET['uploadmultiple']) && $_GET['uploadmultiple'] === '1') {
 ////////////condicion para el boton editor plus ////////////////////////////////////
 if (isset($_COOKIE['editor']) && $_COOKIE['editor'] === 'true') {
 ?>
-<b>  <a href="?offeditor=1&editFile=<?php echo htmlspecialchars($_GET['editFile']); ?>&c=<?php echo "$carpetaz";?>" class="azulin2"> Desactivar Editor Plus </a> </b>
+<b>  <a href="?offeditor=1&editFile=<?php echo htmlspecialchars($_GET['editFile']); ?>&c=<?php echo "$carpetaz";?>" class="azulin2"> <?php echo $tl['desactivate'];?> Editor Plus </a> </b>
 
 
 <?php
@@ -1570,7 +1594,7 @@ if (isset($_COOKIE['editor']) && $_COOKIE['editor'] === 'true') {
   } else {
 ?>
 
-<b>  <a href="?oneditor=1&editFile=<?php echo htmlspecialchars($_GET['editFile']); ?>&c=<?php echo "$carpetaz";?>" class="snaranja"> Activar Editor Plus </a> </b>
+<b>  <a href="?oneditor=1&editFile=<?php echo htmlspecialchars($_GET['editFile']); ?>&c=<?php echo "$carpetaz";?>" class="snaranja"> <?php echo $tl['activate'];?> Editor Plus </a> </b>
 
 <?php 
 }
@@ -1709,12 +1733,12 @@ if (isset($_COOKIE['editor']) && $_COOKIE['editor'] === 'true') {
 #echo "opcion textarea2";
 ?>
 
-        <h2> 📝 Editando: <?php echo htmlspecialchars($_GET['editFile']); ?> [Editor Simple]</h2>
+        <h2> 📝 <?php echo $tl['editing'];?>: <?php echo htmlspecialchars($_GET['editFile']); ?> [Editor Simple]</h2>
         <form action="" method="post">
             <textarea name="fileContent" rows="30" cols="165"  class="formtext" ><?php echo htmlspecialchars($fileContent); ?></textarea><br>
             <input type="hiddenx" name="fileName" value="<?php echo htmlspecialchars($_GET['editFile']); ?>" class="formtext">
             <input type="hidden" name="c" value='<?php echo "$carpetaz";?>' >
-            <input type="submit" name="saveFile" value="GUARDAR ARCHIVO"> <a href="?mod=oneditor&editFile=<?php echo htmlspecialchars($_GET['editFile']); ?>&c=<?php echo "$carpetaz";?>/" class="azulin2">Descartar Cambios </a>  <a href="?c=<?php echo "$carpetaz";?>/" class="azulin2"> Cerrar </a>
+            <input type="submit" name="saveFile" value="<?php echo $tl['savefile'];?>"> <a href="?mod=oneditor&editFile=<?php echo htmlspecialchars($_GET['editFile']); ?>&c=<?php echo "$carpetaz";?>/" class="azulin2"><?php echo $tl['discardchanges'];?> </a>  <a href="?c=<?php echo "$carpetaz";?>/" class="azulin2"> <?php echo $tl['close'];?> </a>
         </form>
 
 <?php
@@ -1999,11 +2023,11 @@ $comprimir=$_GET['comprimir'];
 	<div class="tabla">
 		<div class="filasinfx">
 			<div class="celda"> 
-    <h2> 📚 Comprimir ZIP (<?php echo "$comprimir";?>)</h2>
+    <h2> 📚 <?php echo $tl['compress'];?> ZIP (<?php echo "$comprimir";?>)</h2>
     <form action="" method="post">
-       Si no pone contraseña, no hay problema:<br>
+       <?php echo $tl['msgcompress'];?>:<br>
         <input type="hidden" name="archivoacomprimir" value="<?php echo "$comprimir";?>" required class="formtext" readonly>
-        contraseña:
+        <?php echo $tl['password'];?>:
         <input type="text" name="password" value=""  class="formtext">
         <input type="hidden" name="c" value="<?php echo "$carpetap";?>" >
         <input type="hidden" name="descripcion" value="
@@ -2016,7 +2040,7 @@ $comprimir=$_GET['comprimir'];
 ...................................................................................
 2024
 " >
-        <input type="submit" value="Comprimir" name="compressFile">  <a href='?c=<?php echo "$carpetap";?>' class='azulin2'>Cancelar</a>
+        <input type="submit" value="<?php echo $tl['compress'];?>" name="compressFile">  <a href='?c=<?php echo "$carpetap";?>' class='azulin2'> <?php echo $tl['close'];?> </a>
     </form><br>
 
 
@@ -2187,17 +2211,17 @@ $fileinfo="uploads$carpetap$archivoacambiarnombre";
 
         // Mostrar la información del archivo
 
-        echo "<h3> 🖊️ Info </h3>";
-        echo "<p><strong>▶️ Full Path:</strong> <br><input type='text' id='campo' name='campo' value='$fileinfo' style='width: 460px;' class='formtext'><br>";
-        echo "<p><strong>▶️ Tamaño del archivo:</strong> " . xformatSize2($sizer) . "</p>";
-        echo "<p><strong>▶️ Fecha de creación:</strong> " . date('d-m-Y H:i:s', $creationTimee) . "</p>";
-        echo "<p><strong>▶️ Fecha de último acceso:</strong> " . date('d-m-Y H:i:s', $lastAccessTimee) . "</p>";
-        echo "<p><strong>▶️ Fecha de última modificación:</strong> " . date('d-m-Y H:i:s', $lastModificationTimee) . "</p>";
-        echo "<p><strong>▶️ Permisos:</strong> " . $permissions . "</p>";
-        echo "<p><strong>▶️ Propietario:</strong> " . $ownerInfo['name'] . " (UID: $ownerID)</p>";
-        echo "<p><strong>▶️ Grupo:</strong> " . $groupInfo['name'] . " (GID: $groupID)</p>";
-        echo "<p><strong>▶️ Tipo MIME:</strong> " . $mimeType . "</p>";
-        echo "<p><strong>▶️ Hora actual del servidor:</strong> " . $serverTime . "</p>";
+        echo "<h3> 🖊️ ".$tl['information']." </h3>";
+        echo "<p><strong>▶️ ".$tl['fullpath'].":</strong> <br><input type='text' id='campo' name='campo' value='$fileinfo' style='width: 460px;' class='formtext'><br>";
+        echo "<p><strong>▶️ ".$tl['filesize'].":</strong> " . xformatSize2($sizer) . "</p>";
+        echo "<p><strong>▶️ ".$tl['creationdate'].":</strong> " . date('d-m-Y H:i:s', $creationTimee) . "</p>";
+        echo "<p><strong>▶️ ".$tl['lastaccessdate'].":</strong> " . date('d-m-Y H:i:s', $lastAccessTimee) . "</p>";
+        echo "<p><strong>▶️ ".$tl['lastmodifieddate'].":</strong> " . date('d-m-Y H:i:s', $lastModificationTimee) . "</p>";
+        echo "<p><strong>▶️ ".$tl['permissions'].":</strong> " . $permissions . "</p>";
+        echo "<p><strong>▶️ ".$tl['owner'].":</strong> " . $ownerInfo['name'] . " (UID: $ownerID)</p>";
+        echo "<p><strong>▶️ ".$tl['group'].":</strong> " . $groupInfo['name'] . " (GID: $groupID)</p>";
+        echo "<p><strong>▶️ ".$tl['mimetype'].":</strong> " . $mimeType . "</p>";
+        echo "<p><strong>▶️ ".$tl['currentservertime'].":</strong> " . $serverTime . "</p>";
 #        echo "<p><strong>▶️ Tipo de archivo:</strong> " . $fileType . "</p>";
         echo "<p><strong>▶️ Hash MD5:</strong> " . $md5Hash . "</p>";
 
@@ -2208,23 +2232,23 @@ $fileinfo="uploads$carpetap$archivoacambiarnombre";
     </div>
     <div class="column">
 
-    <h3> 🖊️ Renombrar o mover</h3>
+    <h3> 🖊️  <?php echo $tl['renamemove'];?></h3>
     <form action="" method="post">
         
         <input type="hidden" name="oldName" value="<?php echo "$archivoacambiarnombre";?>"  readonly required class="formtext">
          
         <input type="text" name="newName" value="<?php echo "$archivoacambiarnombre";?>" required class="formtext" style='width: 250px;'>
         <input type="hidden" name="c" value="<?php echo "$carpetap";?>" >
-        <input type="submit" value="Renombrar Archivo" name="renameFile">
+        <input type="submit" value="<?php echo $tl['renamefile'];?>" name="renameFile">
     </form>
 <hr>
-    <h3> 🖊️ Copiar Archivo</h3>
+    <h3> 🖊️ <?php echo $tl['copyfile'];?>  </h3>
     <form action="" method="post">
         <input type="hidden" name="oldName" value="<?php echo "$archivoacambiarnombre";?>"  readonly required class="formtext">
         
         <input type="text" name="newName" value="<?php echo "$archivoacambiarnombre";?>" required class="formtext" style='width: 250px;'>
         <input type="hidden" name="c" value="<?php echo "$carpetap";?>" >
-        <input type="submit" value="Copiar Archivo" name="copyFile">
+        <input type="submit" value="<?php echo $tl['copyfile'];?>" name="copyFile">
     </form>
 <hr>
 
@@ -2261,16 +2285,16 @@ if (in_array($extension, ['jpg', 'bmp', 'tiff', 'gif', 'jfif', 'jpeg', 'png', 'w
 <center>   
 <?php if ($editable == "ok"): ?>
 
- <a href="?editFile=<?php echo "$archivoacambiarnombre";?>&c=<?php echo "$carpetap";?>" class='naranja'>  Editar </a> 
+ <a href="?editFile=<?php echo "$archivoacambiarnombre";?>&c=<?php echo "$carpetap";?>" class='naranja'>  <?php echo $tl['edit'];?> </a> 
 
 <?php endif; ?>
 
 
 <?php if (!$comprimible == "ok"): ?>
-             <a href="?comprimir=<?php echo "$archivoacambiarnombre";?>&c=<?php echo "$carpetap";?>" class='verde'>   Comprimir </a>     
+             <a href="?comprimir=<?php echo "$archivoacambiarnombre";?>&c=<?php echo "$carpetap";?>" class='verde'>   <?php echo $tl['compress'];?> </a>     
 <?php endif; ?>
 
-  <a href="?c=<?php echo "$carpetap";?>" class='azulin'>  Cerrar   </a>       <a href='?deleteFile=uploads<?php echo "$carpetap";?><?php echo "$archivoacambiarnombre";?>&c=<?php echo "$carpetap";?>' class='rojito' onclick="return confirm('¿Estás seguro de que deseas eliminar este archivo?');">  Eliminar</a> </center>
+  <a href="?c=<?php echo "$carpetap";?>" class='azulin'>  <?php echo $tl['close'];?>  </a>       <a href='?deleteFile=uploads<?php echo "$carpetap";?><?php echo "$archivoacambiarnombre";?>&c=<?php echo "$carpetap";?>' class='rojito' onclick="return confirm('¿Estás seguro de que deseas eliminar este archivo?');">  <?php echo $tl['delete'];?> </a> </center>
 
 <br>
 
