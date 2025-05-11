@@ -46,8 +46,14 @@
     "email": "E-Mail",
     "theme": "Design",
     "language": "Sprache",
-    "msgconfiguration": "Bereich zur Konfiguration dieses Systems. Es wird eine JSON-Datei erstellt, um die Einstellungen zu speichern. Löschen Sie diese nicht, da sonst Sicherheit und Änderungen verloren gehen.",
+    "msgconfiguration": "Bereich zur Konfiguration dieses Systems. Dabei wird eine JSON-Datei erstellt, um die Einstellungen zu speichern. Löschen Sie diese Datei nicht, da Sie sonst Sicherheit und Änderungen verlieren.",
     "update": "Aktualisieren",
-    "msgupdate": "Jetzt wird das System auf die neueste Version aktualisiert",
-    "createdby": "erstellt von"
+    "cancel": "Abbrechen",
+    "msgupdate": "Als Nächstes wird das System auf die neueste Version aktualisiert",
+    "okupdate": "Das System wurde erfolgreich aktualisiert",
+    "reload": "Neu laden",
+    "close": "Schließen",
+    "savefile": "Datei speichern",
+    "discardchanges": "Änderungen verwerfen",
+    "editing": "Bearbeiten"
 }
