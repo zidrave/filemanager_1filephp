@@ -85,7 +85,7 @@ $tl = array(
     'update' => 'Actualizar',
     'cancel' => 'Cancelar',
     'msgupdate' => 'A continuacion procederemos a actualizar este sistema a su ultima version',
-    'createdby' => 'creado por',
+    'okupdate' => 'El Sistema se ha actualizado correctamente',
     'createdby' => 'creado por',
     'createdby' => 'creado por',
     'createdby' => 'creado por',
@@ -1008,7 +1008,7 @@ if (file_put_contents($rutaArchivoLocal, $fcontenido) === FALSE) {
 file_put_contents("favicon.ico", $fcontenidoicon);
 file_put_contents("en.json", $fcontenidolang);
 file_put_contents("de.json", $fcontenidolang2);
-echo " $alertaini ⚠️El Sistema se ha actualizado correctamente.   $alertafin";
+echo " $alertaini ⚠️ ".$tl['okupdate']."   $alertafin";
 
     echo "<a href='?c=$carpetaz/' class='naranja' role='button'> <b>RECARGAR </b></a>";
     exit;
