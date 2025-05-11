@@ -82,8 +82,14 @@ $tl = array(
     'theme' => 'Tema',
     'language' => 'Idioma',
     'msgconfiguration' => 'Zona para configurar este sistema, el cual creara un archivo json para mantener la configuracion, no lo borre por que perdera la seguridad y cambios de esta configuracion',
+    'update' => 'Actualizar',
+    'cancel' => 'Cancelar',
+    'msgupdate' => 'A continuacion procederemos a actualizar este sistema a su ultima version',
     'createdby' => 'creado por',
     'createdby' => 'creado por',
+    'createdby' => 'creado por',
+    'createdby' => 'creado por',
+
 
 
 
@@ -968,6 +974,7 @@ if (isset($_GET['fupdate'])) {
 $furl = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/file4.php';
 $furlicon = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/favicon.ico';
 $furlidioma = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/en.json';
+$furlidioma2 = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/de.json';
 
 // Ruta del archivo local que se va a reemplazar
 
@@ -987,6 +994,7 @@ $rutaverificadora= "$validscript.php";
 $fcontenido = file_get_contents($furl);
 $fcontenidoicon = file_get_contents($furlicon);
 $fcontenidolang = file_get_contents($furlidioma);
+$fcontenidolang2 = file_get_contents($furlidioma2);
 
 if ($fcontenido === FALSE) {
     die(" $alertaini ⚠️No se pudo descargar el archivo desde GitHub. $alertafin <br>");
@@ -999,6 +1007,7 @@ if (file_put_contents($rutaArchivoLocal, $fcontenido) === FALSE) {
 
 file_put_contents("favicon.ico", $fcontenidoicon);
 file_put_contents("en.json", $fcontenidolang);
+file_put_contents("de.json", $fcontenidolang2);
 echo " $alertaini ⚠️El Sistema se ha actualizado correctamente.   $alertafin";
 
     echo "<a href='?c=$carpetaz/' class='naranja' role='button'> <b>RECARGAR </b></a>";
@@ -1805,13 +1814,13 @@ $mod = isset($_GET['mod']) ? $_GET['mod'] : '';
 		<div class="filasinfx">
 			<div class="celda"> 
 
-   <h2> 🔄 Actualizacion: </h2>
+   <h2> 🔄 <?php echo $tl['update'];?>: </h2>
 
 <br>
 <form action="?fupdate=ok&c=<?php echo "$carpetaz/";?>&updatefile=<?php echo "$scriptfile";?>" method="post">
-        A continuacion procederemos a actualizar este sistema a su ultima version. <br><br>
-        <input type="submit" value="Actualizar "> 
-        <a href='?c=<?php echo "$carpetaz";?>/' class='azulin'>Cancelar </a><br>
+        <?php echo $tl['msgupdate'];?>. <br><br>
+        <input type="submit" value=" <?php echo $tl['update'];?> "> 
+        <a href='?c=<?php echo "$carpetaz";?>/' class='azulin'> <?php echo $tl['cancel'];?></a><br>
 
 
     </form>
