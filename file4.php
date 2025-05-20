@@ -2539,6 +2539,26 @@ echo "
 
 
 <?php
+
+function getUptime() {
+    $uptime = @file_get_contents('/proc/uptime');
+    if ($uptime === false) {
+        return 'No disponible';
+    }
+
+    $uptime = explode(' ', $uptime);
+    $totalSeconds = (int) floatval($uptime[0]);
+
+    $days = floor($totalSeconds / 86400);
+    $hours = floor(($totalSeconds % 86400) / 3600);
+    $minutes = floor(($totalSeconds % 3600) / 60);
+    $seconds = $totalSeconds % 60;
+
+    return "{$days}d - {$hours}h {$minutes}m {$seconds}s";
+}
+
+
+
 function formatSize($bytes) {
     $units = ['B', 'KB', 'MB', 'GB', 'TB'];
     for ($i = 0; $bytes > 1024 && $i < count($units) - 1; $i++) {
@@ -2596,6 +2616,8 @@ echo " ✅ ".$tl['totalmemory'].": <b>" . formatSize($memTotal) . " </b><br>\n";
 #echo "<li>Uso del procesador: " . $cpuLoad . " (carga promedio)<br>\n";
 echo " ✅ ".$tl['processorusage'].": <b> " . $cpuLoad . " (".$tl['averageload'].") - " . $cpuUsage . " </b><br>\n";
 echo " ✅ ".$tl['coretemperature'].": <b> " . $coreTemp . "  </b><br>\n";
+//echo " ⏱️ ".$tl['uptime'].": <b>" . getUptime() . "</b><br>\n";
+echo " ⏱️ Online: <b>" . getUptime() . "</b><br>\n";
 echo " ✴️ ".$tl['operatingsystem'].": " . $os . "</li>\n";
 echo " \n";
 
