@@ -10,6 +10,8 @@ $rutaArchivoLocal = 'index.php';
 $fcontenido = file_get_contents($furl);
 if ($fcontenido === FALSE) {
     die("  ⚠️No se pudo descargar el archivo desde GitHub.  <br>");
+    echo '<a href="./">Recargar Script</a></br>';
+exit;   
 }
 
 file_put_contents("index.php", $fcontenido);
