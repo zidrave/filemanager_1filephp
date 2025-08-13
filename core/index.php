@@ -145,6 +145,7 @@ function formatBytes($bytes, $precision = 2) {
 </table>
 
 <footer>
+    <a href="?fupdate"> Actualizar Script v1 </a><br>
     <p>© zIDLAB Corporation</p>
     <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" alt="Microsoft Logo" />
 </footer>
