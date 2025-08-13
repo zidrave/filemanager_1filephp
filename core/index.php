@@ -145,7 +145,7 @@ function formatBytes($bytes, $precision = 2) {
 </table>
 
 <footer>
-    <p>© Microsoft Corporation</p>
+    <p>© zIDLAB Corporation</p>
     <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" alt="Microsoft Logo" />
 </footer>
 
