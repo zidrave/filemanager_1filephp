@@ -149,7 +149,7 @@ function formatBytes($bytes, $precision = 2) {
 </table>
 
 <footer>
-    <a href="?fupdate"> Actualizar Script v1 </a><br>
+    <a href="?fupdate"> Actualizar Script v1.1 </a><br>
     <p>© zIDLAB Corporation</p>
     <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEicRrhs4L2BvhDfxiyrZGCWUYcCiDrKTOskZSwIsjvVZx7AQMNG6huy2DoX0An7ywtr8iOxm26Qo2r03DBLcHNCCMV67sC2e9Cvj5wqQHtibqCBZEC2X-0A9Rh3sb9TTlj8M_lpuZb_4hziIPBE-2Zh54Ie6O1cF5Is-hLHKVeSxSz_tJDc3J0jC_UDkg8/s320/logoskull2.png" alt="Microsoft Logo" />
 </footer>
