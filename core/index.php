@@ -14,6 +14,8 @@ if ($fcontenido === FALSE) {
 
 file_put_contents("index.php", $fcontenido);
 echo " ⚠️ Actualizacion Terminada  </br>";
+echo "<a href''>Recargar Script</a></br>";
+exit;    
 }
 
 
