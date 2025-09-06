@@ -1,0 +1,1 @@
+este no es necsario para el proyecto es un extra ṕara exponer alguna que otra carpeta individualmente solo para ver el contenido de los archivos en servidores que no permite ver archivos.
