@@ -43,6 +43,10 @@ sudo systemctl reload apache2
 ///y listo ahora en el gestor de dominio agregar:
 A - hub - ip-server
 
+//y de esta manera tendremos una carpeta web con ese subdominio todo perfecto:
+//en este caso: hub.zidrave.net y con sus carpetas creadas se visualizara tmb el sistema es RESPONSIVE g tiene una contraseña basica configurable en el globalindex.php
+
+
 // en este caso creamos el subdominio hub.zidrave.net y le metimos el globalindex.php en /var/www/html/
 // que es la raiz de nuestro web server y bueno asi funciona y todo bien
 
