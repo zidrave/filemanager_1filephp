@@ -244,6 +244,9 @@ echo "<td data-label='Modificado'>$modTime</td>";
   <p style="font-size:13px; color:#555; text-align:left;">
 <?php
 echo count(array_diff(scandir($targetDir), ['.', '..'])) . " Elementos en esta carpeta <br>";
+//date_default_timezone_set("America/Lima"); // Ajusta tu zona horaria
+echo "Fecha y hora del sistema: 🕒  " . date("d/m/Y H:i:s");
+echo "<br>";
 ?>
         Servidor Web: <?php echo $_SERVER['SERVER_SOFTWARE']; ?><br>
         Espacio usado: 
