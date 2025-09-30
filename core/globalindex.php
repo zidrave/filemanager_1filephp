@@ -1,5 +1,4 @@
 <?php
-// Este archivo no se actualiza pero tiene la propiedad de leerse entre carpetas si lo declaraste como : FallbackResource /globalindex.php
 // 🔹 Forzar que el working directory sea el DocumentRoot real del subdominio
 if (isset($_SERVER['DOCUMENT_ROOT'])) {
     chdir($_SERVER['DOCUMENT_ROOT']);
@@ -32,7 +31,8 @@ if (isset($_GET['logout'])) {
     setcookie($cookie_name, '', time() - 3600, '/');
     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https" : "http";
     $host   = $_SERVER['HTTP_HOST'];
-    header("Location: $scheme://$host/");
+    $uri    = strtok($_SERVER['REQUEST_URI'], '?'); // quita parámetros como ?logout
+    header("Location: $scheme://$host$uri");
     exit;
 }
 
