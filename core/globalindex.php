@@ -103,14 +103,17 @@ sort($files);
 <head>
 <meta charset="UTF-8" />
 <title>Gestor de Archivos</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 🔹 Adaptar a móvil -->
+
+
 <style>
     body { font-family: Arial, sans-serif; background:#f0f2f5; margin:20px auto; max-width:95%; color:#333; }
     h1 { text-align: center; margin-bottom: 20px; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 0 15px; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 0 15px; flex-wrap: wrap; }
     .logout-btn { background:#d32f2f; color:white; padding:8px 16px; border:none; border-radius:4px; cursor:pointer; text-decoration:none; font-size:14px; font-weight:600; transition: background-color 0.3s; }
     .logout-btn:hover { background:#b71c1c; text-decoration:none; }
     table { border-collapse: collapse; width: 100%; background:#fff; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    th, td { padding: 10px 15px; border-bottom: 1px solid #ddd; text-align: left; }
+    th, td { padding: 10px 15px; border-bottom: 1px solid #ddd; text-align: left; font-size:14px; }
     th { background:#0078D7; color:white; text-transform: uppercase; font-weight:600; font-size:14px; }
     tr:hover { background:#e9f0fb; }
     a { color:#0078D7; text-decoration:none; }
@@ -118,7 +121,47 @@ sort($files);
     .icon { font-size:18px; margin-right:8px; }
     footer { text-align:center; margin-top:40px; padding-top:15px; border-top:1px solid #ccc; color:#666; }
     footer img { width:120px; margin-top:10px; opacity:0.7; }
+
+ /* Vista de tabla normal */
+table {
+  width: 100%;
+  table-layout: fixed; /* todas las columnas se reparten el ancho */
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 8px;
+  text-align: left;
+  white-space: nowrap; /* evita saltos raros en títulos */
+}
+
+/* --- Vista móvil --- */
+@media (max-width: 768px) {
+  thead th:nth-child(4),
+  tbody td:nth-child(4) {
+    display: none; /* se elimina la columna completa */
+  }
+
+  /* Repartimos ancho entre las 3 columnas restantes */
+  thead th, tbody td {
+    width: auto; 
+  }
+
+  thead th:nth-child(1),
+  tbody td:nth-child(1) { width: 60%; }  /* Nombre */
+  thead th:nth-child(2),
+  tbody td:nth-child(2) { width: 22%; }  /* Tipo */
+  thead th:nth-child(3),
+  tbody td:nth-child(3) { width: 17%; }  /* Tamaño */
+
+  thead th, tbody td {
+    text-align: left; /* todo alineado a la izquierda */
+  }
+
+}
 </style>
+
+
 </head>
 <body>
 
@@ -155,10 +198,10 @@ foreach ($files as $file) {
     if ($isDir) $link .= "/";
 
     echo "<tr>";
-    echo "<td><a href='$link'><span>$icon</span> $file</a></td>";
-    echo "<td>$type</td>";
-    echo "<td>$size</td>";
-    echo "<td>$modTime</td>";
+echo "<td data-label='Nombre'><a href='$link'><span>$icon</span> $file</a></td>";
+echo "<td data-label='Tipo'>$type</td>";
+echo "<td data-label='Tamaño'>$size</td>";
+echo "<td data-label='Modificado'>$modTime</td>";
     echo "</tr>";
 }
 ?>
