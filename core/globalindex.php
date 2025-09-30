@@ -112,6 +112,9 @@ sort($files);
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 0 15px; flex-wrap: wrap; }
     .logout-btn { background:#d32f2f; color:white; padding:8px 16px; border:none; border-radius:4px; cursor:pointer; text-decoration:none; font-size:14px; font-weight:600; transition: background-color 0.3s; }
     .logout-btn:hover { background:#b71c1c; text-decoration:none; }
+
+
+
     table { border-collapse: collapse; width: 100%; background:#fff; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
     th, td { padding: 10px 15px; border-bottom: 1px solid #ddd; text-align: left; font-size:14px; }
     th { background:#0078D7; color:white; text-transform: uppercase; font-weight:600; font-size:14px; }
@@ -125,14 +128,40 @@ sort($files);
  /* Vista de tabla normal */
 table {
   width: 100%;
-  table-layout: fixed; /* todas las columnas se reparten el ancho */
+  table-layout: fixed; /* mantiene proporción de anchos */
   border-collapse: collapse;
 }
 
-th, td {
-  padding: 8px;
-  text-align: left;
-  white-space: nowrap; /* evita saltos raros en títulos */
+/* Distribución de columnas */
+thead th:nth-child(1),
+tbody td:nth-child(1) {
+  width: 60%;   /* Nombre más grande */
+}
+
+thead th:nth-child(2),
+tbody td:nth-child(2) {
+  width: 15%;   /* Tipo */
+}
+
+thead th:nth-child(3),
+tbody td:nth-child(3) {
+  width: 10%;   /* Tamaño */
+}
+
+thead th:nth-child(4),
+tbody td:nth-child(4) {
+  width: 15%;   /* Modificado */
+}
+
+
+
+td:first-child a {
+  display: inline-block;
+  max-width: 100%;
+  white-space: normal;     /* ✅ permite saltos de línea */
+  word-wrap: break-word;   /* ✅ corta palabras largas */
+  overflow-wrap: anywhere; /* ✅ corta en cualquier parte si es muy largo */
+  vertical-align: top;
 }
 
 /* --- Vista móvil --- */
