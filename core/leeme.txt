@@ -1,1 +1,49 @@
 este no es necsario para el proyecto es un extra ṕara exponer alguna que otra carpeta individualmente solo para ver el contenido de los archivos en servidores que no permite ver archivos.
+
+El globalindex.php es para casos especiales como que tengas tu mismo el server php y puedas configurar detalles del apache la ideal de global index es que se carge ese indexador de contenido de carpetas dinamicamente en cada carpeta de tu server que no tenga un index.php o index.html
+
+a continuacion una guia simple de como implementarlo:
+en este ejemplo estamos creando un subdonio  en nuestro server y este contendra el global index en su carpeta principal como en todas sus carpetas anidadas:
+
+Agregar subdomnios a mi server apache ubuntu:
+cd /var/www/html
+sudo mkdir hub
+sudo chown -R $USER:www-data /var/www/html/hub/
+sudo chmod -R 755 /var/www/html/hub/
+
+sudo nano /etc/apache2/sites-available/hub.zidrave.net.conf
+
+
+
+<VirtualHost *:80>
+ServerName hub.zidrave.net
+DocumentRoot /var/www/html/hub
+<Directory /var/www/html/hub>
+Options -Indexes
+DirectoryIndex index.php index.html
+FallbackResource /globalindex.php
+</Directory>
+
+# Alias para que /globalindex.php apunte al archivo fuera de hub
+Alias /globalindex.php /var/www/html/globalindex.php
+
+<Files "/var/www/html/globalindex.php">
+Require all granted
+</Files>
+
+ErrorLog ${APACHE_LOG_DIR}/hub-error.log
+CustomLog ${APACHE_LOG_DIR}/hub-access.log combined
+</VirtualHost>
+
+
+
+sudo a2ensite hub.zidrave.net
+sudo systemctl reload apache2
+
+///y listo ahora en el gestor de dominio agregar:
+A - hub - ip-server
+
+// en este caso creamos el subdominio hub.zidrave.net y le metimos el globalindex.php en /var/www/html/
+// que es la raiz de nuestro web server y bueno asi funciona y todo bien
+
+
