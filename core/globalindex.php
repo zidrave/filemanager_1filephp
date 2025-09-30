@@ -236,8 +236,47 @@ echo "<td data-label='Modificado'>$modTime</td>";
 ?>
 </tbody>
 </table>
-
+ 
 <footer>
+
+
+
+  <p style="font-size:13px; color:#555; text-align:left;">
+<?php
+echo count(array_diff(scandir($targetDir), ['.', '..'])) . " Elementos en esta carpeta <br>";
+?>
+        Servidor Web: <?php echo $_SERVER['SERVER_SOFTWARE']; ?><br>
+        Espacio usado: 
+        <?php 
+            $total = disk_total_space("/");
+            $free  = disk_free_space("/");
+            $used  = $total - $free;
+            echo round($used / 1024 / 1024 / 1024, 2) . " GB";
+        ?><br>
+        Espacio disponible: 
+        <?php 
+            echo round($free / 1024 / 1024 / 1024, 2) . " GB";
+        ?><br>
+        Uptime: 
+        <?php 
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                echo "No disponible en Windows";
+            } else {
+                $uptime = @file_get_contents("/proc/uptime");
+                if ($uptime !== false) {
+                    $uptime = explode(" ", $uptime)[0];
+                    $days = floor($uptime / 86400);
+                    echo $days . " días";
+                } else {
+                    echo "No disponible";
+                }
+            }
+        ?>
+    </p>
+
+
+
+
     <p>© zIDLAB Corporation</p>
     <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEicRrhs4L2BvhDfxiyrZGCWUYcCiDrKTOskZSwIsjvVZx7AQMNG6huy2DoX0An7ywtr8iOxm26Qo2r03DBLcHNCCMV67sC2e9Cvj5wqQHtibqCBZEC2X-0A9Rh3sb9TTlj8M_lpuZb_4hziIPBE-2Zh54Ie6O1cF5Is-hLHKVeSxSz_tJDc3J0jC_UDkg8/s320/logoskull2.png" alt="Microsoft Logo" />
 </footer>
