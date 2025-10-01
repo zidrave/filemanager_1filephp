@@ -2,16 +2,67 @@
 // ==============================
 // CONFIGURACIÓN
 // ==============================
-$password = "1234";
+
+// 0 = clave simple, 1 = clave avanzada con hash
+$passwordadvance = 1;  
+
+// Modo básico (clave visible)
+$password = "1111";
+
+// Modo avanzado (clave hasheada con bcrypt)
+$password_hashed = '$2y$12$RcgZxApBg/cXAcpXcaZ0QuUf3hBjmcl4bZbonIQvWLyK4.0E0hjrO'; 
+// corresponde a la clave "*******" //ahora es secreta pero puedes crear la tuya con: 
+// echo password_hash("tuclave_nueva", PASSWORD_DEFAULT);
+
+// Cookie
 $cookie_name = "file_manager_auth";
 $cookie_duration = 3600; // 1 hora
+
+
+
+// ==============================
+// GESTIÓN DE TEMAS
+// ==============================
+$available_themes = ['taringa', 'joomla'];
+$default_theme = 'taringa';
+
+// Cambiar tema
+if (isset($_GET['change_theme']) && in_array($_GET['change_theme'], $available_themes)) {
+    setcookie('selected_theme', $_GET['change_theme'], time() + (86400 * 30), '/');
+    header("Location: " . strtok($_SERVER['REQUEST_URI'], '?'));
+    exit;
+}
+
+// Obtener tema actual
+$current_theme = isset($_COOKIE['selected_theme']) ? $_COOKIE['selected_theme'] : $default_theme;
+if (!in_array($current_theme, $available_themes)) $current_theme = $default_theme;
+
+
 
 // ==============================
 // LOGIN CON COOKIE
 // ==============================
 if (isset($_POST['password'])) {
-    if ($_POST['password'] === $password) {
-        setcookie($cookie_name, hash('sha256', $password), time() + $cookie_duration, '/');
+    $input_pass = $_POST['password'];
+    $auth_ok = false;
+
+    if ($passwordadvance == 0) {
+        // Modo simple
+        if ($input_pass === $password) $auth_ok = true;
+    } else {
+        // Modo avanzado con hash
+        if (password_verify($input_pass, $password_hashed)) $auth_ok = true;
+    }
+
+    if ($auth_ok) {
+        // Guardamos cookie estable según el modo
+        if ($passwordadvance == 0) {
+            $cookie_val = hash('sha256', $password);
+        } else {
+            $cookie_val = hash('sha256', $password_hashed); 
+        }
+
+        setcookie($cookie_name, $cookie_val, time() + $cookie_duration, '/');
         header("Location: " . $_SERVER['REQUEST_URI']);
         exit;
     } else {
@@ -19,7 +70,20 @@ if (isset($_POST['password'])) {
     }
 }
 
-$is_authenticated = isset($_COOKIE[$cookie_name]) && $_COOKIE[$cookie_name] === hash('sha256', $password);
+// Verificación de cookie
+if ($passwordadvance == 0) {
+    $expected_cookie = hash('sha256', $password);
+} else {
+    $expected_cookie = hash('sha256', $password_hashed);
+}
+
+$is_authenticated = isset($_COOKIE[$cookie_name]) 
+    && $_COOKIE[$cookie_name] === $expected_cookie;
+
+
+
+
+
 
 if (isset($_GET['logout'])) {
     setcookie($cookie_name, '', time() - 3600, '/');
@@ -84,23 +148,17 @@ $file_count = 0;
 foreach ($files as $f) if ($f !== "." && $f !== "..") $file_count++;
 
 // ==============================
-// HTML PRINCIPAL
+// FUNCIONES DE TEMAS
 // ==============================
-?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Explorador: /<?php echo str_replace($baseDir,"",$targetDir); ?></title>
-<style>
-/* Copia exacta de los estilos de tu plantilla */
+function getThemeStyles($theme) {
+    $styles = [
+        'taringa' => "
 * {margin:0;padding:0;box-sizing:border-box;}
 body {font-family:Arial, Helvetica, sans-serif; background:#e8eef7; color:#333; min-height:100vh;}
 header {background:linear-gradient(180deg, #3d6fa8 0%, #2d5a8f 100%); padding:15px 30px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 5px rgba(0,0,0,0.2);}
 .title {display:flex; align-items:center; gap:12px; font-size:22px; font-weight:bold; color:#fff; text-shadow:1px 1px 2px rgba(0,0,0,0.3);}
 .folder-icon {font-size:28px;}
-.logout-btn {background:linear-gradient(180deg, #ff6b35 0%, #e55a2b 100%); color:#fff; border:1px solid #d54a1f; padding:10px 20px; font-family:Arial,sans-serif; font-weight:bold; font-size:13px; cursor:pointer; transition: all 0.2s; text-transform:uppercase; border-radius:3px; box-shadow:0 2px 4px rgba(0,0,0,0.2);}
+.logout-btn {background:linear-gradient(180deg, #ff6b35 0%, #e55a2b 100%); color:#fff; border:1px solid #d54a1f; padding:10px 20px; font-family:Arial,sans-serif; font-weight:bold; font-size:13px; cursor:pointer; transition: all 0.2s; text-transform:uppercase; border-radius:3px; box-shadow:0 2px 4px rgba(0,0,0,0.2); text-decoration:none;}
 .logout-btn:hover {background:linear-gradient(180deg, #ff7d4d 0%, #f16637 100%); box-shadow:0 3px 6px rgba(0,0,0,0.3); transform:translateY(-1px);}
 .logout-btn:active {transform:translateY(0); box-shadow:0 1px 3px rgba(0,0,0,0.2);}
 .breadcrumb {background:#fff; padding:12px 30px; border-bottom:1px solid #d5dde5; font-size:13px; color:#666;}
@@ -123,25 +181,112 @@ td {padding:12px 20px; color:#333; font-size:14px;}
 .info-box p {margin:8px 0; color:#666; font-size:13px; line-height:1.6;}
 .info-box strong {color:#2d5a8f; font-weight:bold;}
 footer {background:#2d5a8f; color:#fff; text-align:center; padding:30px; margin-top:40px; border-top:3px solid #3d6fa8;}
-   
-    footer img { width:120px; margin-top:10px; opacity:0.7; }
+footer img { width:120px; margin-top:10px; opacity:0.7; }
 .logo {width:100px; height:100px; margin:15px auto; opacity:0.9;}
 .copyright {font-size:13px; margin-bottom:15px; opacity:0.9;}
 .stats-grid {display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:15px; margin:15px 0;}
 .stat-item {background:#f5f7fa; padding:12px; border-radius:3px; border-left:3px solid #3d6fa8;}
 .stat-label {font-size:12px; color:#666; text-transform:uppercase; margin-bottom:5px;}
 .stat-value {font-size:16px; color:#2d5a8f; font-weight:bold;}
+.theme-selector {position:fixed; bottom:20px; right:20px; background:#fff; padding:15px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.15); z-index:1000;}
+.theme-selector select {padding:8px 12px; border:1px solid #d5dde5; border-radius:4px; font-size:13px; cursor:pointer;}
 @media (max-width:768px){th:nth-child(4),td:nth-child(4){display:none;}}
+",
+        'joomla' => "
+* {margin:0;padding:0;box-sizing:border-box;}
+body {font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background:#f5f7fa; color:#333;}
+.top-nav {background:linear-gradient(180deg, #1e3a5f 0%, #152d4a 100%); box-shadow:0 2px 8px rgba(0,0,0,0.15);}
+.top-menu {display:flex; max-width:1400px; margin:0 auto;}
+.top-menu-item {color:#fff; text-decoration:none; padding:15px 25px; font-size:14px; font-weight:500; border-left:1px solid rgba(255,255,255,0.1); transition:all 0.2s; display:flex; align-items:center; gap:5px;}
+.top-menu-item:first-child {border-left:none;}
+.top-menu-item:hover {background:rgba(255,255,255,0.1);}
+header {background:linear-gradient(135deg, #1e5a8e 0%, #2970b3 100%); padding:40px 30px; color:#fff; box-shadow:0 4px 12px rgba(0,0,0,0.1);}
+.header-content {max-width:1400px; margin:0 auto; display:flex; justify-content:space-between; align-items:center;}
+.title {font-size:36px; font-weight:300; letter-spacing:0.5px; color:#fff;}
+.logout-btn {background:#ff9800; color:#fff; padding:12px 30px; border:none; font-size:15px; font-weight:600; cursor:pointer; transition:all 0.2s; border-radius:3px; text-decoration:none; display:inline-block;}
+.logout-btn:hover {background:#fb8c00; box-shadow:0 4px 12px rgba(255, 152, 0, 0.4); transform:translateY(-1px);}
+.breadcrumb {background:#2970b3; padding:14px 30px; box-shadow:0 2px 5px rgba(0,0,0,0.1);}
+.breadcrumb-content {max-width:1400px; margin:0 auto; color:rgba(255,255,255,0.9); font-size:14px;}
+.breadcrumb a {color:rgba(255,255,255,0.9); text-decoration:none; transition:color 0.2s;}
+.breadcrumb a:hover {color:#fff; text-decoration:underline;}
+.main-content {max-width:1400px; margin:30px auto; padding:0 30px;}
+.info-box {background:#fff; padding:25px 30px; border-radius:4px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin-bottom:30px; border-left:4px solid #2970b3;}
+.info-box p {margin:8px 0; color:#666; font-size:14px;}
+.info-box strong {color:#1e3a5f;}
+.content-box {width:100%; background:#fff; border-radius:4px; box-shadow:0 2px 8px rgba(0,0,0,0.08); overflow:hidden; margin-bottom:30px;}
+.box-header {background:linear-gradient(180deg, #f5f7fa 0%, #e8eef7 100%); padding:12px 20px; border-bottom:1px solid #d5dde5; font-weight:bold; color:#2d5a8f; border-radius:0;}
+table {width:100%; border-collapse:collapse;}
+thead {background:linear-gradient(180deg, #2970b3 0%, #1e5a8e 100%);}
+th {padding:16px 30px; text-align:left; font-weight:600; color:#fff; font-size:13px; text-transform:uppercase; letter-spacing:0.5px;}
+tbody tr {border-bottom:1px solid #e8eef5; transition:all 0.2s;}
+tbody tr:hover {background:#f8fafc;}
+tbody tr:last-child {border-bottom:none;}
+td {padding:16px 30px; color:#333; font-size:14px;}
+.file-link {color:#2970b3; text-decoration:none; display:flex; align-items:center; gap:10px; font-weight:500;}
+.file-link:hover {text-decoration:underline;}
+.file-icon {font-size:20px;}
+.stats-grid {display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:20px; margin-bottom:30px;}
+.stat-item {background:#fff; padding:20px 25px; border-radius:4px; box-shadow:0 2px 8px rgba(0,0,0,0.08); border-left:4px solid #2970b3;}
+.stat-label {color:#666; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;}
+.stat-value {color:#1e3a5f; font-size:20px; font-weight:600;}
+footer {background:linear-gradient(180deg, #0d1f33 0%, #152d4a 100%); color:rgba(255,255,255,0.8); padding:30px; margin-top:60px; text-align:center;}
+footer img {width:120px; margin-top:10px; opacity:0.7;}
+.copyright {font-size:13px; color:rgba(255,255,255,0.6);}
+.theme-selector {position:fixed; bottom:20px; right:20px; background:#fff; padding:15px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.15); z-index:1000;}
+.theme-selector select {padding:8px 12px; border:1px solid #d5dde5; border-radius:4px; font-size:13px; cursor:pointer;}
+@media (max-width:768px){th:nth-child(4),td:nth-child(4){display:none;}}
+"
+    ];
+    return $styles[$theme] ?? $styles['taringa'];
+}
+
+// ==============================
+// HTML PRINCIPAL
+// ==============================
+?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Explorador: /<?php echo str_replace($baseDir,"",$targetDir); ?></title>
+<style>
+<?php echo getThemeStyles($current_theme); ?>
 </style>
 </head>
 <body>
+
+<?php if ($current_theme === 'joomla'): ?>
+<nav class="top-nav">
+    <div class="top-menu">
+        <a href="#" class="top-menu-item">🏠 Inicio</a>
+        <a href="#" class="top-menu-item">📁 Explorador</a>
+        <a href="#" class="top-menu-item">⚙️ Configuración</a>
+        <a href="#" class="top-menu-item">👤 Usuario</a>
+    </div>
+</nav>
+<?php endif; ?>
+
 <header>
+    <?php if ($current_theme === 'joomla'): ?>
+    <div class="header-content">
+        <h1 class="title">Explorador de Archivos</h1>
+        <a href="?logout" class="logout-btn">Cerrar Sesión</a>
+    </div>
+    <?php else: ?>
     <div class="title"><span class="folder-icon">📁</span> Explorador de Archivos</div>
     <a href="?logout" class="logout-btn">Cerrar Sesión</a>
+    <?php endif; ?>
 </header>
 
-<div class="breadcrumb">
+<div class="breadcrumb <?php echo $current_theme === 'joomla' ? '' : ''; ?>">
+    <?php if ($current_theme === 'joomla'): ?>
+    <div class="breadcrumb-content">
+        <strong>Ruta actual:</strong> <?php echo str_replace($baseDir,"",$targetDir) ?: "/"; ?>
+    </div>
+    <?php else: ?>
     <strong>Ruta actual:</strong> <?php echo str_replace($baseDir,"",$targetDir) ?: "/"; ?>
+    <?php endif; ?>
 </div>
 
 <div class="main-content">
@@ -237,13 +382,18 @@ foreach ($files as $file) {
 </div>
 </div>
 
+<!-- Selector de Temas -->
+<div class="theme-selector">
+    <label style="font-size:12px; color:#666; display:block; margin-bottom:8px; font-weight:bold;">🎨 Tema:</label>
+    <select onchange="window.location.href='?change_theme='+this.value">
+        <option value="taringa" <?php echo $current_theme === 'taringa' ? 'selected' : ''; ?>>Taringa</option>
+        <option value="joomla" <?php echo $current_theme === 'joomla' ? 'selected' : ''; ?>>Joomla</option>
+    </select>
+</div>
+
 <footer>
     <p class="copyright">© <?php echo date("Y"); ?> zIDLAB Corporation - Todos los derechos reservados</p>
-
-
-    <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEicRrhs4L2BvhDfxiyrZGCWUYcCiDrKTOskZSwIsjvVZx7AQMNG6huy2DoX0An7ywtr8iOxm26Qo2r03DBLcHNCCMV67sC2e9Cvj5wqQHtibqCBZEC2X-0A9Rh3sb9TTlj8M_lpuZb_4hziIPBE-2Zh54Ie6O1cF5Is-hLHKVeSxSz_tJDc3J0jC_UDkg8/s320/logoskull2.png" alt="Microsoft Logo" />
-
-
+    <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEicRrhs4L2BvhDfxiyrZGCWUYcCiDrKTOskZSwIsjvVZx7AQMNG6huy2DoX0An7ywtr8iOxm26Qo2r03DBLcHNCCMV67sC2e9Cvj5wqQHtibqCBZEC2X-0A9Rh3sb9TTlj8M_lpuZb_4hziIPBE-2Zh54Ie6O1cF5Is-hLHKVeSxSz_tJDc3J0jC_UDkg8/s320/logoskull2.png" alt="Logo" />
     <p style="font-size:12px; opacity:0.8;">Explorador de Carpetas</p>
 </footer>
 
