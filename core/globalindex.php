@@ -3,7 +3,10 @@
 // CONFIGURACIÓN
 // ==============================
 
-// 0 = clave simple, 1 = clave avanzada con hash
+// 1 = pedirá contraseña, 0 = acceso libre
+$versinclave = 1;  
+
+// 0 = clave simple, 1 = clave avanzada con hash (En esta opcion tienes q crear tu hash ejem: $2y$12$RcgZxApBg/cXAcpXcaZ0QuUf3hBjmcl4bZ....)
 $passwordadvance = 1;  
 
 // Modo básico (clave visible)
@@ -20,16 +23,20 @@ $cookie_duration = 3600; // 1 hora
 
 
 
+
+
+
 // ==============================
 // GESTIÓN DE TEMAS
 // ==============================
 //$available_themes = ['taringa', 'joomla'];
-$available_themes = ['taringa', 'joomla', 'filemanager'];
+$available_themes = ['taringa', 'joomla', 'github', 'leonardo', 'filemanager'];
 $default_theme = 'taringa';
 
 // Cambiar tema
 if (isset($_GET['change_theme']) && in_array($_GET['change_theme'], $available_themes)) {
-    setcookie('selected_theme', $_GET['change_theme'], time() + (86400 * 30), '/');
+//  setcookie('selected_theme', $_GET['change_theme'], time() + (86400 * 30), '/'); // era pa un mes
+    setcookie('selected_theme', $_GET['change_theme'], time() + (86400 * 180), '/'); // para 6 meses
     header("Location: " . strtok($_SERVER['REQUEST_URI'], '?'));
     exit;
 }
@@ -40,47 +47,40 @@ if (!in_array($current_theme, $available_themes)) $current_theme = $default_them
 
 
 
-// ==============================
-// LOGIN CON COOKIE
-// ==============================
-if (isset($_POST['password'])) {
-    $input_pass = $_POST['password'];
-    $auth_ok = false;
 
-    if ($passwordadvance == 0) {
-        // Modo simple
-        if ($input_pass === $password) $auth_ok = true;
-    } else {
-        // Modo avanzado con hash
-        if (password_verify($input_pass, $password_hashed)) $auth_ok = true;
-    }
+// ==============================
+// LOGIN CON COOKIE (SOLO SI $versinclave = 1)
+// ==============================
+$is_authenticated = true; // por defecto libre
 
-    if ($auth_ok) {
-        // Guardamos cookie estable según el modo
+if ($versinclave == 1) {
+    $is_authenticated = false;
+
+    if (isset($_POST['password'])) {
+        $input_pass = $_POST['password'];
+        $auth_ok = false;
+
         if ($passwordadvance == 0) {
-            $cookie_val = hash('sha256', $password);
+            if ($input_pass === $password) $auth_ok = true;
         } else {
-            $cookie_val = hash('sha256', $password_hashed); 
+            if (password_verify($input_pass, $password_hashed)) $auth_ok = true;
         }
 
-        setcookie($cookie_name, $cookie_val, time() + $cookie_duration, '/');
-        header("Location: " . $_SERVER['REQUEST_URI']);
-        exit;
-    } else {
-        $login_error = "Contraseña incorrecta";
+        if ($auth_ok) {
+            $cookie_val = ($passwordadvance == 0) ? hash('sha256', $password) : hash('sha256', $password_hashed);
+            setcookie($cookie_name, $cookie_val, time() + $cookie_duration, '/');
+            header("Location: " . $_SERVER['REQUEST_URI']);
+            exit;
+        } else {
+            $login_error = "Contraseña incorrecta";
+        }
     }
+
+    // Verificación de cookie
+    $expected_cookie = ($passwordadvance == 0) ? hash('sha256', $password) : hash('sha256', $password_hashed);
+
+    $is_authenticated = isset($_COOKIE[$cookie_name]) && $_COOKIE[$cookie_name] === $expected_cookie;
 }
-
-// Verificación de cookie
-if ($passwordadvance == 0) {
-    $expected_cookie = hash('sha256', $password);
-} else {
-    $expected_cookie = hash('sha256', $password_hashed);
-}
-
-$is_authenticated = isset($_COOKIE[$cookie_name]) 
-    && $_COOKIE[$cookie_name] === $expected_cookie;
-
 
 
 
@@ -98,7 +98,7 @@ if (isset($_GET['logout'])) {
 // ==============================
 // FORMULARIO LOGIN
 // ==============================
-if (!$is_authenticated):
+if ($versinclave == 1 && !$is_authenticated):
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -191,6 +191,362 @@ footer img { width:100px; opacity:0.7; }
   th:nth-child(4), td:nth-child(4) { display:none; }
 }
 ",
+
+
+
+'leonardo' => "
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: Arial, sans-serif;
+    background: #0f0f1a;  /* Fondo oscuro estilo Leonardo */
+    color: #e4e6eb;
+    min-height: 100vh;
+    font-size: 12px;
+}
+header {
+    background: linear-gradient(90deg, #1a1a2e, #16213e); /* degrade futurista */
+    color: #ffffff;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #2a2a40;
+}
+.title { font-size: 18px; font-weight: bold; color: #f5f5f5; }
+.logout-btn {
+    background: linear-gradient(45deg, #e94560, #ff6f91);
+    color: #ffffff;
+    border: none;
+    padding: 6px 15px;
+    cursor: pointer;
+    border-radius: 4px;
+    text-transform: uppercase;
+    font-size: 11px;
+    font-weight: bold;
+    box-shadow: 0 0 8px rgba(233,69,96,0.5);
+}
+.logout-btn:hover {
+    background: linear-gradient(45deg, #ff6f91, #e94560);
+}
+.breadcrumb {
+    background: #1a1a2e;
+    padding: 10px 15px;
+    color: #aaa;
+    font-size: 11px;
+}
+.breadcrumb a {
+    color: #00d9ff;
+    text-decoration: none;
+}
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+.main-content {
+    padding: 20px;
+    max-width: 1200px;
+    margin: auto;
+}
+.content-box {
+    background: #161b2e;
+    border: 1px solid #2a2a40;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    box-shadow: 0 0 12px rgba(0,0,0,0.5);
+}
+.box-header {
+    background: #0f0f1a;
+    padding: 12px 15px;
+    font-weight: bold;
+    color: #00d9ff;
+    text-transform: uppercase;
+    font-size: 11px;
+    border-bottom: 1px solid #2a2a40;
+    letter-spacing: 1px;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+th, td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #2a2a40;
+    font-size: 13px;
+}
+th {
+    text-align: left;
+    text-transform: uppercase;
+    background: linear-gradient(to bottom, #ff6f91, #e94560); /* degradado rosado vertical */
+    color: #fff;
+    letter-spacing: 0.8px;
+}
+tbody tr {
+    background: #1a1a2e;
+    transition: background 0.2s;
+}
+tbody tr:nth-child(even) {
+    background: #111122;
+}
+tbody tr:hover {
+    background: #232344;
+}
+td { color: #e4e6eb; }
+.file-link {
+    color: #00d9ff;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.file-link:hover {
+    color: #33e0ff;
+}
+.file-icon { font-size: 14px; }
+.info-box {
+    background: #0f0f1a;
+    border: 1px solid #2a2a40;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-left: 4px solid #00d9ff;
+    border-radius: 4px;
+}
+.info-box strong {
+    color: #00d9ff;
+}
+footer {
+    background: #161b2e;
+    color: #aaa;
+    text-align: center;
+    padding: 20px;
+    margin-top: 30px;
+    border-top: 1px solid #2a2a40;
+}
+footer img { width: 100px; opacity: 0.7; }
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+}
+.stat-item {
+    background: #161b2e;
+    padding: 12px;
+    border-radius: 4px;
+    color: #e4e6eb;
+    border-left: 3px solid #00d9ff;
+    box-shadow: 0 0 6px rgba(0,217,255,0.3);
+}
+.stat-label {
+    font-size: 11px;
+    color: #aaa;
+    text-transform: uppercase;
+}
+.stat-value {
+    font-size: 15px;
+    color: #fff;
+    font-weight: bold;
+}
+.theme-selector {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #161b2e;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #2a2a40;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+.theme-selector select {
+    padding: 6px 10px;
+    background: #0f0f1a;
+    border: 1px solid #2a2a40;
+    color: #e4e6eb;
+    border-radius: 4px;
+}
+
+/* Responsive: ocultar columna Modificado */
+@media (max-width: 768px) {
+    th:nth-child(4), td:nth-child(4) {
+        display: none;
+    }
+}
+",
+
+
+
+
+
+'github' => "
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: Arial, sans-serif;
+    background: #0d1117;     /* fondo oscuro tipo GitHub Dark */
+    color: #c9d1d9;           /* texto claro */
+    min-height: 100vh;
+    font-size: 12px;
+}
+header {
+    background: #161b22;      /* un tono más claro de fondo */
+    color: #c9d1d9;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #30363d;
+}
+.title { font-size: 18px; font-weight: bold; }
+.logout-btn {
+    background: #f85149;      /* rojo de acento tipo GitHub */
+    color: #ffffff;
+    border: none;
+    padding: 6px 15px;
+    cursor: pointer;
+    border-radius: 4px;
+    text-transform: uppercase;
+    font-size: 11px;
+    font-weight: bold;
+}
+.logout-btn:hover {
+    background: #ea3636;
+}
+.breadcrumb {
+    background: #161b22;
+    padding: 10px 15px;
+    color: #8b949e;
+    font-size: 11px;
+}
+.breadcrumb a {
+    color: #58a6ff;
+    text-decoration: none;
+}
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+.main-content {
+    padding: 20px;
+    max-width: 1200px;
+    margin: auto;
+}
+.content-box {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+.box-header {
+    background: #0d1117;
+    padding: 12px 15px;
+    font-weight: bold;
+    color: #58a6ff;
+    text-transform: uppercase;
+    font-size: 11px;
+    border-bottom: 1px solid #30363d;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+th, td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #30363d;
+    font-size: 13px;
+}
+th {
+    color: #8b949e;
+    text-align: left;
+    text-transform: uppercase;
+    background: #0d1117;
+}
+tbody tr {
+    background: #161b22;
+    transition: background 0.2s;
+}
+tbody tr:nth-child(even) {
+    background: #0d1117;
+}
+tbody tr:hover {
+    background: #21262d;
+}
+td { color: #c9d1d9; }
+.file-link {
+    color: #58a6ff;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.file-link:hover {
+    color: #79c0ff;
+}
+.file-icon { font-size: 14px; }
+.info-box {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-left: 4px solid #58a6ff;
+    border-radius: 4px;
+}
+.info-box strong {
+    color: #58a6ff;
+}
+footer {
+    background: #161b22;
+    color: #8b949e;
+    text-align: center;
+    padding: 20px;
+    margin-top: 30px;
+    border-top: 1px solid #30363d;
+}
+footer img { width: 100px; opacity: 0.7; }
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+}
+.stat-item {
+    background: #161b22;
+    padding: 12px;
+    border-radius: 4px;
+    color: #c9d1d9;
+    border-left: 3px solid #58a6ff;
+}
+.stat-label {
+    font-size: 11px;
+    color: #8b949e;
+    text-transform: uppercase;
+}
+.stat-value {
+    font-size: 15px;
+    color: #c9d1d9;
+    font-weight: bold;
+}
+.theme-selector {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #161b22;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #30363d;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+.theme-selector select {
+    padding: 6px 10px;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    color: #c9d1d9;
+    border-radius: 4px;
+}
+
+/* Responsive: ocultar columna Modificado */
+@media (max-width: 768px) {
+    th:nth-child(4), td:nth-child(4) {
+        display: none;
+    }
+}
+",
+
 
 
         'taringa' => "
@@ -312,11 +668,15 @@ footer img {width:120px; margin-top:10px; opacity:0.7;}
     <?php if ($current_theme === 'joomla'): ?>
     <div class="header-content">
         <h1 class="title">Explorador de Archivos</h1>
-        <a href="?logout" class="logout-btn">Cerrar Sesión</a>
+   <?php if ($versinclave == 1): ?>
+        <a href="?logout" class="logout-btn">Cerrar Sesión x</a>
+    <?php endif; ?>
     </div>
     <?php else: ?>
     <div class="title"><span class="folder-icon">📁</span> Explorador de Archivos</div>
+       <?php if ($versinclave == 1): ?>
     <a href="?logout" class="logout-btn">Cerrar Sesión</a>
+       <?php endif; ?>
     <?php endif; ?>
 </header>
 
@@ -353,7 +713,7 @@ footer img {width:120px; margin-top:10px; opacity:0.7;}
 if ($requestedPath !== "." && $requestedPath !== "") {
     $parent = dirname($requestedPath);
     $parent = $parent === "." ? "/" : "/" . $parent . "/";
-    echo "<tr><td colspan='4'><a href='$parent' class='file-link'><span class='file-icon'>↩️</span> Subir al directorio anterior</a></td></tr>";
+    echo "<tr><td colspan='4'><a href='$parent' class='file-link'><span class='file-icon'>🔺</span> Subir al directorio anterior</a></td></tr>";
 }
 
 // Archivos
@@ -429,7 +789,9 @@ foreach ($files as $file) {
     <select onchange="window.location.href='?change_theme='+this.value">
         <option value="taringa" <?php echo $current_theme === 'taringa' ? 'selected' : ''; ?>>Taringa</option>
         <option value="joomla" <?php echo $current_theme === 'joomla' ? 'selected' : ''; ?>>Joomla</option>
+        <option value="github" <?php echo $current_theme === 'github' ? 'selected' : ''; ?>>Github</option>
         <option value="filemanager" <?php echo $current_theme === 'filemanager' ? 'selected' : ''; ?>>File Manager</option>
+        <option value="leonardo" <?php echo $current_theme === 'leonardo' ? 'selected' : ''; ?>>Leonardo</option>
 
     </select>
 </div>
