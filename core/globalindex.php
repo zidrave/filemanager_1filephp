@@ -1,18 +1,13 @@
 <?php
-// 🔹 Forzar que el working directory sea el DocumentRoot real del subdominio
-if (isset($_SERVER['DOCUMENT_ROOT'])) {
-    chdir($_SERVER['DOCUMENT_ROOT']);
-}
-
 // ==============================
-// 🔹 CONFIGURACIÓN
+// CONFIGURACIÓN
 // ==============================
 $password = "1234";
 $cookie_name = "file_manager_auth";
 $cookie_duration = 3600; // 1 hora
 
 // ==============================
-// 🔹 LOGIN CON COOKIE
+// LOGIN CON COOKIE
 // ==============================
 if (isset($_POST['password'])) {
     if ($_POST['password'] === $password) {
@@ -26,18 +21,17 @@ if (isset($_POST['password'])) {
 
 $is_authenticated = isset($_COOKIE[$cookie_name]) && $_COOKIE[$cookie_name] === hash('sha256', $password);
 
-// 🔹 Cerrar sesión
 if (isset($_GET['logout'])) {
     setcookie($cookie_name, '', time() - 3600, '/');
     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https" : "http";
     $host   = $_SERVER['HTTP_HOST'];
-    $uri    = strtok($_SERVER['REQUEST_URI'], '?'); // quita parámetros como ?logout
+    $uri    = strtok($_SERVER['REQUEST_URI'], '?');
     header("Location: $scheme://$host$uri");
     exit;
 }
 
 // ==============================
-// 🔹 FORMULARIO LOGIN
+// FORMULARIO LOGIN
 // ==============================
 if (!$is_authenticated):
 ?>
@@ -47,7 +41,7 @@ if (!$is_authenticated):
 <meta charset="UTF-8" />
 <title>Acceso - Gestor de Archivos</title>
 <style>
-    body { font-family: Arial, sans-serif; background: #f0f2f5; display:flex; justify-content:center; align-items:center; min-height:100vh; }
+    body { font-family: Arial; background:#f0f2f5; display:flex; justify-content:center; align-items:center; min-height:100vh; }
     .login-container { background:#fff; padding:40px; border-radius:8px; box-shadow:0 0 20px rgba(0,0,0,0.1); text-align:center; width:350px; }
     .btn { background:#0078D7; color:#fff; padding:10px; border:none; border-radius:4px; cursor:pointer; width:100%; font-weight:bold; }
     .btn:hover { background:#106ebe; }
@@ -70,233 +64,191 @@ exit;
 endif;
 
 // ==============================
-// 🔹 DETECTAR DIRECTORIO DESDE LA URL
+// DETECTAR DIRECTORIO
 // ==============================
 $baseDir = realpath($_SERVER['DOCUMENT_ROOT']);
-
-// Ruta pedida (ej: /xxx/pedos/)
 $requestedPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $requestedPath = urldecode($requestedPath);
-
-// Normalizar (si está vacío → raíz)
 $requestedPath = trim($requestedPath, "/");
-if ($requestedPath === "") {
-    $requestedPath = ".";
-}
-
+if ($requestedPath === "") $requestedPath = ".";
 $targetDir = realpath($baseDir . "/" . $requestedPath);
 
-if ($targetDir === false || strpos($targetDir, $baseDir) !== 0) {
-    die("🚫 Acceso denegado");
-}
+if ($targetDir === false || strpos($targetDir, $baseDir) !== 0) die("🚫 Acceso denegado");
 
 // Listar archivos
 $files = scandir($targetDir);
 sort($files);
 
+// Contar elementos
+$file_count = 0;
+foreach ($files as $f) if ($f !== "." && $f !== "..") $file_count++;
+
 // ==============================
-// 🔹 HTML LISTADO
+// HTML PRINCIPAL
 // ==============================
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<title>Gestor de Archivos</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 🔹 Adaptar a móvil -->
-
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Explorador: /<?php echo str_replace($baseDir,"",$targetDir); ?></title>
 <style>
-    body { font-family: Arial, sans-serif; background:#f0f2f5; margin:20px auto; max-width:95%; color:#333; }
-    h1 { text-align: center; margin-bottom: 20px; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 0 15px; flex-wrap: wrap; }
-    .logout-btn { background:#d32f2f; color:white; padding:8px 16px; border:none; border-radius:4px; cursor:pointer; text-decoration:none; font-size:14px; font-weight:600; transition: background-color 0.3s; }
-    .logout-btn:hover { background:#b71c1c; text-decoration:none; }
-
-
-
-    table { border-collapse: collapse; width: 100%; background:#fff; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    th, td { padding: 10px 15px; border-bottom: 1px solid #ddd; text-align: left; font-size:14px; }
-    th { background:#0078D7; color:white; text-transform: uppercase; font-weight:600; font-size:14px; }
-    tr:hover { background:#e9f0fb; }
-    a { color:#0078D7; text-decoration:none; }
-    a:hover { text-decoration:underline; }
-    .icon { font-size:18px; margin-right:8px; }
-    footer { text-align:center; margin-top:40px; padding-top:15px; border-top:1px solid #ccc; color:#666; }
+/* Copia exacta de los estilos de tu plantilla */
+* {margin:0;padding:0;box-sizing:border-box;}
+body {font-family:Arial, Helvetica, sans-serif; background:#e8eef7; color:#333; min-height:100vh;}
+header {background:linear-gradient(180deg, #3d6fa8 0%, #2d5a8f 100%); padding:15px 30px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 5px rgba(0,0,0,0.2);}
+.title {display:flex; align-items:center; gap:12px; font-size:22px; font-weight:bold; color:#fff; text-shadow:1px 1px 2px rgba(0,0,0,0.3);}
+.folder-icon {font-size:28px;}
+.logout-btn {background:linear-gradient(180deg, #ff6b35 0%, #e55a2b 100%); color:#fff; border:1px solid #d54a1f; padding:10px 20px; font-family:Arial,sans-serif; font-weight:bold; font-size:13px; cursor:pointer; transition: all 0.2s; text-transform:uppercase; border-radius:3px; box-shadow:0 2px 4px rgba(0,0,0,0.2);}
+.logout-btn:hover {background:linear-gradient(180deg, #ff7d4d 0%, #f16637 100%); box-shadow:0 3px 6px rgba(0,0,0,0.3); transform:translateY(-1px);}
+.logout-btn:active {transform:translateY(0); box-shadow:0 1px 3px rgba(0,0,0,0.2);}
+.breadcrumb {background:#fff; padding:12px 30px; border-bottom:1px solid #d5dde5; font-size:13px; color:#666;}
+.breadcrumb a {color:#3d6fa8; text-decoration:none;}
+.breadcrumb a:hover {text-decoration:underline;}
+.main-content {max-width:1200px; margin:20px auto; padding:0 20px;}
+.content-box {background:#fff; border:1px solid #d5dde5; border-radius:5px; margin-bottom:20px; box-shadow:0 1px 3px rgba(0,0,0,0.1);}
+.box-header {background:linear-gradient(180deg, #f5f7fa 0%, #e8eef7 100%); padding:12px 20px; border-bottom:1px solid #d5dde5; font-weight:bold; color:#2d5a8f; border-radius:5px 5px 0 0;}
+table {width:100%; border-collapse:collapse;}
+thead {background:#f5f7fa; border-bottom:2px solid #d5dde5;}
+th {padding:12px 20px; text-align:left; font-weight:bold; color:#2d5a8f; font-size:13px; text-transform:uppercase;}
+tbody tr {border-bottom:1px solid #e8eef7; transition:background 0.2s;}
+tbody tr:hover {background:#f5f7fa;}
+tbody tr:last-child {border-bottom:none;}
+td {padding:12px 20px; color:#333; font-size:14px;}
+.file-link {color:#3d6fa8; text-decoration:none; display:flex; align-items:center; gap:8px; font-weight:500;}
+.file-link:hover {color:#2d5a8f; text-decoration:underline;}
+.file-icon {font-size:18px;}
+.info-box {background:#fffbea; border:1px solid #f5e6a8; border-left:4px solid #ff6b35; padding:15px 20px; margin-bottom:20px; border-radius:3px;}
+.info-box p {margin:8px 0; color:#666; font-size:13px; line-height:1.6;}
+.info-box strong {color:#2d5a8f; font-weight:bold;}
+footer {background:#2d5a8f; color:#fff; text-align:center; padding:30px; margin-top:40px; border-top:3px solid #3d6fa8;}
+   
     footer img { width:120px; margin-top:10px; opacity:0.7; }
-
- /* Vista de tabla normal */
-table {
-  width: 100%;
-  table-layout: fixed; /* mantiene proporción de anchos */
-  border-collapse: collapse;
-}
-
-/* Distribución de columnas */
-thead th:nth-child(1),
-tbody td:nth-child(1) {
-  width: 60%;   /* Nombre más grande */
-}
-
-thead th:nth-child(2),
-tbody td:nth-child(2) {
-  width: 15%;   /* Tipo */
-}
-
-thead th:nth-child(3),
-tbody td:nth-child(3) {
-  width: 10%;   /* Tamaño */
-}
-
-thead th:nth-child(4),
-tbody td:nth-child(4) {
-  width: 15%;   /* Modificado */
-}
-
-
-
-td:first-child a {
-  display: inline-block;
-  max-width: 100%;
-  white-space: normal;     /* ✅ permite saltos de línea */
-  word-wrap: break-word;   /* ✅ corta palabras largas */
-  overflow-wrap: anywhere; /* ✅ corta en cualquier parte si es muy largo */
-  vertical-align: top;
-}
-
-/* --- Vista móvil --- */
-@media (max-width: 768px) {
-  thead th:nth-child(4),
-  tbody td:nth-child(4) {
-    display: none; /* se elimina la columna completa */
-  }
-
-  /* Repartimos ancho entre las 3 columnas restantes */
-  thead th, tbody td {
-    width: auto; 
-  }
-
-  thead th:nth-child(1),
-  tbody td:nth-child(1) { width: 60%; }  /* Nombre */
-  thead th:nth-child(2),
-  tbody td:nth-child(2) { width: 22%; }  /* Tipo */
-  thead th:nth-child(3),
-  tbody td:nth-child(3) { width: 17%; }  /* Tamaño */
-
-  thead th, tbody td {
-    text-align: left; /* todo alineado a la izquierda */
-  }
-
-}
+.logo {width:100px; height:100px; margin:15px auto; opacity:0.9;}
+.copyright {font-size:13px; margin-bottom:15px; opacity:0.9;}
+.stats-grid {display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:15px; margin:15px 0;}
+.stat-item {background:#f5f7fa; padding:12px; border-radius:3px; border-left:3px solid #3d6fa8;}
+.stat-label {font-size:12px; color:#666; text-transform:uppercase; margin-bottom:5px;}
+.stat-value {font-size:16px; color:#2d5a8f; font-weight:bold;}
+@media (max-width:768px){th:nth-child(4),td:nth-child(4){display:none;}}
 </style>
-
-
 </head>
 <body>
-
-<div class="header">
-    <h2>📂 Explorando: <b><?php echo str_replace($baseDir, "", $targetDir) ?: "/"; ?></b></h2>
+<header>
+    <div class="title"><span class="folder-icon">📁</span> Explorador de Archivos</div>
     <a href="?logout" class="logout-btn">Cerrar Sesión</a>
+</header>
+
+<div class="breadcrumb">
+    <strong>Ruta actual:</strong> <?php echo str_replace($baseDir,"",$targetDir) ?: "/"; ?>
 </div>
 
-<table>
-<thead>
-<tr><th>Nombre</th><th>Tipo</th><th>Tamaño</th><th>Modificado</th></tr>
-</thead>
-<tbody>
+<div class="main-content">
+<div class="info-box">
+    <p><strong>📂 Directorio actual:</strong> <?php echo str_replace($baseDir,"",$targetDir) ?: "/"; ?></p>
+    <p><strong>📊 Elementos encontrados:</strong> <?php echo $file_count; ?> archivos en esta carpeta</p>
+</div>
+
+<div class="content-box">
+    <div class="box-header">📄 Listado de Archivos</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Tipo</th>
+                <th>Tamaño</th>
+                <th>Modificado</th>
+            </tr>
+        </thead>
+        <tbody>
 <?php
-// Botón para subir al padre
+// Subir al padre
 if ($requestedPath !== "." && $requestedPath !== "") {
     $parent = dirname($requestedPath);
     $parent = $parent === "." ? "/" : "/" . $parent . "/";
-    echo "<tr><td colspan='4'><a href='" . $parent . "'>⬅️ Subir</a></td></tr>";
+    echo "<tr><td colspan='4'><a href='$parent' class='file-link'><span class='file-icon'>↩️</span> Subir al directorio anterior</a></td></tr>";
 }
 
-// Archivos y carpetas
+// Archivos
 foreach ($files as $file) {
     if ($file === "." || $file === "..") continue;
-    $fullPath = $targetDir . "/" . $file;
+    $fullPath = $targetDir."/".$file;
     $isDir = is_dir($fullPath);
-
     $type = $isDir ? "Directorio" : "Archivo";
     $size = $isDir ? "-" : formatBytes(filesize($fullPath));
     $modTime = date("d/m/Y H:i:s", filemtime($fullPath));
     $icon = $isDir ? "📁" : "📄";
-
-    $link = "/" . ltrim(($requestedPath === "." ? "" : $requestedPath . "/") . $file, "./");
-    if ($isDir) $link .= "/";
-
+    $link = "/".ltrim(($requestedPath==="."?"":$requestedPath."/").$file,"./");
+    if($isDir) $link.="/";
     echo "<tr>";
-echo "<td data-label='Nombre'><a href='$link'><span>$icon</span> $file</a></td>";
-echo "<td data-label='Tipo'>$type</td>";
-echo "<td data-label='Tamaño'>$size</td>";
-echo "<td data-label='Modificado'>$modTime</td>";
+    echo "<td><a href='$link' class='file-link'><span class='file-icon'>$icon</span> $file</a></td>";
+    echo "<td>$type</td>";
+    echo "<td>$size</td>";
+    echo "<td>$modTime</td>";
     echo "</tr>";
 }
 ?>
-</tbody>
-</table>
- 
-<footer>
+        </tbody>
+    </table>
+</div>
 
-
-
-  <p style="font-size:13px; color:#555; text-align:left;">
-<?php
-echo count(array_diff(scandir($targetDir), ['.', '..'])) . " Elementos en esta carpeta <br>";
-//date_default_timezone_set("America/Lima"); // Ajusta tu zona horaria
-echo "Fecha y hora del sistema: 🕒  " . date("d/m/Y H:i:s");
-echo "<br>";
-?>
-        Servidor Web: <?php echo $_SERVER['SERVER_SOFTWARE']; ?><br>
-        Espacio usado: 
-        <?php 
-            $total = disk_total_space("/");
-            $free  = disk_free_space("/");
-            $used  = $total - $free;
-            echo round($used / 1024 / 1024 / 1024, 2) . " GB";
-        ?><br>
-        Espacio disponible: 
-        <?php 
-            echo round($free / 1024 / 1024 / 1024, 2) . " GB";
-        ?><br>
-        Uptime: 
-        <?php 
-            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-                echo "No disponible en Windows";
-            } else {
-                $uptime = @file_get_contents("/proc/uptime");
-                if ($uptime !== false) {
-                    $uptime = explode(" ", $uptime)[0];
-                    $days = floor($uptime / 86400);
-                    echo $days . " días";
-                } else {
-                    echo "No disponible";
+<div class="content-box">
+    <div class="box-header">📊 Información del Sistema</div>
+    <div style="padding:20px;">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-label">Fecha y Hora</div>
+                <div class="stat-value"><?php echo date("d/m/Y H:i:s"); ?></div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Servidor Web</div>
+                <div class="stat-value"><?php echo $_SERVER['SERVER_SOFTWARE']; ?></div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Espacio Usado</div>
+                <div class="stat-value">
+                <?php $total=disk_total_space("/");$free=disk_free_space("/");$used=$total-$free;echo round($used/1024/1024/1024,2)." GB"; ?>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Espacio Disponible</div>
+                <div class="stat-value"><?php echo round($free/1024/1024/1024,2)." GB"; ?></div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Sistema Operativo</div>
+                <div class="stat-value"><?php echo PHP_OS; ?></div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Tiempo Activo</div>
+                <div class="stat-value">
+                <?php 
+                if(strtoupper(substr(PHP_OS,0,3))==='WIN'){echo "No disponible";}
+                else{
+                    $uptime=@file_get_contents("/proc/uptime");
+                    if($uptime!==false){$uptime=explode(" ",$uptime)[0];$days=floor($uptime/86400);echo $days." días";}
+                    else echo "No disponible";
                 }
-            }
-        ?>
-    </p>
+                ?>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<footer>
+    <p class="copyright">© <?php echo date("Y"); ?> zIDLAB Corporation - Todos los derechos reservados</p>
 
 
-
-
-    <p>© zIDLAB Corporation</p>
     <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEicRrhs4L2BvhDfxiyrZGCWUYcCiDrKTOskZSwIsjvVZx7AQMNG6huy2DoX0An7ywtr8iOxm26Qo2r03DBLcHNCCMV67sC2e9Cvj5wqQHtibqCBZEC2X-0A9Rh3sb9TTlj8M_lpuZb_4hziIPBE-2Zh54Ie6O1cF5Is-hLHKVeSxSz_tJDc3J0jC_UDkg8/s320/logoskull2.png" alt="Microsoft Logo" />
+
+
+    <p style="font-size:12px; opacity:0.8;">Explorador de Carpetas</p>
 </footer>
 
+<?php
+function formatBytes($bytes,$precision=2){$units=['B','KB','MB','GB','TB'];$bytes=max($bytes,0);$pow=floor(($bytes?log($bytes):0)/log(1024));$pow=min($pow,count($units)-1);$bytes/= (1<< (10*$pow));return round($bytes,$precision).' '.$units[$pow];}
+?>
 </body>
 </html>
-
-<?php
-// ==============================
-// 🔹 FUNCIONES AUXILIARES
-// ==============================
-function formatBytes($bytes, $precision = 2) {
-    $units = ['B', 'KB', 'MB', 'GB', 'TB'];
-    $bytes = max($bytes, 0);
-    $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
-    $pow = min($pow, count($units) - 1);
-    $bytes /= (1 << (10 * $pow));
-    return round($bytes, $precision) . ' ' . $units[$pow];
-}
-?>
