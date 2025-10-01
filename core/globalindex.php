@@ -31,8 +31,8 @@ $cookie_duration = 3600; // 1 hora
 // GESTIÓN DE TEMAS
 // ==============================
 //$available_themes = ['taringa', 'joomla'];
-$available_themes = ['taringa', 'joomla', 'github', 'leonardo', 'filemanager'];
-$default_theme = 'taringa';
+$available_themes = ['taringa', 'joomla', 'github', 'leonardo', 'zidrave-skin'];
+$default_theme = 'zidrave-skin';
 
 // Cambiar tema
 if (isset($_GET['change_theme']) && in_array($_GET['change_theme'], $available_themes)) {
@@ -154,7 +154,7 @@ foreach ($files as $f) if ($f !== "." && $f !== "..") $file_count++;
 // ==============================
 function getThemeStyles($theme) {
     $styles = [
-'filemanager' => "
+'zidrave-skin' => "
 * {margin:0;padding:0;box-sizing:border-box;}
 body {font-family: Arial, sans-serif; background:#080c11; color:#e0e1dd; min-height:100vh;}
 header {background:linear-gradient(180deg,#263c5e 0%, #071f31 100%); color:#fff; padding:12px 20px; display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #415a77;}
@@ -699,7 +699,29 @@ footer img {width:120px; margin-top:10px; opacity:0.7;}
 
 
 
-<div id="txt-viewer" class="content-box" style="display:none;">
+
+
+
+
+
+
+<div id="txt-viewer"  style="display:none;">
+
+
+
+ 
+<div style="padding:10px;">
+    <div style="text-align:right; margin-top:0px;">
+        <button id="close-txt2" class="logout-btn">Cerrar</button>
+    </div>
+</div>
+ 
+
+<div  class="content-box" >
+
+
+
+
   <div class="box-header">  
     <h3 id="txt-title"></h3>
       </div>
@@ -711,6 +733,8 @@ footer img {width:120px; margin-top:10px; opacity:0.7;}
 </div>
 
 
+
+
     <div style="padding:20px;">
     <div class="stat-item" >
         <pre id="txt-content" style="white-space:pre-wrap; font-family:monospace; margin:0;"></pre>
@@ -718,13 +742,16 @@ footer img {width:120px; margin-top:10px; opacity:0.7;}
     </div>
 
 
-<div style="padding:20px;">
-    <div style="text-align:right; margin-top:10px;">
+
+</div>
+
+<div style="padding:10px;">
+    <div style="text-align:right; margin-top:-20px;">
         <button id="close-txt" class="logout-btn">Cerrar</button>
     </div>
 </div>
+<br>
 </div>
-
 
 <div class="content-box">
     <div class="box-header">📄 Listado de Archivos</div>
@@ -777,8 +804,11 @@ if ($isDir) {
     if($isDir) $link.="/";
     echo "<tr>";
     $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION)); //ahora trabaja con extensiones en mayuscula
-    if ($ext === "txt") {
-    echo "<td><a href='#top' class='file-link txt-link' data-file='".htmlspecialchars($link) ."'><span class='file-icon'>$icon</span> $file 🔹​​ </a></td>";
+
+   // Definimos extensiones que se mostrarán como "texto visualizable"
+   $textExts = ["txt", "log", "md", "ini", "cfg", "json", "xml", "csv"];
+   if (in_array($ext, $textExts)) {
+    echo "<td><a href='' class='file-link txt-link' data-file='".htmlspecialchars($link) ."'><span class='file-icon'>$icon</span> $file 🔹​​ </a></td>";
     } else {
     echo "<td><a href='$link' class='file-link'><span class='file-icon'>$icon</span> $file</a></td>";
     }
@@ -841,10 +871,10 @@ if ($isDir) {
 <div class="theme-selector">
     <label style="font-size:12px; color:#666; display:block; margin-bottom:8px; font-weight:bold;">🎨 Tema:</label>
     <select onchange="window.location.href='?change_theme='+this.value">
+        <option value="zidrave-skin" <?php echo $current_theme === 'zidrave-skin' ? 'selected' : ''; ?>>Zidrave Skin</option>
         <option value="taringa" <?php echo $current_theme === 'taringa' ? 'selected' : ''; ?>>Taringa</option>
         <option value="joomla" <?php echo $current_theme === 'joomla' ? 'selected' : ''; ?>>Joomla</option>
         <option value="github" <?php echo $current_theme === 'github' ? 'selected' : ''; ?>>Github</option>
-        <option value="filemanager" <?php echo $current_theme === 'filemanager' ? 'selected' : ''; ?>>File Manager</option>
         <option value="leonardo" <?php echo $current_theme === 'leonardo' ? 'selected' : ''; ?>>Leonardo</option>
 
     </select>
@@ -877,6 +907,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const content = document.getElementById("txt-content");
 
     const closeBtn = document.getElementById("close-txt");
+    const closeBtn2 = document.getElementById("close-txt2");
+
 
     links.forEach(link => {
         link.addEventListener("click", e => {
@@ -887,9 +919,15 @@ fetch(file)
     .then(res => res.text())
     .then(text => {
         mostrarArchivo("📄 " + file.split("/").pop(), text, file);
+        viewer.style.display = "block";
+
+        // 👇 Aquí haces que la página suba al inicio
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     })
     .catch(err => {
         mostrarArchivo("Error", "No se pudo cargar el archivo.", null);
+        viewer.style.display = "block";
+        window.scrollTo({ top: 0, behavior: 'smooth' }); // también en errores
     });
         });
     });
@@ -899,6 +937,14 @@ fetch(file)
         title.textContent = "";
         content.textContent = "";
     });
+
+
+    closeBtn2.addEventListener("click", () => {
+        viewer.style.display = "none";
+        title.textContent = "";
+        content.textContent = "";
+    });
+
 });
 </script>
 
@@ -913,4 +959,10 @@ fetch(file)
 <?php
 function formatBytes($bytes,$precision=2){$units=['B','KB','MB','GB','TB'];$bytes=max($bytes,0);$pow=floor(($bytes?log($bytes):0)/log(1024));$pow=min($pow,count($units)-1);$bytes/= (1<< (10*$pow));return round($bytes,$precision).' '.$units[$pow];}
 ?>
+
+
+
+
 </body>
+
+
