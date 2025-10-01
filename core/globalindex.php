@@ -23,7 +23,8 @@ $cookie_duration = 3600; // 1 hora
 // ==============================
 // GESTIÓN DE TEMAS
 // ==============================
-$available_themes = ['taringa', 'joomla'];
+//$available_themes = ['taringa', 'joomla'];
+$available_themes = ['taringa', 'joomla', 'filemanager'];
 $default_theme = 'taringa';
 
 // Cambiar tema
@@ -152,6 +153,46 @@ foreach ($files as $f) if ($f !== "." && $f !== "..") $file_count++;
 // ==============================
 function getThemeStyles($theme) {
     $styles = [
+'filemanager' => "
+* {margin:0;padding:0;box-sizing:border-box;}
+body {font-family: Arial, sans-serif; background:#080c11; color:#e0e1dd; min-height:100vh;}
+header {background:linear-gradient(180deg,#263c5e 0%, #071f31 100%); color:#fff; padding:12px 20px; display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #415a77;}
+.title {font-size:18px; font-weight:bold;}
+.logout-btn {background:#415a77; color:#fff; border:none; padding:8px 15px; cursor:pointer; border-radius:5px; text-decoration:none;}
+.logout-btn:hover {background:#778da9;}
+.breadcrumb {background:#045476; padding:10px 20px; font-size:13px; color:#ffffff;}
+.breadcrumb a {color:#edf6f9; text-decoration:none;}
+.breadcrumb a:hover {text-decoration:underline;}
+.main-content {padding:20px; max-width:1200px; margin:auto;}
+.content-box {background:#01050e; border:1px solid #1e3a5f; border-radius:8px; margin-bottom:20px; overflow:hidden;}
+.box-header {background:#1e3a5f; padding:13px 18px; font-weight:bold; color:#edf6f9; text-transform:uppercase;}
+table {width:100%; border-collapse:collapse;}
+th, td {padding:12px 15px; border-bottom:1px solid #1e3a5f; font-size:15px;}
+th {color:#edf6f9; text-align:left; background:#010813;}
+tbody tr {background:#0f1e2e;}
+tbody tr:nth-child(even) {background:#16283c;}
+tbody tr:hover {background:#020d17;}
+.file-link {color:#e0e1dd; text-decoration:none; display:flex; align-items:center; gap:6px;}
+.file-link:hover {color:#00fbff;}
+.file-icon {font-size:14px;}
+.info-box {background:#031a30; border:1px solid #415a77; padding:15px; margin-bottom:20px; border-left:4px solid #778da9; border-radius:5px;}
+.info-box strong {color:#edf6f9;}
+footer {background:#061c32; color:#aaa; text-align:center; padding:20px; margin-top:30px; border-top:2px solid #1e3a5f;}
+footer img { width:100px; opacity:0.7; }
+.stats-grid {display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:15px;}
+.stat-item {background:#192733; padding:12px; border-radius:8px; color:#37bfe1;}
+.stat-label {font-size:13px; color:#37bfe1; solid #1e3a5f; text-transform:uppercase;}
+.stat-value {font-size:18px; color:#fff; font-weight:bold;}
+.theme-selector {position:fixed; bottom:20px; right:20px; background:#111827; padding:12px; border-radius:6px; border:1px solid #415a77; box-shadow:0 2px 8px rgba(0,0,0,0.4);}
+.theme-selector select {padding:6px 10px; background:#0d1b2a; border:1px solid #415a77; color:#edf6f9; border-radius:4px;}
+
+/* Responsive: ocultar columna Modificado */
+@media (max-width: 768px) {
+  th:nth-child(4), td:nth-child(4) { display:none; }
+}
+",
+
+
         'taringa' => "
 * {margin:0;padding:0;box-sizing:border-box;}
 body {font-family:Arial, Helvetica, sans-serif; background:#e8eef7; color:#333; min-height:100vh;}
@@ -388,6 +429,8 @@ foreach ($files as $file) {
     <select onchange="window.location.href='?change_theme='+this.value">
         <option value="taringa" <?php echo $current_theme === 'taringa' ? 'selected' : ''; ?>>Taringa</option>
         <option value="joomla" <?php echo $current_theme === 'joomla' ? 'selected' : ''; ?>>Joomla</option>
+        <option value="filemanager" <?php echo $current_theme === 'filemanager' ? 'selected' : ''; ?>>File Manager</option>
+
     </select>
 </div>
 
@@ -401,4 +444,3 @@ foreach ($files as $file) {
 function formatBytes($bytes,$precision=2){$units=['B','KB','MB','GB','TB'];$bytes=max($bytes,0);$pow=floor(($bytes?log($bytes):0)/log(1024));$pow=min($pow,count($units)-1);$bytes/= (1<< (10*$pow));return round($bytes,$precision).' '.$units[$pow];}
 ?>
 </body>
-</html>
