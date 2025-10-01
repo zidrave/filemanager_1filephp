@@ -703,6 +703,12 @@ footer img {width:120px; margin-top:10px; opacity:0.7;}
 
 
 
+<div id="image-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);justify-content:center;align-items:center;cursor:pointer;"></div>
+
+
+
+
+
 
 
 <div id="txt-viewer"  style="display:none;">
@@ -752,6 +758,10 @@ footer img {width:120px; margin-top:10px; opacity:0.7;}
 </div>
 <br>
 </div>
+
+
+
+
 
 <div class="content-box">
     <div class="box-header">📄 Listado de Archivos</div>
@@ -805,13 +815,19 @@ if ($isDir) {
     echo "<tr>";
     $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION)); //ahora trabaja con extensiones en mayuscula
 
-   // Definimos extensiones que se mostrarán como "texto visualizable"
-   $textExts = ["txt", "log", "md", "ini", "cfg", "json", "xml", "csv"];
-   if (in_array($ext, $textExts)) {
-    echo "<td><a href='' class='file-link txt-link' data-file='".htmlspecialchars($link) ."'><span class='file-icon'>$icon</span> $file 🔹​​ </a></td>";
-    } else {
+// Definimos extensiones que se mostrarán como "texto visualizable"
+$textExts = ["txt", "log", "md", "ini", "cfg", "json", "xml", "csv"];
+// Definimos extensiones que se mostrarán como imágenes
+$imageExts = ["jpg", "jpeg", "png", "gif", "webp", "bmp", "svg"];
+
+if (in_array($ext, $textExts)) {
+    echo "<td><a href='' class='file-link txt-link' data-file='".htmlspecialchars($link)."'><span class='file-icon'>$icon</span> $file 🔹​​ </a></td>";
+} elseif (in_array($ext, $imageExts)) {
+    // Para imágenes agregamos la clase image-link y el contenedor lo manejará con JS
+    echo "<td><a href='' class='file-link image-link' data-file='".htmlspecialchars($link)."'><span class='file-icon'>$icon</span> $file 🔹</a></td>";
+} else {
     echo "<td><a href='$link' class='file-link'><span class='file-icon'>$icon</span> $file</a></td>";
-    }
+}
 
     echo "<td>$type</td>";
     echo "<td>$size</td>";
@@ -883,6 +899,25 @@ if ($isDir) {
 
 
 <script>
+
+
+document.querySelectorAll('.image-link').forEach(link => {
+    link.addEventListener('click', e => {
+        e.preventDefault();
+        const file = link.dataset.file;
+        const modal = document.getElementById('image-modal');
+        modal.innerHTML = `<img src="${file}" style="max-width:90%; max-height:90%;">`;
+        modal.style.display = 'flex';
+    });
+});
+
+// Para cerrar el modal
+document.getElementById('image-modal').addEventListener('click', () => {
+    document.getElementById('image-modal').style.display = 'none';
+});
+
+
+
 
 function mostrarArchivo(nombre, contenido, ruta) {
     document.getElementById("txt-title").textContent = nombre;
