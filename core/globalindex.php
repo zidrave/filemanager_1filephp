@@ -21,6 +21,7 @@ $password_hashed = '$2y$12$RcgZxApBg/cXAcpXcaZ0QuUf3hBjmcl4bZbonIQvWLyK4.0E0hjrO
 $cookie_name = "file_manager_auth";
 $cookie_duration = 3600; // 1 hora
 
+// ==============================
 
 
 
@@ -113,7 +114,7 @@ if ($versinclave == 1 && !$is_authenticated):
     .error { color:#d32f2f; margin-top:15px; }
 </style>
 </head>
-<body>
+<body id="top">
 <div class="login-container">
     <h1>🔒 Acceso Requerido</h1>
     <form method="post">
@@ -696,6 +697,35 @@ footer img {width:120px; margin-top:10px; opacity:0.7;}
     <p><strong>📊 Elementos encontrados:</strong> <?php echo $file_count; ?> archivos en esta carpeta</p>
 </div>
 
+
+
+<div id="txt-viewer" class="content-box" style="display:none;">
+  <div class="box-header">  
+    <h3 id="txt-title"></h3>
+      </div>
+
+<div style="padding:20px; display:none;" id="txt-path-container">
+  <div class="stat-value">
+      <pre id="txt-path"></pre>
+  </div>
+</div>
+
+
+    <div style="padding:20px;">
+    <div class="stat-item" >
+        <pre id="txt-content" style="white-space:pre-wrap; font-family:monospace; margin:0;"></pre>
+    </div>
+    </div>
+
+
+<div style="padding:20px;">
+    <div style="text-align:right; margin-top:10px;">
+        <button id="close-txt" class="logout-btn">Cerrar</button>
+    </div>
+</div>
+</div>
+
+
 <div class="content-box">
     <div class="box-header">📄 Listado de Archivos</div>
     <table>
@@ -724,11 +754,35 @@ foreach ($files as $file) {
     $type = $isDir ? "Directorio" : "Archivo";
     $size = $isDir ? "-" : formatBytes(filesize($fullPath));
     $modTime = date("d/m/Y H:i:s", filemtime($fullPath));
-    $icon = $isDir ? "📁" : "📄";
+//  $icon = $isDir ? "📁" : "📄";
+
+    // Extensión en minúsculas
+    $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+
+$icon = "📄"; 
+if ($isDir) {
+    $icon = "📁";
+} elseif (in_array($ext, ["jpg","jpeg","png","gif","webp"])) {
+    $icon = "🖼️";
+} elseif (in_array($ext, ["mp3","wav","ogg"])) {
+    $icon = "🎵";
+} elseif (in_array($ext, ["mp4","mkv","avi"])) {
+    $icon = "🎬";
+} elseif (in_array($ext, ["zip","rar","7z","tar","gz"])) {
+    $icon = "📦";
+} elseif (in_array($ext, ["php","html","css","js","py","sh"])) {
+    $icon = "💻";
+}
     $link = "/".ltrim(($requestedPath==="."?"":$requestedPath."/").$file,"./");
     if($isDir) $link.="/";
     echo "<tr>";
+    $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION)); //ahora trabaja con extensiones en mayuscula
+    if ($ext === "txt") {
+    echo "<td><a href='#top' class='file-link txt-link' data-file='".htmlspecialchars($link) ."'><span class='file-icon'>$icon</span> $file 🔹​​ </a></td>";
+    } else {
     echo "<td><a href='$link' class='file-link'><span class='file-icon'>$icon</span> $file</a></td>";
+    }
+
     echo "<td>$type</td>";
     echo "<td>$size</td>";
     echo "<td>$modTime</td>";
@@ -795,6 +849,60 @@ foreach ($files as $file) {
 
     </select>
 </div>
+
+
+
+<script>
+
+function mostrarArchivo(nombre, contenido, ruta) {
+    document.getElementById("txt-title").textContent = nombre;
+    document.getElementById("txt-content").textContent = contenido;
+
+    if (ruta) {
+        // Arma la URL completa con dominio
+        const fullUrl = window.location.origin + ruta;
+        document.getElementById("txt-path").textContent = "📎 " + fullUrl;
+        document.getElementById("txt-path-container").style.display = "block";
+    } else {
+        document.getElementById("txt-path-container").style.display = "none";
+    }
+
+    document.getElementById("txt-viewer").style.display = "block";
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const links = document.querySelectorAll(".txt-link");
+    const viewer = document.getElementById("txt-viewer");
+    const title = document.getElementById("txt-title");
+    const content = document.getElementById("txt-content");
+
+    const closeBtn = document.getElementById("close-txt");
+
+    links.forEach(link => {
+        link.addEventListener("click", e => {
+            e.preventDefault();
+            const file = link.dataset.file;
+
+fetch(file)
+    .then(res => res.text())
+    .then(text => {
+        mostrarArchivo("📄 " + file.split("/").pop(), text, file);
+    })
+    .catch(err => {
+        mostrarArchivo("Error", "No se pudo cargar el archivo.", null);
+    });
+        });
+    });
+
+    closeBtn.addEventListener("click", () => {
+        viewer.style.display = "none";
+        title.textContent = "";
+        content.textContent = "";
+    });
+});
+</script>
+
+
 
 <footer>
     <p class="copyright">© <?php echo date("Y"); ?> zIDLAB Corporation - Todos los derechos reservados</p>
