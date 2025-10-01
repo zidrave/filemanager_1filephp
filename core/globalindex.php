@@ -834,6 +834,16 @@ if (in_array($ext, $textExts)) {
     echo "<td>$modTime</td>";
     echo "</tr>";
 }
+
+
+
+// Subir al padre
+if ($requestedPath !== "." && $requestedPath !== "") {
+    $parent = dirname($requestedPath);
+    $parent = $parent === "." ? "/" : "/" . $parent . "/";
+    echo "<tr><td colspan='4'><a href='$parent' class='file-link'><span class='file-icon'>🔺</span> Subir al directorio anterior</a></td></tr>";
+}
+
 ?>
         </tbody>
     </table>
