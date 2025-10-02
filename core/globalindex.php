@@ -17,6 +17,18 @@ $password_hashed = '$2y$12$RcgZxApBg/cXAcpXcaZ0QuUf3hBjmcl4bZbonIQvWLyK4.0E0hjrO
 // corresponde a la clave "*******" //ahora es secreta pero puedes crear la tuya con: 
 // echo password_hash("tuclave_nueva", PASSWORD_DEFAULT);
 
+
+
+// Detectar dominio y subdominio para poner configuracion personalizada para cada subdominio o dominio
+$host = $_SERVER['HTTP_HOST']; // Esto devuelve "subdominio.dominio.com" o "dominio.com"
+// Verificar si $host es exactamente "files.zidrave.net"
+if ($host === "files.zidrave.net") {
+//reglas especiales para un tipo de subdominio
+//$password_hashed = '$2y$12$RcgZxApBg/cXAcpXcaZ0QuUf3hBjmcl4bZbonIQvWLyK4.0E0hjrO'; //otro password para este subdominio o dominio
+$versinclave = 0;  // 0 acceso libre sin clave o poner clave y clave personalizada para cada dominio o subdominio
+}
+
+
 // Cookie
 $cookie_name = "file_manager_auth";
 $cookie_duration = 3600; // 1 hora
@@ -104,27 +116,66 @@ if ($versinclave == 1 && !$is_authenticated):
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<title>Acceso - Gestor de Archivos</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acceso - Gestor</title>
 <style>
-    body { font-family: Arial; background:#f0f2f5; display:flex; justify-content:center; align-items:center; min-height:100vh; }
-    .login-container { background:#fff; padding:40px; border-radius:8px; box-shadow:0 0 20px rgba(0,0,0,0.1); text-align:center; width:350px; }
-    .btn { background:#0078D7; color:#fff; padding:10px; border:none; border-radius:4px; cursor:pointer; width:100%; font-weight:bold; }
-    .btn:hover { background:#106ebe; }
-    .error { color:#d32f2f; margin-top:15px; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  height:100vh; display:flex; justify-content:center; align-items:center;
+  font-family:Arial, sans-serif;
+  background:linear-gradient(180deg,#0b1220,#001a33);
+  padding:15px;
+}
+.login{
+  width:100%; max-width:360px; padding:30px; text-align:center;
+  background:linear-gradient(180deg,#fff,#f2f2f2);
+  border-radius:14px;
+  box-shadow:0 8px 20px rgba(0,0,0,0.6),0 0 30px rgba(0,85,204,0.1);
+  position:relative;
+}
+.login::before{
+  content:""; position:absolute; inset:-6px; border-radius:18px;
+  background:linear-gradient(45deg,rgba(0,85,204,0.15),rgba(0,200,255,0.08));
+  filter:blur(18px); z-index:-1;
+}
+input,button{
+  width:100%; padding:12px; margin:10px 0;
+  border-radius:8px; font-size:15px;
+}
+input{
+  border:1px solid #ccc;
+}
+button{
+  border:1px solid #003366;
+  background:#003366; color:#fff; font-weight:bold; cursor:pointer;
+}
+button:hover{background:#0055cc}
+.error{color:#c62828; margin-top:10px; font-size:14px}
+
+/* En pantallas pequeñas el cuadro ocupa casi todo */
+@media (max-width:600px){
+  .login{
+    max-width:100%;
+    border-radius:0;
+    height:auto;
+    padding:20px;
+  }
+}
 </style>
 </head>
-<body id="top">
-<div class="login-container">
-    <h1>🔒 Acceso Requerido</h1>
-    <form method="post">
-        <input type="password" name="password" placeholder="Contraseña" required autofocus style="width:100%;padding:10px;margin-bottom:10px;">
-        <button type="submit" class="btn">Entrar</button>
-    </form>
-    <?php if (isset($login_error)) echo "<div class='error'>$login_error</div>"; ?>
+<body>
+<div class="login">
+  <h2>🔒 Login </h2>
+  <form method="post">
+    <input type="password" name="password" placeholder="Contraseña" required autofocus>
+    <button type="submit">Entrar</button>
+  </form>
+  <?php if (isset($login_error)) echo "<div class='error'>$login_error</div>"; ?>
 </div>
 </body>
 </html>
+
 <?php
 exit;
 endif;
