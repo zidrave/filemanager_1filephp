@@ -31,7 +31,7 @@ $versinclave = 0;  // 0 acceso libre sin clave o poner clave y clave personaliza
 
 // Cookie
 $cookie_name = "file_manager_auth";
-$cookie_duration = 3600; // 1 hora
+$cookie_duration = 3600 * 24 * 7; // 1 hora -cambiado a 1 semana
 
 // ==============================
 
@@ -735,10 +735,10 @@ footer img {width:120px; margin-top:10px; opacity:0.7;}
 <div class="breadcrumb <?php echo $current_theme === 'joomla' ? '' : ''; ?>">
     <?php if ($current_theme === 'joomla'): ?>
     <div class="breadcrumb-content">
-        <strong>Ruta actual:</strong> <?php echo str_replace($baseDir,"",$targetDir) ?: "/"; ?>
+   <h2> 🌎 <?php echo $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']; ?>  </h2> 
     </div>
     <?php else: ?>
-    <strong>Ruta actual:</strong> <?php echo str_replace($baseDir,"",$targetDir) ?: "/"; ?>
+   <h2> 🌎 <?php echo $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']; ?>  </h2> 
     <?php endif; ?>
 </div>
 
@@ -753,9 +753,18 @@ footer img {width:120px; margin-top:10px; opacity:0.7;}
 
 
 
-
-<div id="image-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);justify-content:center;align-items:center;cursor:pointer;"></div>
-
+<div id="image-modal" style="display:none;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.4);
+    justify-content:center;
+    align-items:center;
+    cursor:pointer;
+    backdrop-filter: blur(6px);
+"></div>
 
 
 
@@ -1049,7 +1058,7 @@ fetch(file)
 <footer>
     <p class="copyright">© <?php echo date("Y"); ?> zIDLAB Corporation - Todos los derechos reservados</p>
     <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEicRrhs4L2BvhDfxiyrZGCWUYcCiDrKTOskZSwIsjvVZx7AQMNG6huy2DoX0An7ywtr8iOxm26Qo2r03DBLcHNCCMV67sC2e9Cvj5wqQHtibqCBZEC2X-0A9Rh3sb9TTlj8M_lpuZb_4hziIPBE-2Zh54Ie6O1cF5Is-hLHKVeSxSz_tJDc3J0jC_UDkg8/s320/logoskull2.png" alt="Logo" />
-    <p style="font-size:12px; opacity:0.8;">Explorador de Carpetas</p>
+    <p style="font-size:12px; opacity:0.8;">Explorador de Carpetas de Zidrave - <a href='https://zidrave.net/?p=4641'  class='stat-label' target='_black'><b>Ver Proyecto</b></a></p>
 </footer>
 
 <?php
