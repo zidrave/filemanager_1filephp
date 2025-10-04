@@ -29,6 +29,21 @@ $versinclave = 0;  // 0 acceso libre sin clave o poner clave y clave personaliza
 }
 
 
+////buscar PLugin ( GI-SECURITY.PHP ) para personalizar configuracion en carpetas diferentes
+$gisFile = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . $_SERVER['REQUEST_URI'] . 'gi-security.php';
+$gisFile = str_replace("%20"," ",$gisFile); //falta mejorar pero este detalle daba problemas con carpetas con espacios
+if (!file_exists($gisFile)) {
+//echo "no existe aun -  $gisFile<br>";
+} else {
+//echo "archivo de seguridad encontrado! $gisFile<br>";
+include("$gisFile");
+
+}
+
+
+
+
+
 // Cookie
 $cookie_name = "file_manager_auth";
 $cookie_duration = 3600 * 24 * 7; // 1 hora -cambiado a 1 semana
@@ -708,7 +723,7 @@ footer img {width:120px; margin-top:10px; opacity:0.7;}
 <?php if ($current_theme === 'joomla'): ?>
 <nav class="top-nav">
     <div class="top-menu">
-        <a href="#" class="top-menu-item">🏠 Inicio</a>
+        <a href="/" class="top-menu-item">🏠 Inicio</a>
         <a href="#" class="top-menu-item">📁 Explorador</a>
         <a href="#" class="top-menu-item">⚙️ Configuración</a>
         <a href="#" class="top-menu-item">👤 Usuario</a>
@@ -753,6 +768,216 @@ footer img {width:120px; margin-top:10px; opacity:0.7;}
 
 
 
+
+
+
+
+
+<div id="txt-viewer"  style="display:none;">
+ 
+<div style="padding:10px;">
+    <div style="text-align:right; margin-top:0px;">
+        <button id="close-txt2" class="logout-btn">Cerrar</button>
+    </div>
+</div>
+ 
+
+<div  class="content-box" >
+
+  <div class="box-header">  
+    <h3 id="txt-title"></h3>
+      </div>
+
+<div style="padding:20px; display:none;" id="txt-path-container">
+  <div class="stat-value">
+      <pre id="txt-path"></pre>
+  </div>
+</div>
+    <div style="padding:20px;">
+    <div class="stat-item" >
+        <pre id="txt-content" style="white-space:pre-wrap; font-family:monospace; margin:0;"></pre>
+    </div>
+    </div>
+
+</div>
+
+<div style="padding:10px;">
+    <div style="text-align:right; margin-top:-20px;">
+        <button id="close-txt" class="logout-btn">Cerrar</button>
+    </div>
+</div>
+<br>
+</div>
+
+
+
+<?php
+///////////////////////// README.MD ///////////////////////////////
+$mdFile = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . $_SERVER['REQUEST_URI'] . '/readme.md';
+//$mdFile = __DIR__ . $_SERVER['REQUEST_URI'].'/readme.md';
+//$mdFile = $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . '/readme.md';
+//echo "Buscando: $mdFile";
+if (!file_exists($mdFile)) {
+//    http_response_code(404);
+//    echo "<h1>readme.md no encontrado</h1> <p>Coloca un archivo  readme.md en esta carpeta.</p>";
+//    exit;
+} else {
+
+$md = file_get_contents($mdFile);
+
+// Escapamos primero para evitar inyección; aplicaremos transformaciones sobre texto seguro.
+$md = htmlspecialchars($md, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+
+// ---- Parser Markdown ligero (cubrir lo más usado) ----
+
+
+
+ 
+
+// ---- Parser Markdown con protección de bloques ----
+
+// 1) PROTEGER bloques de código con triple backticks
+$codeBlocks = [];
+$codeCounter = 0;
+$md = preg_replace_callback(
+    '/```([a-zA-Z0-9_+-]*)\n(.*?)\n```/s',
+    function($m) use (&$codeBlocks, &$codeCounter){
+        $lang = $m[1] ? ' class="lang-'.htmlspecialchars($m[1], ENT_QUOTES).'"' : '';
+        $code = htmlspecialchars($m[2], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $placeholder = "___CODEBLOCK{$codeCounter}___";
+        $codeBlocks[$placeholder] = "<pre><code{$lang}>{$code}</code></pre>";
+        $codeCounter++;
+        return $placeholder;
+    },
+    $md
+);
+
+// 2) PROTEGER código inline con backticks simples
+$inlineCode = [];
+$inlineCounter = 0;
+$md = preg_replace_callback(
+    '/`([^`\n]+)`/',
+    function($m) use (&$inlineCode, &$inlineCounter){
+        $code = htmlspecialchars($m[1], ENT_QUOTES);
+        $placeholder = "___INLINECODE{$inlineCounter}___";
+        $inlineCode[$placeholder] = "<code>{$code}</code>";
+        $inlineCounter++;
+        return $placeholder;
+    },
+    $md
+);
+
+
+
+// 2) Headers
+$md = preg_replace('/^######\s*(.+)$/m', '<h6>$1</h6>', $md);
+$md = preg_replace('/^#####\s*(.+)$/m', '<h5>$1</h5>', $md);
+$md = preg_replace('/^####\s*(.+)$/m', '<h4>$1</h4>', $md);
+$md = preg_replace('/^###\s*(.+)$/m', '<h3>$1</h3>', $md);
+$md = preg_replace('/^##\s*(.+)$/m', '<h2>$1</h2>', $md);
+$md = preg_replace('/^#\s*(.+)$/m', '<h1>$1</h1>', $md);
+
+
+// 5) Imágenes (ANTES de enlaces y ANTES de escapar)
+$md = preg_replace_callback(
+    '/!\[([^\]]*)\]\(([^)]+)\)/',
+    function($m){
+        $alt = htmlspecialchars($m[1], ENT_QUOTES);
+        $url = htmlspecialchars($m[2], ENT_QUOTES);
+        return '<center><img src="'.$url.'" alt="'.$alt.'" style="max-width:100%; height:auto; border-radius:4px;" /></center>';
+    },
+    $md
+);
+
+// 5) Enlaces
+$md = preg_replace_callback('/\[([^\]]+)\]\(([^)]+)\)/', function($m){
+    $text = htmlspecialchars($m[1], ENT_QUOTES);
+    $url  = htmlspecialchars($m[2], ENT_QUOTES);
+    return '<a href="'. $url .'" target="_blank" rel="noopener noreferrer">'. $text .'</a>';
+}, $md);
+
+
+//lineas
+$md = preg_replace('/^[ \t]*(-{3,}|\*{3,}|_{3,})[ \t]*$/m', '<hr style="border:none; height:1px; background:#415a77; margin:20px 0;">', $md);
+
+// 5) Bold **text** or __text__
+$md = preg_replace('/\*\*(.+?)\*\*/s', '<strong>$1</strong>', $md);
+$md = preg_replace('/\_\_(.+?)\_\_/s', '<strong>$1</strong>', $md);
+
+// 6) Italic *text* or _text_
+$md = preg_replace('/\*(.+?)\*/s', '<em>$1</em>', $md);
+$md = preg_replace('/\_(.+?)\_/s', '<em>$1</em>', $md);
+
+// 7) Inline code  
+$md = preg_replace('/`([^`]+)`/','<code>$1</code>', $md);
+
+// 8) Listas no ordenadas (líneas que empiezan con - o *)
+// Convertimos grupos de líneas en <ul><li>...</li></ul>
+$md = preg_replace_callback('/(^((?:[ \t]*[-\*]\s+.+\r?\n)+))/m', function($m){
+    $block = trim($m[1]);
+    $items = preg_split('/\r?\n/', $block);
+    $html = "<ul>";
+    foreach($items as $it){
+        $it = preg_replace('/^[\-\*]\s+/', '', $it);
+        $html .= '<li>'.$it.'</li>';
+    }
+    $html .= "</ul>";
+    return $html;
+}, $md);
+
+// 9) Listas ordenadas 1. 2. 3.
+$md = preg_replace_callback('/(^((?:[ \t]*\d+\.\s+.+\r?\n)+))/m', function($m){
+    $block = trim($m[1]);
+    $items = preg_split('/\r?\n/', $block);
+    $html = "<ol>";
+    foreach($items as $it){
+        $it = preg_replace('/^\d+\.\s+/', '', $it);
+        $html .= '<li>'.$it.'</li>';
+    }
+    $html .= "</ol>";
+    return $html;
+}, $md);
+
+// 10) Líneas vacías => saltos de párrafo
+// Primero normalizamos saltos de línea
+$md = str_replace(["\r\n","\r"], "\n", $md);
+// Reemplazamos doble newline por </p><p>, pero respetando que ya haya headers, pre, ul, ol, etc.
+$parts = preg_split("/\n{2,}/", $md);
+foreach ($parts as &$p) {
+    // Si ya empieza con una etiqueta bloque, no envolver
+    if (preg_match('/^\s*<(h[1-6]|ul|ol|pre|blockquote|img|p)/i', trim($p))) {
+        $p = $p;
+    } else {
+        // Reemplazco saltos simples por <br> para conservar líneas
+        $p = '<p>' . nl2br(trim($p)) . '</p>';
+    }
+}
+
+
+$bodyHtml = implode("\n", $parts);
+?>
+ 
+
+<div  class="content-box" id="readme-container">
+  <div class="box-header">  
+    <h4>🎖️readme.md</h4>
+      </div>
+ <div style="padding:20px;">
+  <div class="stat-value">
+      <pre> <?php echo "$bodyHtml"; ?>  </pre>  
+  </div>
+ </div>
+</div>
+
+<?php
+/////////////////////////README.MD ///////////////////////////////
+} //cerrando
+?>
+
+ 
+
+
+
 <div id="image-modal" style="display:none;
     position:fixed;
     top:0;
@@ -770,54 +995,6 @@ footer img {width:120px; margin-top:10px; opacity:0.7;}
 
 
 
-
-<div id="txt-viewer"  style="display:none;">
-
-
-
- 
-<div style="padding:10px;">
-    <div style="text-align:right; margin-top:0px;">
-        <button id="close-txt2" class="logout-btn">Cerrar</button>
-    </div>
-</div>
- 
-
-<div  class="content-box" >
-
-
-
-
-  <div class="box-header">  
-    <h3 id="txt-title"></h3>
-      </div>
-
-<div style="padding:20px; display:none;" id="txt-path-container">
-  <div class="stat-value">
-      <pre id="txt-path"></pre>
-  </div>
-</div>
-
-
-
-
-    <div style="padding:20px;">
-    <div class="stat-item" >
-        <pre id="txt-content" style="white-space:pre-wrap; font-family:monospace; margin:0;"></pre>
-    </div>
-    </div>
-
-
-
-</div>
-
-<div style="padding:10px;">
-    <div style="text-align:right; margin-top:-20px;">
-        <button id="close-txt" class="logout-btn">Cerrar</button>
-    </div>
-</div>
-<br>
-</div>
 
 
 
@@ -1003,6 +1180,15 @@ function mostrarArchivo(nombre, contenido, ruta) {
     }
 
     document.getElementById("txt-viewer").style.display = "block";
+
+
+
+    // OCULTAR el contenedor del README cuando se abre un archivo de texto
+    const readmeContainer = document.getElementById("readme-container");
+    if (readmeContainer) {
+        readmeContainer.style.display = "none";
+    }
+
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -1041,6 +1227,11 @@ fetch(file)
         viewer.style.display = "none";
         title.textContent = "";
         content.textContent = "";
+        // MOSTRAR nuevamente el contenedor del README
+        const readmeContainer = document.getElementById("readme-container");
+        if (readmeContainer) {
+            readmeContainer.style.display = "block";
+        }
     });
 
 
@@ -1048,6 +1239,11 @@ fetch(file)
         viewer.style.display = "none";
         title.textContent = "";
         content.textContent = "";
+        // MOSTRAR nuevamente el contenedor del README
+        const readmeContainer = document.getElementById("readme-container");
+        if (readmeContainer) {
+            readmeContainer.style.display = "block";
+        }
     });
 
 });
