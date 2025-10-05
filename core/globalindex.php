@@ -747,13 +747,20 @@ footer img {width:120px; margin-top:10px; opacity:0.7;}
     <?php endif; ?>
 </header>
 
+<?php
+//$mdFile = str_replace("%20"," ",$mdFile); 
+$urlactual = $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+$urlactual = str_replace("%20"," ",$urlactual); 
+?>
+
+
 <div class="breadcrumb <?php echo $current_theme === 'joomla' ? '' : ''; ?>">
     <?php if ($current_theme === 'joomla'): ?>
     <div class="breadcrumb-content">
-   <h2> 🌎 <?php echo $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']; ?>  </h2> 
+   <h2> 🌎 <?php echo $urlactual; ?>  </h2> 
     </div>
     <?php else: ?>
-   <h2> 🌎 <?php echo $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']; ?>  </h2> 
+   <h2> 🌎 <?php echo $urlactual; ?>  </h2> 
     <?php endif; ?>
 </div>
 
@@ -813,16 +820,21 @@ footer img {width:120px; margin-top:10px; opacity:0.7;}
 
 <?php
 ///////////////////////// README.MD ///////////////////////////////
-$mdFile = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . $_SERVER['REQUEST_URI'] . '/readme.md';
+$mdFile = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . $_SERVER['REQUEST_URI'] . 'readme.md';
+$mdFile = str_replace("%20"," ",$mdFile); 
+
+//$mdFile = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . $_SERVER['REQUEST_URI'] . '/readme.md';
 //$mdFile = __DIR__ . $_SERVER['REQUEST_URI'].'/readme.md';
 //$mdFile = $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . '/readme.md';
-//echo "Buscando: $mdFile";
+
+
 if (!file_exists($mdFile)) {
+//    echo "no encontro $mdFile";
 //    http_response_code(404);
-//    echo "<h1>readme.md no encontrado</h1> <p>Coloca un archivo  readme.md en esta carpeta.</p>";
+//    echo "<h1>readme.md no encontrado</h1> <p>  $mdFile </p>";
 //    exit;
 } else {
-
+//echo "Buscando: $mdFile";
 $md = file_get_contents($mdFile);
 
 // Escapamos primero para evitar inyección; aplicaremos transformaciones sobre texto seguro.
