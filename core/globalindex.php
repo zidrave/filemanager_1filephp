@@ -1351,6 +1351,144 @@ exit;
 ///////////////////////////////////////
 
 
+////////////////// Comprimir archivo o carpeta 🚀 🚀🚀🚀🚀🚀🚀🚀
+if (isset($_POST['compressFile'])) {
+
+    // Requiere autenticación SIEMPRE (sin importar $versinclave)
+    if (!$is_authenticated) {
+         // die($alertasegura); // usaremos exit; para agregar un registro de logs a futuro
+          echo "$alertasegura";
+          //codigo para registrar actividad - falta
+          exit;
+    }
+
+    $namefilec = $_POST['archivoacomprimir'];
+    $namefilepass = $_POST['password'] ?? '';
+    $descripcion = $_POST['descripcion'] ?? '';
+
+    $nombreZipa = isset($_POST['archivoacomprimir']) ? $_POST['archivoacomprimir'] . '.zip' : 'archivo_protegido.zip';
+    $nombreZip = rtrim($baseDir2, '/') . '/' . ltrim($nombreZipa, '/');
+
+    function comprimirCarpetaConContrasena($origen, $destino, $excluir = [], $contrasena) {
+        $zip = new ZipArchive();
+
+        if ($zip->open($destino, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            die("No se pudo crear el archivo ZIP.\n");
+        }
+
+        $archivos = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($origen, RecursiveDirectoryIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::SELF_FIRST
+        );
+
+        foreach ($archivos as $archivo) {
+            $rutaRelativa = str_replace($origen . '/', '', $archivo->getPathname());
+
+            $excluirArchivo = false;
+            foreach ($excluir as $itemExcluido) {
+                if (strpos($rutaRelativa, $itemExcluido) === 0) {
+                    $excluirArchivo = true;
+                    break;
+                }
+            }
+
+            if (!$excluirArchivo) {
+                if ($archivo->isDir()) {
+                    $zip->addEmptyDir($rutaRelativa);
+                } else {
+                    $zip->addFile($archivo->getPathname(), $rutaRelativa);
+                    
+                    // ✅ ORDEN CORRECTO: Primero compresión
+                    $zip->setCompressionName($rutaRelativa, ZipArchive::CM_DEFLATE, 9);
+                    
+                    // ✅ Luego encriptación (si hay contraseña)
+                    if (!empty($contrasena)) {
+                        $zip->setEncryptionName($rutaRelativa, ZipArchive::EM_AES_256, $contrasena);
+                    }
+                }
+            }
+        }
+
+
+
+        $zip->close();
+
+ 
+
+        if (!file_exists($destino)) {
+            echo "  ⚠️Error al comprimir la carpeta.\n  ";
+        } else {
+            echo "  ⚠️ Carpeta comprimida correctamente\n   ";
+        }
+    }
+
+    if (isset($_POST['archivoacomprimir'])) {
+
+    // Requiere autenticación SIEMPRE (sin importar $versinclave)
+    if (!$is_authenticated) {
+         // die($alertasegura); // usaremos exit; para agregar un registro de logs a futuro
+          echo "$alertasegura";
+          //codigo para registrar actividad - falta
+          exit;
+    }
+
+        $ruta = rtrim($baseDir2, '/') . '/' . ltrim($namefilec, '/');
+        
+        if (is_file($ruta)) {
+            // Comprimir un único archivo
+            $zip = new ZipArchive();
+            
+            if ($zip->open($nombreZip, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== TRUE) {
+                die("No se pudo crear el archivo ZIP");
+            }
+            
+            $zip->addFile($ruta, basename($ruta));
+            
+            // ✅ ORDEN CRÍTICO: Primero compresión
+            $zip->setCompressionName(basename($ruta), ZipArchive::CM_DEFLATE, 9);
+            
+            // ✅ Luego encriptación (si hay contraseña)
+            if (!empty($namefilepass)) {
+                $zip->setEncryptionName(basename($ruta), ZipArchive::EM_AES_256, $namefilepass);
+            }
+
+
+
+            $zip->close();
+
+
+            echo " ⚠️El archivo <b>$namefilec.zip</b> se ha creado correctamente.  ";
+            
+        } elseif (is_dir($ruta)) {
+            comprimirCarpetaConContrasena($ruta, $nombreZip, [], $namefilepass);
+            echo "  ⚠️ La carpeta <b>$namefilec.zip</b> se ha creada correctamente.  ";
+            
+        } else {
+            echo "   ⚠️ La ruta especificada no es válida: $ruta  ";
+            exit;
+        }
+    } else {
+        echo "No se especificó ningún archivo o carpeta.";
+        exit;
+    }
+
+    // Agregar un comentario al archivo ZIP
+  //  if (!empty($descripcion)) {
+  //      $zip = new ZipArchive();
+  //      if ($zip->open($nombreZip) === TRUE) {
+  //          $zip->setArchiveComment($descripcion);
+  //          $zip->close();
+  //      } else {
+  //          echo " ⚠️ No se pudo abrir el archivo ZIP para agregar el comentario. ";
+  //      }
+  //  }
+
+
+    echo "<script>alert(' ✅ La compresion se realizo, correctamente'); window.location.href = './'; </script>";
+    exit;
+}
+////////////////// Comprimir archivo o carpeta 🚀 🚀🚀🚀🚀🚀🚀🚀
+
 
 // ==============================
 // HTML PRINCIPAL
@@ -1453,6 +1591,50 @@ foreach ($segments as $index => $segment) {
 }
 ?>
 </div>
+
+
+
+
+
+
+
+
+
+
+<?php
+if($_GET["passgen"]){
+?>
+
+<div class="info-box">
+<?php
+$passx = isset($_POST["passx"]) ? $_POST["passx"] : "1111";
+$clavemagica = password_hash("$passx", PASSWORD_DEFAULT);
+?>
+<b class="link-link"> <?php echo "$clavemagica  </b> <br> <b class='stat-label'> Clave Original: $passx ";?></b>
+
+<form action="./?passgen=on" method="POST">
+🔐
+          <input  class="eform" type="text" name="passx"
+            placeholder="Contraseña a encriptar..."
+            value=""
+            style="
+              padding:8px;
+              border-radius:5px;
+
+              min-width:250px;
+              box-sizing:border-box;
+            ">
+<button type="submit" name="passgen"  class="logout-btn">Generar Password</button>
+<a href="<?php echo "$path2"; ?>" class="logout-btnred">Cerrar</a>
+ </form>
+</div> 
+
+<?php
+}
+?>
+
+
+
 
 
 
@@ -1665,7 +1847,7 @@ $file_f = basename($file_f);
 <div class="info-box">
 <form action="./" method="POST">
 📦 
-          <input  class="eform" type="text" name="FileCompress"
+          <input  class="eform" type="text" name="archivoacomprimir"
             placeholder="Nombre del archivo.."
             value="<?php echo $file_f;?>"
             style="
@@ -1676,7 +1858,7 @@ $file_f = basename($file_f);
               box-sizing:border-box;
             ">
 
-          <input  class="eform" type="text" name="PassCompress"
+          <input  class="eform" type="text" name="password"
             placeholder="Password (Opcional)"
             value=""
             style="
@@ -1686,8 +1868,17 @@ $file_f = basename($file_f);
               min-width:250px;
               box-sizing:border-box;
             ">
-
-<button type="submit" name="createFile"  class="logout-btn">Comprimir Archivo</button>
+        <input type="hidden" name="descripcion" value="
+           ,______________________________________       
+          |_________________,----------._ [____]  ''-,__  __....-----====
+                        (_(||||||||||||)___________/   ''                |
+                           `----------' zIDRAvE[ ))'-,                   |
+                     FILE MANAGER (Index of)    ''    `,  _,--....___    |
+                     https://zidrave.net/?p=4641        `/           ''''
+...................................................................................
+2025
+" >
+<button type="submit" name="compressFile"  class="logout-btn">Comprimir Archivo</button>
 <a href="<?php echo "$path2"; ?>" class="logout-btnred">Cerrar</a>
  </form>
 </div> 
@@ -1855,7 +2046,7 @@ if (!file_exists($mdFile)) {
 $md = file_get_contents($mdFile);
 
 // Escapamos primero para evitar inyección; aplicaremos transformaciones sobre texto seguro.
-$md = htmlspecialchars($md, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+// $md = htmlspecialchars($md, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
 // ---- Parser Markdown ligero (cubrir lo más usado) ----
 
@@ -1927,7 +2118,11 @@ $md = preg_replace_callback('/\[([^\]]+)\]\(([^)]+)\)/', function($m){
 
 
 //lineas
-$md = preg_replace('/^[ \t]*(-{3,}|\*{3,}|_{3,})[ \t]*$/m', '<hr style="border:none; height:1px; background:#415a77; margin:20px 0;">', $md);
+$md = preg_replace(
+    '/(?:\r?\n|\A)[ \t]*(?:-{3,}|\*{3,}|_{3,})[ \t]*(?:\r?\n|\z)/',
+    "<hr style=\"border:none; height:1px; background:#415a77; margin:20px 0;\">",
+    $md
+);
 
 // 5) Bold **text** or __text__
 $md = preg_replace('/\*\*(.+?)\*\*/s', '<strong>$1</strong>', $md);
@@ -1993,7 +2188,7 @@ $bodyHtml = implode("\n", $parts);
       </div>
  <div style="padding:20px;">
   <div class="stat-value">
-      <pre> <?php echo "$bodyHtml"; ?>  </pre>  
+     <pre> <?php echo "$bodyHtml"; ?>  </pre>    
   </div>
  </div>
 </div>
@@ -2053,6 +2248,18 @@ if ($requestedPath !== "." && $requestedPath !== "") {
 
 // LISTAR CARPETAS Y ARCHIVOS
 
+//esta funcion es para calcular el tamaño de una carpeta pero es muy pesada solo usarlo bajo demanda
+function folderSize($dir) {
+    $size = 0;
+    foreach (scandir($dir) as $file) {
+        if ($file === '.' || $file === '..') continue;
+        $path = $dir . DIRECTORY_SEPARATOR . $file;
+        $size += is_dir($path) ? folderSize($path) : filesize($path);
+    }
+    return $size;
+}
+
+
 // Obtener lista de archivos y carpetas
 $files = scandir($targetDir);
 
@@ -2083,11 +2290,16 @@ foreach ($sortedFiles as $file) {
     $fullPath = $targetDir . "/" . $file;
     $isDir = is_dir($fullPath);
   if ($is_authenticated) {
+
+
     //$type = $isDir ? "🗂️ | ⚙️ 📚 ❌" : "📄 | 📝 ⚙️ 📚 ❌";
 if($isDir){
+
+
+
 $type = "🗂️ | 
 ⚙️ 
-📚 
+<a href=\"?new=compress&f=$file\" class='link-link'>📚  </a>
 <a href=\"?deleteFolder=$file\" class='link-link'  onclick=\"return confirm('🗑 ¿Seguro que deseas eliminar \\n la Carpeta $file ❓ \\n \\n  Solo Se eliminara si la Carpeta esta vacia');\">❌ </a>";
 } else {
 $type = "📄 | 
@@ -2102,8 +2314,14 @@ $type = "📄 |
   } else {
     $type = $isDir ? "🗂️ Directorio" : "📄 Archivo";
   }
-    $size = $isDir ? "-" : formatBytes(filesize($fullPath));
+
+// ver tamaño de una carṕeta solo bajo demanda.
+//$size = $isDir ? formatBytes(folderSize($fullPath)) : formatBytes(filesize($fullPath));
+
+    $size = $isDir ? "-" : formatBytes(filesize($fullPath)); //en caso de ser carpeta mostrara - en ves de su tamaño, es mas lite asi.
+    $size = preg_replace('/([\d\.]+)/', '<strong class="link-link">$1</strong>', $size);
     $modTime = date("d/m/Y H:i:s", filemtime($fullPath));
+    $modTime = preg_replace('/^(\d{2}\/\d{2}\/\d{4})/', '<strong class="link-link">$1</strong>', $modTime);
 
     $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 
@@ -2111,23 +2329,28 @@ $type = "📄 |
     $icon = "📄"; 
     if ($isDir) {
         $icon = "📁";
-    } elseif (in_array($ext, ["jpg","jpeg","png","gif","webp"])) {
+    } elseif (in_array($ext, ["jpg","jpeg","png","gif","webp","bmp"])) {
         $icon = "🖼️";
     } elseif (in_array($ext, ["mp3","wav","ogg"])) {
         $icon = "🎵";
     } elseif (in_array($ext, ["mp4","mkv","avi"])) {
         $icon = "🎬";
     } elseif (in_array($ext, ["zip","rar","7z","tar","gz"])) {
-        $icon = "📦";
+        $icon = "📚";
     } elseif (in_array($ext, ["php","html","css","js","py","sh"])) {
         $icon = "💻";
+    } elseif (in_array($ext, ["pdf"])) {
+        $icon = "📕";
+    }  elseif (in_array($ext, ["docx","rtf"])) {
+        $icon = "📘";
     }
+
 
     $link = "/" . ltrim(($requestedPath === "." ? "" : $requestedPath . "/") . $file, "./");
     if ($isDir) $link .= "/";
 
     echo "<tr>";
-    $textExts = ["txt", "log", "md", "ini", "cfg", "json", "xml", "csv"];
+    $textExts = ["txt", "log", "md", "ini", "cfg", "json", "xml", "csv", "dat", "inf"];
     $imageExts = ["jpg", "jpeg", "png", "gif", "webp", "bmp", "svg"];
 
 
@@ -2140,6 +2363,13 @@ if ($isDir) {
     // CARPETAS siempre van a enlace normal
     echo "<td><a href='$link' class='file-link'><span class='file-icon'>$icon</span> <b>$file</b></a></td>";
 } else {
+//recortar el nombre de los archivos que sean muy largos
+$itemr = $file;
+if (strlen($itemr) > 33) {
+    $itemr = substr($itemr, -33);
+    $file = "➰".$itemr;
+}
+
     // ARCHIVOS aplican lógica especial
     if (in_array($ext, $textExts)) {
         echo "<td><a href='' class='file-link txt-link' data-file='" . htmlspecialchars($link) . "'><span class='file-icon'>$icon</span> <b>$file</b> 🔹</a></td>";
@@ -2350,12 +2580,19 @@ fetch(file + "?_=" + Date.now()) // ← fuerza a no usar caché
 
 </script>
 
+ 
+
 
 
 <footer>
-    <p class="copyright">© <?php echo date("Y"); ?> zIDLAB Corporation - Todos los derechos reservados</p>
+
+
+
+
+
+    <p class="copyright">© <?php echo date("Y"); ?> zIDLAB Corporation - Todos los derechos reservados - <a href="?passgen=on" class="link-link">Generar Password</a></p>
     <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEicRrhs4L2BvhDfxiyrZGCWUYcCiDrKTOskZSwIsjvVZx7AQMNG6huy2DoX0An7ywtr8iOxm26Qo2r03DBLcHNCCMV67sC2e9Cvj5wqQHtibqCBZEC2X-0A9Rh3sb9TTlj8M_lpuZb_4hziIPBE-2Zh54Ie6O1cF5Is-hLHKVeSxSz_tJDc3J0jC_UDkg8/s320/logoskull2.png" alt="Logo" />
-    <p style="font-size:12px; opacity:0.8;">Explorador de Carpetas de Zidrave - <a href='https://zidrave.net/?p=4641'  class='stat-label' target='_black'><b>Ver Proyecto</b></a></p>
+    <p style="font-size:12px; opacity:0.8;">Explorador de Carpetas de Zidrave - <a href='https://zidrave.net/?p=4641'  class='link-link' target='_black'><b>Ver Proyecto</b></a></p>
 </footer>
 
 <?php
