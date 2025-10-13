@@ -16,7 +16,7 @@ $password = "1111";
 // Modo avanzado (clave hasheada con bcrypt)
 $password_hashed = '$2y$12$RcgZxApBg/cXAcpXcaZ0QuUf3hBjmcl4bZbonIQvWLyK4.0E0hjrO'; 
 // corresponde a la clave "*******" //ahora es secreta pero puedes crear la tuya con: 
-// echo password_hash("tuclave_nueva", PASSWORD_DEFAULT);
+// echo password_hash("tuclave_nueva", PASSWORD_DEFAULT); o usando la opcion /?passgen=on  de este script
 
 
 
@@ -1568,8 +1568,9 @@ foreach ($segments as $index => $segment) {
 
     // Si es el último segmento → poner en negrita sin link
     if ($index === array_key_last($segments)) {
-        $breadcrumb .= "<b> $segment </b> / ";
-        $ultimodir = $segment;
+        $breadcrumb .= "<b> <a href='$currentPath/' class='link-link' > $segment </a> </b> / ";
+//        $ultimodir = $segment;
+        $ultimodir = "<a href='$currentPath/' class='link-link' >$segment </a>";
     } else {
         $breadcrumb .= "<a href='$currentPath/' class='link-link' > $segment </a><b>/</b>";
         
@@ -2284,6 +2285,8 @@ natcasesort($regularFiles);
 
 // Combinar: primero carpetas, luego archivos
 $sortedFiles = array_merge($folders, $regularFiles);
+$carpetaNum = 1;
+$archivoNum = 1;
 
 // Ahora usa $sortedFiles en lugar de $files
 foreach ($sortedFiles as $file) {
@@ -2312,7 +2315,7 @@ $type = "📄 |
 
 
   } else {
-    $type = $isDir ? "🗂️ Directorio" : "📄 Archivo";
+    $type = $isDir ? "🗂️ DIR " : "📄 Archivo";
   }
 
 // ver tamaño de una carṕeta solo bajo demanda.
@@ -2359,10 +2362,13 @@ $type = "📄 |
 
 
 // DESPUÉS (CORREGIDO):
+
 if ($isDir) {
+  $numerocarpeta = $carpetaNum++;
     // CARPETAS siempre van a enlace normal
-    echo "<td><a href='$link' class='file-link'><span class='file-icon'>$icon</span> <b>$file</b></a></td>";
+    echo "<td>  <a href='$link' class='file-link' title='$numerocarpeta'>  <span class='file-icon'>   $icon <b>$file</b> </span> </a> </td>";
 } else {
+$numeroarchivo = $archivoNum++;
 //recortar el nombre de los archivos que sean muy largos
 $itemr = $file;
 if (strlen($itemr) > 33) {
@@ -2372,11 +2378,11 @@ if (strlen($itemr) > 33) {
 
     // ARCHIVOS aplican lógica especial
     if (in_array($ext, $textExts)) {
-        echo "<td><a href='' class='file-link txt-link' data-file='" . htmlspecialchars($link) . "'><span class='file-icon'>$icon</span> <b>$file</b> 🔹</a></td>";
+        echo "<td><a href='' title='$numeroarchivo' class='file-link txt-link' data-file='" . htmlspecialchars($link) . "'><span class='file-icon'>$icon</span> <b>$file</b> 🔹</a></td>";
     } elseif (in_array($ext, $imageExts)) {
-        echo "<td><a href='' class='file-link image-link' data-file='" . htmlspecialchars($link) . "'><span class='file-icon'>$icon</span> <b>$file</b> 🔹</a></td>";
+        echo "<td><a href='' title='$numeroarchivo' class='file-link image-link' data-file='" . htmlspecialchars($link) . "'><span class='file-icon'> $icon</span> <b>$file</b> 🔹</a></td>";
     } else {
-        echo "<td><a href='$link' class='file-link'><span class='file-icon'>$icon</span> <b>$file</b></a></td>";
+        echo "<td><a href='$link' title='$numeroarchivo' class='file-link'><span class='file-icon'> $icon</span> <b>$file</b></a></td>";
     }
 }
 
