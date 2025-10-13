@@ -1350,30 +1350,54 @@ exit;
 ///  FIN SUBIR VARIOS X AJAX     //////
 ///////////////////////////////////////
 
-
-////////////////// Comprimir archivo o carpeta 🚀 🚀🚀🚀🚀🚀🚀🚀
+////////////////// Comprimir archivo o carpeta 🚀
 if (isset($_POST['compressFile'])) {
 
-    // Requiere autenticación SIEMPRE (sin importar $versinclave)
+    // ✅ Validar autenticación UNA SOLA VEZ
     if (!$is_authenticated) {
-         // die($alertasegura); // usaremos exit; para agregar un registro de logs a futuro
-          echo "$alertasegura";
-          //codigo para registrar actividad - falta
-          exit;
+        echo $alertasegura;
+        exit;
     }
 
-    $namefilec = $_POST['archivoacomprimir'];
+    // ✅ SANITIZAR inputs
+    $namefilec = isset($_POST['archivoacomprimir']) ? trim($_POST['archivoacomprimir']) : '';
     $namefilepass = $_POST['password'] ?? '';
     $descripcion = $_POST['descripcion'] ?? '';
 
-    $nombreZipa = isset($_POST['archivoacomprimir']) ? $_POST['archivoacomprimir'] . '.zip' : 'archivo_protegido.zip';
-    $nombreZip = rtrim($baseDir2, '/') . '/' . ltrim($nombreZipa, '/');
+    // ✅ Validar que no esté vacío
+    if (empty($namefilec)) {
+        echo "<script>alert('❌ Debes especificar un archivo o carpeta'); window.history.back();</script>";
+        exit;
+    }
 
+    // ✅ SEGURIDAD: Eliminar path traversal
+    $namefilec = str_replace(['../', '..\\', '~'], '', $namefilec);
+    $namefilec = ltrim($namefilec, '/\\');
+
+    // ✅ Construir rutas de forma segura
+    $ruta = rtrim($baseDir2, '/') . '/' . $namefilec;
+    $nombreZip = rtrim($baseDir2, '/') . '/' . $namefilec . '.zip';
+
+    // ✅ Validar que el archivo/carpeta exista
+    if (!file_exists($ruta)) {
+        echo "<script>alert('❌ El archivo o carpeta no existe'); window.history.back();</script>";
+        exit;
+    }
+
+    // ✅ Validar que esté dentro del directorio permitido
+    $rutaReal = realpath($ruta);
+    $baseReal = realpath($baseDir2);
+    if ($rutaReal === false || strpos($rutaReal, $baseReal) !== 0) {
+        echo "<script>alert('🚫 Acceso denegado'); window.history.back();</script>";
+        exit;
+    }
+
+    // ✅ Función para comprimir carpetas
     function comprimirCarpetaConContrasena($origen, $destino, $excluir = [], $contrasena) {
         $zip = new ZipArchive();
 
         if ($zip->open($destino, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
-            die("No se pudo crear el archivo ZIP.\n");
+            return false;
         }
 
         $archivos = new RecursiveIteratorIterator(
@@ -1397,11 +1421,8 @@ if (isset($_POST['compressFile'])) {
                     $zip->addEmptyDir($rutaRelativa);
                 } else {
                     $zip->addFile($archivo->getPathname(), $rutaRelativa);
-                    
-                    // ✅ ORDEN CORRECTO: Primero compresión
                     $zip->setCompressionName($rutaRelativa, ZipArchive::CM_DEFLATE, 9);
                     
-                    // ✅ Luego encriptación (si hay contraseña)
                     if (!empty($contrasena)) {
                         $zip->setEncryptionName($rutaRelativa, ZipArchive::EM_AES_256, $contrasena);
                     }
@@ -1409,85 +1430,64 @@ if (isset($_POST['compressFile'])) {
             }
         }
 
-
-
         $zip->close();
-
- 
-
-        if (!file_exists($destino)) {
-            echo "  ⚠️Error al comprimir la carpeta.\n  ";
-        } else {
-            echo "  ⚠️ Carpeta comprimida correctamente\n   ";
-        }
+        return file_exists($destino);
     }
 
-    if (isset($_POST['archivoacomprimir'])) {
+    // ✅ Procesar compresión
+    $exito = false;
+    $mensaje = '';
 
-    // Requiere autenticación SIEMPRE (sin importar $versinclave)
-    if (!$is_authenticated) {
-         // die($alertasegura); // usaremos exit; para agregar un registro de logs a futuro
-          echo "$alertasegura";
-          //codigo para registrar actividad - falta
-          exit;
-    }
-
-        $ruta = rtrim($baseDir2, '/') . '/' . ltrim($namefilec, '/');
+    if (is_file($ruta)) {
+        // Comprimir un único archivo
+        $zip = new ZipArchive();
         
-        if (is_file($ruta)) {
-            // Comprimir un único archivo
-            $zip = new ZipArchive();
-            
-            if ($zip->open($nombreZip, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== TRUE) {
-                die("No se pudo crear el archivo ZIP");
-            }
-            
+        if ($zip->open($nombreZip, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
             $zip->addFile($ruta, basename($ruta));
-            
-            // ✅ ORDEN CRÍTICO: Primero compresión
             $zip->setCompressionName(basename($ruta), ZipArchive::CM_DEFLATE, 9);
             
-            // ✅ Luego encriptación (si hay contraseña)
             if (!empty($namefilepass)) {
                 $zip->setEncryptionName(basename($ruta), ZipArchive::EM_AES_256, $namefilepass);
             }
 
-
-
             $zip->close();
-
-
-            echo " ⚠️El archivo <b>$namefilec.zip</b> se ha creado correctamente.  ";
-            
-        } elseif (is_dir($ruta)) {
-            comprimirCarpetaConContrasena($ruta, $nombreZip, [], $namefilepass);
-            echo "  ⚠️ La carpeta <b>$namefilec.zip</b> se ha creada correctamente.  ";
-            
+            $exito = true;
+            $mensaje = "Archivo comprimido correctamente";
         } else {
-            echo "   ⚠️ La ruta especificada no es válida: $ruta  ";
-            exit;
+            $mensaje = "Error al crear el archivo ZIP";
+        }
+        
+    } elseif (is_dir($ruta)) {
+        // Comprimir carpeta completa
+        if (comprimirCarpetaConContrasena($ruta, $nombreZip, [], $namefilepass)) {
+            $exito = true;
+            $mensaje = "Carpeta comprimida correctamente";
+        } else {
+            $mensaje = "Error al comprimir la carpeta";
         }
     } else {
-        echo "No se especificó ningún archivo o carpeta.";
-        exit;
+        $mensaje = "La ruta especificada no es válida";
     }
 
-    // Agregar un comentario al archivo ZIP
-  //  if (!empty($descripcion)) {
-  //      $zip = new ZipArchive();
-  //      if ($zip->open($nombreZip) === TRUE) {
-  //          $zip->setArchiveComment($descripcion);
-  //          $zip->close();
-  //      } else {
-  //          echo " ⚠️ No se pudo abrir el archivo ZIP para agregar el comentario. ";
-  //      }
-  //  }
+    // ✅ Agregar comentario (DESPUÉS de cerrar el ZIP)
+    if ($exito && !empty($descripcion) && file_exists($nombreZip)) {
+        $zip = new ZipArchive();
+        if ($zip->open($nombreZip) === TRUE) {
+            $zip->setArchiveComment($descripcion);
+            $zip->close();
+        }
+    }
 
-
-    echo "<script>alert(' ✅ La compresion se realizo, correctamente'); window.location.href = './'; </script>";
+    // ✅ Mostrar resultado
+    if ($exito) {
+        $nombreArchivo = basename($nombreZip);
+        echo "<script>alert('✅ $mensaje\\n\\nArchivo: $nombreArchivo'); window.location.href = './';</script>";
+    } else {
+        echo "<script>alert('❌ $mensaje'); window.history.back();</script>";
+    }
     exit;
 }
-////////////////// Comprimir archivo o carpeta 🚀 🚀🚀🚀🚀🚀🚀🚀
+////////////////// Comprimir archivo o carpeta 🚀
 
 
 // ==============================
