@@ -1045,8 +1045,8 @@ if (isset($_POST['saveFile'])) {
 
 
 
-    // Validar extensión permitida (opcional pero recomendado)
-    $allowedExts = ['txt', 'md', 'php', 'html', 'css', 'js', 'json', 'xml', 'htm', 'htaccess', 'dat', 'bashrc', 'info', 'ini'];
+    // Validar extensión permitida (opcional pero recomendado) 
+    $allowedExts = ['txt', 'md', 'php', 'html', 'css', 'js', 'json', 'xml', 'htm', 'htaccess', 'htpasswd', 'dat', 'bashrc', 'info', 'ini'];
     $ext = strtolower(pathinfo($fileToSave, PATHINFO_EXTENSION));
     if (!in_array($ext, $allowedExts)) {
         die("🚫 Extensión no permitida");
