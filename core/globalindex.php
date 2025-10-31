@@ -444,7 +444,7 @@ footer {background:#061c32; color:#aaa; text-align:center; padding:20px; margin-
 footer img { width:100px; opacity:0.7; }
 .stats-grid {display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:15px;}
 .stat-item {font-size:18px;background:#192733; padding:12px; border-radius:8px; color:#37bfe1;}
-.stat-label {font-size:15px; color:#37bfe1; solid #1e3a5f; text-transform:uppercase;}
+.stat-label {font-size:15px; color:#37bfe1; solid #1e3a5f; }
 .stat-value {font-size:18px; color:#fff; font-weight:bold;}
 .theme-selector {position:fixed; bottom:20px; right:20px; background:#111827; padding:12px; border-radius:6px; border:1px solid #415a77; box-shadow:0 2px 8px rgba(0,0,0,0.4);}
 .theme-selector select {padding:6px 10px; background:#0d1b2a; border:1px solid #415a77; color:#edf6f9; border-radius:4px;}
@@ -947,7 +947,7 @@ td {padding:16px 30px; color:#333; font-size:14px;}
 .file-icon {font-size:20px;}
 .stats-grid {display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:20px; margin-bottom:30px;}
 .stat-item {background:#fff; padding:20px 25px; border-radius:4px; box-shadow:0 2px 8px rgba(0,0,0,0.08); border-left:4px solid #2970b3;}
-.stat-label {color:#666; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;}
+.stat-label {color:#666; font-size:12px;  letter-spacing:0.5px; margin-bottom:8px;}
 .stat-value {color:#1e3a5f; font-size:20px; font-weight:600;}
 footer {background:linear-gradient(180deg, #0d1f33 0%, #152d4a 100%); color:rgba(255,255,255,0.8); padding:30px; margin-top:60px; text-align:center;}
 footer img {width:120px; margin-top:10px; opacity:0.7;}
@@ -1611,7 +1611,7 @@ if($_GET["passgen"]){
 $passx = isset($_POST["passx"]) ? $_POST["passx"] : "1111";
 $clavemagica = password_hash("$passx", PASSWORD_DEFAULT);
 ?>
-<b class="link-link"> <?php echo "$clavemagica  </b> <br> <b class='stat-label'> Clave Original: $passx ";?></b>
+<b class="link-link"> <?php echo "$clavemagica  </b> <br> <b class='stat-label'> CLAVE ORIGINAL: $passx ";?></b>
 
 <form action="./?passgen=on" method="POST">
 🔐
