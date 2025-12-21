@@ -8,8 +8,8 @@
 # 2025 y no la olvido xxxwwwwwwxxxx
 
 //////////////POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
-$tokenplus = "e%OfuFoewwwCpPZDq"; // cambie este valor es para darle mas seguridad a su script
-$pepper = "e%OfuxxweLRCpPZDq_U7tXz9#mK2@pL4wN";
+$tokenplus = "e%OfwwwwuFoewwwCpPZDq"; // cambie este valor es para darle mas seguridad a su script
+$pepper = "e%OrrrrpPZDq_U7tXz9#mK2@pL4wN"; // cambie este valor es para darle mas seguridad a su script
 $configFile = 'fconfig.json'; //obligatorio cambiar el archivo config pero siempre con .json ejemplo x69cfg69x.json
 //////////////POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
 
@@ -1402,7 +1402,20 @@ $items = scandir($uploadDir);
 
 
     <header>
-        <h1> 🌀 File Manager   -  <?php echo "$scriptfm";?> <a href='<?php echo "$scriptfile";?>.php' class='enlacez' role='button'> <?php echo $tl['home'];?>:  </a> / 
+        <h1> 🌀 File Manager   -  <?php echo "$scriptfm";?>   
+
+
+
+ <a href='?'>🏠</a>   <a href='?c=<?php echo "$carpetaz";?>/../'>↩️</a>   <a href='?mod=creartexto&c=<?php echo "$carpetaz";?>/'>📝</a> <a href='?mod=crearcarpeta&c=<?php echo "$carpetaz";?>/'> 🗂️ </a>  <a href='?mod=eliminarcarpeta&c=<?php echo "$carpetaz";?>/'>❌</a> <a href='?mod=config&c=<?php echo "$carpetaz";?>/'>⚙️ </a> <a href='?mod=update&c=<?php echo "$carpetaz";?>/'> 🔄 </a></h1>
+    </header>
+
+
+
+
+<div style="width:100%; height:5px; background-color:<?php echo "$colorHex";?>;"></div>
+
+<a href='<?php echo "$scriptfile";?>.php' class='enlacez' role='button'>
+<?php echo $tl['home'];?>:  </a> /
 
 <?php
 foreach ($partes as $parte) {
@@ -1417,16 +1430,6 @@ foreach ($partes as $parte) {
         }
     }
 ?>
-
- <a href='?'>🏠</a>   <a href='?c=<?php echo "$carpetaz";?>/../'>↩️</a>   <a href='?mod=creartexto&c=<?php echo "$carpetaz";?>/'>📝</a> <a href='?mod=crearcarpeta&c=<?php echo "$carpetaz";?>/'> 🗂️ </a>  <a href='?mod=eliminarcarpeta&c=<?php echo "$carpetaz";?>/'>❌</a> <a href='?mod=config&c=<?php echo "$carpetaz";?>/'>⚙️ </a> <a href='?mod=update&c=<?php echo "$carpetaz";?>/'> 🔄 </a></h1>
-    </header>
-
-
-
-
-<div style="width:100%; height:5px; background-color:<?php echo "$colorHex";?>;"></div>
-
-
 
 
 <?php
