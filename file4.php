@@ -3,12 +3,13 @@
 #   - - - |_________________,----------._ [____]  ""-,__  __....-----=====
 #                        (_(||||||||||||)___________/   ""                |
 #                           `----------' zIDRAvE[ ))"-,                   |
-#                     FILE MANAGER V4.3.5        ""    `,  _,--....___    |
+#                     FILE MANAGER V4.3.6        ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
-# 202xxx .x
+# 2025 y no la olvido xxxxxxxxxxxxxxxxxxxxxxxxxx
 
 //////////////POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
 $tokenplus = "e%OfuFoeLRCpPZDq"; // cambie este valor es para darle mas seguridad a su script
+$pepper = "e%OfuFoeLRCpPZDq_U7tXz9#mK2@pL4wN";
 $configFile = 'fconfig.json'; //obligatorio cambiar el archivo config pero siempre con .json ejemplo x69cfg69x.json
 //////////////POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
 
@@ -16,7 +17,7 @@ $nombreMaquina = gethostname();
 $hashCompleto = hash('sha256', $nombreMaquina);
 $tokenhost = substr($hashCompleto, 0, 10);
 #formato de mensajes de alerta
-$fversion="4.3.5";
+$fversion="4.3.6";
 $alertaini=" <div class='mensajex'> <h2>";
 $alertafin="  </h2> </div> ";
 $scriptfile="file4"; //no cambiar este nombre por que se decalibran varias cosas
@@ -111,17 +112,8 @@ $tl = array(
     'activate' => 'Activar',
     'desactivate' => 'Desactivar',
     'createdby' => 'creado por',
-    'createdby' => 'creado por',
-    'createdby' => 'creado por',
-    'createdby' => 'creado por',
 
 
-
-
-
-
-
-    'createdby' => 'creado por',
     'selectlanguage' => 'Seleccionar Idioma'
 );
 
@@ -218,10 +210,6 @@ $colorHex = '#' . substr($hash, 0, 6);
 
 
 //////Esto es para Evitar logeos fallidos multiples mientras se falla en un logeo nadie mas entrara al sistema, este sistema es mono usuario y seguro.
-//if (file_exists($archivo_bloqueo)) {
-//echo "Sistema bloqueado temporalmente";
-//exit;
-//}
 
 if (file_exists($archivo_bloqueo) && $_COOKIE['loggedin'] !== 'true') {
     echo "Sistema bloqueado temporalmente";
@@ -241,7 +229,7 @@ $stylealert = <<<EOD
             text-decoration: none;
             color: #436074; /* Color azul para enlaces */
         }
-        a:hover {
+        a:hover {fconfiguracion
             color: #FF0000; /* Cambia a rojo al pasar el mouse */
         }
 
@@ -279,97 +267,94 @@ EOD;
 
  
 
-//////// VERIFICAR SEGURIDAD /////////////////////////
+
+//////// VERIFICAR SEGURIDAD (FLUJO UNIFICADO Y GLOBAL) /////////////////////////
 if (file_exists($configFile)) {
-#session_start(); // Iniciar la sesión
-$configData = json_decode(file_get_contents($configFile), true);
+    if (session_status() === PHP_SESSION_NONE) { session_start(); }
+    $configData = json_decode(file_get_contents($configFile), true);
+    $seguridadcabeza = "$stylealert <header> <h1> 🌀 File Manager </h1></header> <br>";
 
-$seguridadcabeza = "$stylealert <header> <h1> 🌀 File Manager </h1></header> <br>";
+    // --- VARIABLES MAESTRAS (Necesarias para todo el script) ---
+    $master     = $configData['fuser']; 
+    $mastermail = $configData['fmail'];
+    $masterskin = $configData['fskin'];
+    $masterlang = $configData['flanguaje'];
+    
+    // --- CÁLCULO DEL TOKEN DE PERSISTENCIA ---
+    $tokenhash_db = $configData['fpass'];
+    $tokenhash_valid = md5("$tokenplus$tokenhost$tokenhash_db");
 
-      $master = $configData['fuser'];
-      $mastermail = $configData['fmail'];
-      $masterskin = $configData['fskin'];
-      $masterlang = $configData['flanguaje'];
-      $tokenhash  = $configData['fpass'];
-      $tokenhash  = "$tokenplus$tokenhost$tokenhash";
-      $tokenhash = md5($tokenhash);
+    // 1. INTENTO DE LOGIN (Procesar Formulario POST)
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fuser'], $_POST['fpass'])) {
+        $peppered_input = hash_hmac("sha512", $_POST['fpass'], $pepper);
 
+        if ($_POST['fuser'] === $master && password_verify($peppered_input, $configData['fpass'])) {
+            session_regenerate_id(true);
+            $_SESSION['user_auth'] = true;
+            $_SESSION['user_name'] = $master;
 
+            setcookie('loggedin', 'true', $expire_time, '/');
+            setcookie('Hash', $tokenhash_valid, $expire_time, '/');
+            
+            // Actualizar IP en el JSON
+            $configData['fhash'] = $haship;
+            file_put_contents($configFile, json_encode($configData, JSON_PRETTY_PRINT));
 
-    // Si no existe una cookie de sesión, pedir nombre de usuario y contraseña
-
-
-
-
-// Verificar si se ha enviado el formulario de nombre de usuario y contraseña
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fuser']) && isset($_POST['fpass'])) {
-    // Comparar el nombre de usuario y la contraseña introducidos con los almacenados
-    if ($_POST['fuser'] === $configData['fuser'] && password_verify($_POST['fpass'], $configData['fpass']) ) {
-        // Si el nombre de usuario y la contraseña son correctos, establecer las cookies de sesión y guardamos nuestra ip hasheada en el config
-        setcookie('loggedin', 'true', $expire_time, '/');
-        setcookie('PTM', 'laput', $expire_time, '/');
-        setcookie('Hash', "$tokenhash", $expire_time, '/');
-        $updateJSON = file_get_contents($configFile);
-        // Decodificar el JSON a un array asociativo
-        $updatedatos = json_decode($updateJSON, true);
-        // Modificar el valor de "fhash"
-        $updatedatos['fhash'] = $haship; //aqui va $haship
-        // Codificar el array modificado nuevamente a JSON
-        $nuevoJSON = json_encode($updatedatos, JSON_PRETTY_PRINT);
-        file_put_contents($configFile, $nuevoJSON);
-
-        header("Location: $scriptfile.php");
-        exit; 
-    } else {
-        // Si el nombre de usuario o la contraseña son incorrectos, mostrar un mensaje de error
-        // Crear el archivo de bloqueo
-        touch($archivo_bloqueo);
-        echo "$seguridadcabeza";
-        echo " <h2>🤨 Nombre de usuario o contraseña incorrectos. </h2>";
-        echo ' <hr> <small>Seguridad '.$scriptfile.' - 2024 </small>';
-        sleep(7); //retardador antibrutos
-        unlink($archivo_bloqueo);
-        exit; 
+            header("Location: $scriptfile.php?c=$getruta");
+            exit;
+        } else {
+            touch($archivo_bloqueo);
+            echo "$seguridadcabeza <div class='mensajex'><h2>🤨 Credenciales incorrectas.</h2></div>";
+            sleep(3); 
+            unlink($archivo_bloqueo);
+            exit;
+        }
     }
-} else {
-    // Verificar si la cookie 'Hash' existe y coincide con el hash generado
-    if (isset($_COOKIE['Hash']) && $_COOKIE['Hash'] === "$tokenhash" && $haship === $configData['fhash']) {
-        // Si la cookie existe y es válida, no mostrar el formulario
-        #echo "Ya estás logueado.";
-        // Aquí puedes redirigir o mostrar contenido
-    } else {
-        // Si la cookie no existe o es inválida, mostrar el formulario de inicio de sesión
+
+    // 2. AUTO-LOGIN (Sincronizar Cookie con Sesión)
+    if (!isset($_SESSION['user_auth']) || $_SESSION['user_auth'] !== true) {
+        if (isset($_COOKIE['Hash']) && $_COOKIE['Hash'] === $tokenhash_valid && $haship === $configData['fhash']) {
+            $_SESSION['user_auth'] = true;
+            $_SESSION['user_name'] = $master;
+        }
+    }
+
+    // 3. MURO DE ACCESO (Si después de lo anterior no hay sesión, bloquear)
+    $is_authenticated = isset($_SESSION['user_auth']) && $_SESSION['user_auth'] === true;
+
+if (!$is_authenticated && $mod !== 'config') {
         echo "$seguridadcabeza";
         echo '<form action="" method="post">';
         echo ' <b>Usuario </b>: <input type="text" name="fuser" required> ';
         echo ' <b>Contraseña </b>: <input type="password" name="fpass" required placeholder="Ingrese su contraseña"> ';
         echo '<input type="submit" value="Entrar"> ';
-        echo '</form> <hr> <small>Seguridad '.$scriptfile.' - 2024 </small>';
-
-     exit;
+        echo '</form> <hr> <small>Seguridad '.$scriptfile.' - '.$fversion.' </small>';
+        exit;
     }
-}
-
 }
 //////// VERIFICAR SEGURIDAD FIN /////////////////////////
 
 
 
-//echo "mi ip es $miip y su hash es: $haship";
+ 
 
 
 
 ///////fexit////////////////////////
 if (isset($_GET['fexit'])) {
-#$_SESSION['loggedin'] = false;
+// 1. Destruir la sesión en el servidor
+    if (session_status() === PHP_SESSION_NONE) { session_start(); }
+session_unset();
+session_destroy();
 
-#setcookie('loggedin', 'true', $expire_time, '/');
-setcookie('loggedin', '', $expire_time, '/');
-setcookie('Hash', "", $expire_time, '/'); 
+
+// 2. Eliminar las cookies en el navegador (expiración en el pasado)
+    $past = time() - 3600;
+    setcookie('loggedin', '', $past, '/');
+    setcookie('Hash', '', $past, '/');
+    setcookie('PTM', '', $past, '/'); // Limpiamos también el token PTM
+
 header("Location: $scriptfile.php");
-#echo " Borrando cookie<br>";
-    # echo " $alertaini ⚠️ cerrando session de $master. $alertafin <br>";
-    # echo "<a href='?c=$carpetaz/' class='naranja' role='button'> <b>RECARGAR </b></a>";
 
     exit;
 }
@@ -1078,7 +1063,11 @@ if (isset($_GET['fconfiguracion'])) {
 
     // Recoger datos del formulario
     $fuser = $_POST['fuser'];
-    $fpass = password_hash($_POST['fpass'], PASSWORD_DEFAULT); 
+// IMPORTANTE: Aplicar pepper al guardar la nueva clave
+    $peppered_pass = hash_hmac("sha512", $_POST['fpass'], $pepper);
+    $fpass_hashed = password_hash($peppered_pass, PASSWORD_DEFAULT);
+
+
     $fmail = $_POST['fmail'];
     $fskin = $_POST['fskin'];
     $flanguaje = $_POST['flanguaje'];
@@ -1087,7 +1076,7 @@ if (isset($_GET['fconfiguracion'])) {
     // Crear un array asociativo con los datos
     $config = [
         'fuser' => $fuser,
-        'fpass' => $fpass,
+        'fpass' => $fpass_hashed, // Guardamos el hash blindado
         'fmail' => $fmail,
         'fskin' => $fskin,
         'fhash' => $haship,
@@ -2315,7 +2304,7 @@ if (in_array($extension, ['jpg', 'bmp', 'tiff', 'gif', 'jfif', 'jpeg', 'png', 'w
 <?php
 /////// USUARIO LOGEADO MENSAJE  ////////// 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 🙋‍♂️ 
 
-if (isset($_COOKIE['loggedin']) && $_COOKIE['loggedin'] === 'true') {
+if (isset($is_authenticated) && $is_authenticated === true) {
     echo "🙋‍♂️ ".$tl['welcome']." <b>$master / [<a href=\"?fexit=1\">".$tl['exit']."</a>]</b>";
   }
 ?>
