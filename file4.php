@@ -3,9 +3,9 @@
 #   - - - |_________________,----------._ [____]  ""-,__  __....-----=====
 #                        (_(||||||||||||)___________/   ""                |
 #                           `----------' zIDRAvE[ ))"-,                   |
-#                     FILE MANAGER V4.3.6        ""    `,  _,--....___    |
+#                     FILE MANAGER V4.3.7        ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
-# 2025 y no la olvido xxxeeeeexxxxxx
+# 2025 y no la olvido xxxwwwwwwxxxx
 
 //////////////POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
 $tokenplus = "e%OfuFoewwwCpPZDq"; // cambie este valor es para darle mas seguridad a su script
@@ -17,7 +17,7 @@ $nombreMaquina = gethostname();
 $hashCompleto = hash('sha256', $nombreMaquina);
 $tokenhost = substr($hashCompleto, 0, 10);
 #formato de mensajes de alerta
-$fversion="4.3.6";
+$fversion="4.3.7";
 $alertaini=" <div class='mensajex'> <h2>";
 $alertafin="  </h2> </div> ";
 $scriptfile="file4"; //no cambiar este nombre por que se decalibran varias cosas
@@ -29,6 +29,7 @@ $expire_time = time() + 2592000; //valor puesto para 30 dias
 $miip = $_SERVER['REMOTE_ADDR'];
 $haship = hash('sha256', $miip);
 $archivo_bloqueo = 'bloqueo.lock';
+$segundos_bloqueo = 20;
 $is_authenticated = false; // Por defecto nadie está autenticado
 $master = ""; // Inicializar para evitar errores
 
@@ -265,8 +266,15 @@ EOD;
 
 
 //////// VERIFICAR SEGURIDAD (FLUJO UNIFICADO Y GLOBAL) /////////////////////////
-if (file_exists($configFile)) {
+
     if (session_status() === PHP_SESSION_NONE) { session_start(); }
+
+ 
+
+
+
+if (file_exists($configFile)) {
+
     $configData = json_decode(file_get_contents($configFile), true);
     $seguridadcabeza = "$stylealert <header> <h1> 🌀 File Manager </h1></header> <br>";
 
@@ -299,16 +307,19 @@ if (file_exists($configFile)) {
             header("Location: $scriptfile.php?c=$getruta");
             exit;
         } else {
+            // claves incorrectas
             touch($archivo_bloqueo);
             echo "$seguridadcabeza <div class='mensajex'><h2>🤨 Credenciales incorrectas.</h2></div>";
-            sleep(7); //que se demoren por no saber la clave
-            //unlink($archivo_bloqueo);
-            if (file_exists($archivo_bloqueo)) {
-                unlink($archivo_bloqueo);
-               }
+
+
+
+
             exit;
         }
     }
+
+
+
 
     // 2. AUTO-LOGIN (Sincronizar Cookie con Sesión)
     if (!isset($_SESSION['user_auth']) || $_SESSION['user_auth'] !== true) {
@@ -321,6 +332,27 @@ if (file_exists($configFile)) {
     // 3. MURO DE ACCESO (Si después de lo anterior no hay sesión, bloquear)
     $is_authenticated = isset($_SESSION['user_auth']) && $_SESSION['user_auth'] === true;
 
+
+
+
+
+//creacion del bloqueador
+  if (file_exists($archivo_bloqueo) && (!$is_authenticated )) {
+    $tiempo_creacion = filemtime($archivo_bloqueo); // Obtiene timestamp de creación
+    $tiempo_transcurrido = time() - $tiempo_creacion;
+
+    if ($tiempo_transcurrido < $segundos_bloqueo) {
+        // El bloqueo sigue vigente, cerramos el paso de inmediato
+        die("$stylealert <div class='mensajex'><h2>⏳ Sistema bloqueado.</h2><p>Reintente en " . ($segundos_bloqueo - $tiempo_transcurrido) . " segundos.</p></div>");
+    } else {
+        unlink($archivo_bloqueo);
+    }
+}
+
+
+
+
+
 if (!$is_authenticated && $mod !== 'config') {
         echo "$seguridadcabeza";
         echo '<form action="" method="post">';
@@ -331,20 +363,13 @@ if (!$is_authenticated && $mod !== 'config') {
         exit;
     }
 }
+
+
+
+
 //////// VERIFICAR SEGURIDAD FIN /////////////////////////
 
 
-/**
- * GESTIÓN DE BLOQUEO POST-AUTENTICACIÓN
- * Si existe el archivo .lock y el usuario NO ha sido validado por el muro anterior, 
- * se detiene la ejecución. Si el usuario ya está logueado, el bloqueo se ignora para él.
- */
-if (file_exists($archivo_bloqueo) && (!$is_authenticated )) {
-    echo "$stylealert <div class='mensajex'><h2>⏳ Sistema bloqueado temporalmente por seguridad.</h2><p>Intente de nuevo en unos segundos.</p></div>";
-    exit;
-}
-///////////////////////////////////////////////////////////////////////////////
- 
 
 
 
