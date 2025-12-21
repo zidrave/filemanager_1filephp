@@ -407,11 +407,18 @@ exit;
 }
 
 
+/////
+//buscando la ruta real de cada carpeta
+$ruta = $_GET['c'];
+$uploadDir = 'uploads'.$ruta.'';
+$rutarealserver = realpath($uploadDir);
+////
+
 ///////////////////////////////////////
 ///      SUBIR VARIOS X AJAX     //////
 ///////////////////////////////////////
 if (isset($_GET['varios'])) {
-#$ruta = "($_GET['c']";
+
 $ruta = $_GET['c'];
 #echo "subiendo varios test en uploads$ruta";
 echo "
@@ -1430,7 +1437,13 @@ foreach ($partes as $parte) {
         }
     }
 ?>
-
+<br>
+<?php
+//echo realpath(__FILE__);
+//echo __DIR__;
+//echo "$rutarealserver ";
+?>
+<hr>
 
 <?php
 ///////////////////////////// SUBIR ARCHIVOS AL SISTEMA 2 MODOS CLASICO Y MULTIPLE ////////////////////
@@ -2349,7 +2362,7 @@ if (isset($is_authenticated) && $is_authenticated === true) {
         <br>
 	<div class="tabla">
 		<div class="filasinfx">
-			<div class="celda"> <?php echo $tl['foldercontent']; ?>: <b><?php echo "$carpetaz/"; ?></b>
+			<div class="celda"> <?php echo $tl['foldercontent']; ?>: <b><?php echo "$rutarealserver/"; ?></b>
 			</div>
 		</div>
 	</div> <br>
