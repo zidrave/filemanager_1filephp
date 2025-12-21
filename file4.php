@@ -5,11 +5,11 @@
 #                           `----------' zIDRAvE[ ))"-,                   |
 #                     FILE MANAGER V4.3.6        ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
-# 2025 y no la olvido xxxxxxxxxxxxxxxxxxxxxxxxxx
+# 2025 y no la olvido xxxeeeeexxxxxx
 
 //////////////POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
-$tokenplus = "e%OfuFoeLRCpPZDq"; // cambie este valor es para darle mas seguridad a su script
-$pepper = "e%OfuFoeLRCpPZDq_U7tXz9#mK2@pL4wN";
+$tokenplus = "e%OfuFoewwwCpPZDq"; // cambie este valor es para darle mas seguridad a su script
+$pepper = "e%OfuxxweLRCpPZDq_U7tXz9#mK2@pL4wN";
 $configFile = 'fconfig.json'; //obligatorio cambiar el archivo config pero siempre con .json ejemplo x69cfg69x.json
 //////////////POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
 
@@ -29,7 +29,8 @@ $expire_time = time() + 2592000; //valor puesto para 30 dias
 $miip = $_SERVER['REMOTE_ADDR'];
 $haship = hash('sha256', $miip);
 $archivo_bloqueo = 'bloqueo.lock';
-
+$is_authenticated = false; // Por defecto nadie está autenticado
+$master = ""; // Inicializar para evitar errores
 
 
 //////////////idioma predeterminado ES ////////////////////
@@ -209,12 +210,7 @@ $colorHex = '#' . substr($hash, 0, 6);
 
 
 
-//////Esto es para Evitar logeos fallidos multiples mientras se falla en un logeo nadie mas entrara al sistema, este sistema es mono usuario y seguro.
 
-if (file_exists($archivo_bloqueo) && $_COOKIE['loggedin'] !== 'true') {
-    echo "Sistema bloqueado temporalmente";
-    exit;
-}
 
 #$stylealert = "
 $stylealert = <<<EOD
@@ -305,8 +301,11 @@ if (file_exists($configFile)) {
         } else {
             touch($archivo_bloqueo);
             echo "$seguridadcabeza <div class='mensajex'><h2>🤨 Credenciales incorrectas.</h2></div>";
-            sleep(3); 
-            unlink($archivo_bloqueo);
+            sleep(7); //que se demoren por no saber la clave
+            //unlink($archivo_bloqueo);
+            if (file_exists($archivo_bloqueo)) {
+                unlink($archivo_bloqueo);
+               }
             exit;
         }
     }
@@ -335,7 +334,16 @@ if (!$is_authenticated && $mod !== 'config') {
 //////// VERIFICAR SEGURIDAD FIN /////////////////////////
 
 
-
+/**
+ * GESTIÓN DE BLOQUEO POST-AUTENTICACIÓN
+ * Si existe el archivo .lock y el usuario NO ha sido validado por el muro anterior, 
+ * se detiene la ejecución. Si el usuario ya está logueado, el bloqueo se ignora para él.
+ */
+if (file_exists($archivo_bloqueo) && (!$is_authenticated )) {
+    echo "$stylealert <div class='mensajex'><h2>⏳ Sistema bloqueado temporalmente por seguridad.</h2><p>Intente de nuevo en unos segundos.</p></div>";
+    exit;
+}
+///////////////////////////////////////////////////////////////////////////////
  
 
 
