@@ -303,6 +303,7 @@ if (file_exists($configFile)) {
             // Actualizar IP en el JSON
             $configData['fhash'] = $haship;
             file_put_contents($configFile, json_encode($configData, JSON_PRETTY_PRINT));
+            session_write_close(); // Asegurar grabado de sesión
 
             header("Location: $scriptfile.php?c=$getruta");
             exit;
