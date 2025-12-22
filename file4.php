@@ -1,5 +1,5 @@
 <?php 
-#           ,______________________________________       
+#          ,______________________________________       
 #   - - - |_________________,----------._ [____]  ""-,__  __....-----=====
 #                        (_(||||||||||||)___________/   ""                |
 #                           `----------' zIDRAvE[ ))"-,                   |
@@ -293,7 +293,8 @@ if (file_exists($configFile)) {
     
     // --- CÁLCULO DEL TOKEN DE PERSISTENCIA ---
     $tokenhash_db = $configData['fpass'];
-    $tokenhash_valid = md5("$tokenplus$tokenhost$tokenhash_db");
+  //$tokenhash_valid = md5("$tokenplus$tokenhost$tokenhash_db");
+    $tokenhash_valid = hash('sha256', "$tokenplus$tokenhost$tokenhash_db");
 
     // 1. INTENTO DE LOGIN (Procesar Formulario POST)
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fuser'], $_POST['fpass'])) {
