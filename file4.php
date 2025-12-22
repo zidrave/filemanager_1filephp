@@ -3,7 +3,7 @@
 #   - - - |_________________,----------._ [____]  ""-,__  __....-----=====
 #                        (_(||||||||||||)___________/   ""                |
 #                           `----------' zIDRAvE[ ))"-,                   |
-#                     FILE MANAGER V4.3.7        ""    `,  _,--....___    |
+#                     FILE MANAGER V4.3.8        ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
 # 2025 y para adelante
 //////////////POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
@@ -18,7 +18,7 @@ $nombreMaquina = gethostname();
 $hashCompleto = hash('sha256', $nombreMaquina);
 $tokenhost = substr($hashCompleto, 0, 10);
 #formato de mensajes de alerta
-$fversion="4.3.7";
+$fversion="4.3.8";
 $alertaini=" <div class='mensajex'> <h2>";
 $alertafin="  </h2> </div> ";
 $scriptfile="file4"; //no cambiar este nombre por que se decalibran varias cosas
@@ -34,6 +34,12 @@ $segundos_bloqueo = 20;
 $is_authenticated = false; // Por defecto nadie está autenticado
 $master = ""; // Inicializar para evitar errores
 
+////Cookie Reforce
+$cookiePath = "/; SameSite=Strict";
+$cookieDomain = ""; // Dejar vacío para el host actual
+$isSecure = false;  // Cambiar a true si usas HTTPS (recomendado)
+$isHttpOnly = true; // ACTIVADO: Protege contra robo por JavaScript
+////
 
 //////////////idioma predeterminado ES ////////////////////
 $tl = array(
@@ -298,8 +304,10 @@ if (file_exists($configFile)) {
             $_SESSION['user_auth'] = true;
             $_SESSION['user_name'] = $master;
 
-            setcookie('loggedin', 'true', $expire_time, '/');
-            setcookie('Hash', $tokenhash_valid, $expire_time, '/');
+            //setcookie('loggedin', 'true', $expire_time, '/');
+            //setcookie('Hash', $tokenhash_valid, $expire_time, '/');
+              setcookie('loggedin', 'true', $expire_time, $cookiePath, $cookieDomain, $isSecure, $isHttpOnly);
+              setcookie('Hash', $tokenhash_valid, $expire_time, $cookiePath, $cookieDomain, $isSecure, $isHttpOnly);
             
             // Actualizar IP en el JSON
             $configData['fhash'] = $haship;
@@ -387,9 +395,11 @@ session_destroy();
 
 
 // 2. Eliminar las cookies en el navegador (expiración en el pasado)
-    $past = time() - 3600;
-    setcookie('loggedin', '', $past, '/');
-    setcookie('Hash', '', $past, '/');
+
+$past = time() - 3600;
+setcookie('loggedin', '', $past, $cookiePath, $cookieDomain, $isSecure, $isHttpOnly);
+setcookie('Hash', '', $past, $cookiePath, $cookieDomain, $isSecure, $isHttpOnly);
+
     setcookie('PTM', '', $past, '/'); // Limpiamos también el token PTM
 
 header("Location: $scriptfile.php");
@@ -567,10 +577,11 @@ exit;
 
 /////// BORRAR Configracion /////////////////////////////////
 if (isset($_GET['fborrarconfiguracion'])) {
-#$_SESSION['loggedin'] = false;
-setcookie('loggedin', '', $expire_time, '/'); 
-setcookie('Hash', "", $expire_time, '/'); 
-setcookie('TESTCOOKIE', 'Borrarconfig', $expire_time, '/');
+#$_SESSION['loggedin'] = false; 
+    setcookie('loggedin', '', $past, $cookiePath, $cookieDomain, $isSecure, $isHttpOnly);
+    setcookie('Hash', '', $past, $cookiePath, $cookieDomain, $isSecure, $isHttpOnly);
+
+
     if (file_exists("$configFile")) {
         unlink("$configFile"); // Borrar el archivo de configuracion
         #echo "$alertaini ⚠️ Configuración borrada correctamente. $alertafin";
