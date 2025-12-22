@@ -10,8 +10,10 @@
 //////////////POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
 $tokenplus = "e%OfwwwwuFoewwwCpPZDq"; // cambie este valor es para darle mas seguridad a su script
 $pepper = "e%OrrrrpPZDq_U7tXz9#mK2@pL4wN"; // cambie este valor es para darle mas seguridad a su script
+////// Cambiar estos valores TOKENPLUS y PEPPER antes de crear tu usuario administrador, si lo cambias despues de configurar tu cuenta
+////// admin nunca logeara la unica solución es que borres manualmente el archivo fconfig.json 
 $configFile = 'fconfig.json'; //obligatorio cambiar el archivo config pero siempre con .json ejemplo x69cfg69x.json
-//////////////POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
+//////////////POR SEGURIDAD CAMBIE ESTOS VALORES ANTES DE GRABAR EL USUARIO///////////
 
 $nombreMaquina = gethostname();
 $hashCompleto = hash('sha256', $nombreMaquina);
@@ -2357,12 +2359,90 @@ if (in_array($extension, ['jpg', 'bmp', 'tiff', 'gif', 'jfif', 'jpeg', 'png', 'w
 if (isset($is_authenticated) && $is_authenticated === true) {
     echo "🙋‍♂️ ".$tl['welcome']." <b>$master / [<a href=\"?fexit=1\">".$tl['exit']."</a>]</b>";
   }
+
+//preparando parceo de ruta real del server//////////////////
+// 1. Definiciones de ruta absoluta (Mantenemos la lógica de base)
+$baseReal = realpath(__DIR__ . "/uploads"); 
+$rutaExplorada = realpath($rutarealserver);
+
+// Preparamos los arrays
+$arrBase = explode(DIRECTORY_SEPARATOR, trim($baseReal, DIRECTORY_SEPARATOR));
+$arrExplo = explode(DIRECTORY_SEPARATOR, trim($rutaExplorada, DIRECTORY_SEPARATOR));
+// AGREGAMOS EL ELEMENTO VACÍO AL INICIO para representar la raíz "/"
+array_unshift($arrExplo, "");
+
+
 ?>
 
         <br>
 	<div class="tabla">
 		<div class="filasinfx">
-			<div class="celda"> <?php echo $tl['foldercontent']; ?>: <b><?php echo "$rutarealserver/"; ?></b>
+			<div class="celda"> <?php echo $tl['foldercontent']; ?>: <b> 
+<?php 
+
+//echo "$rutarealserver/"; 
+//parceador///
+$totalPartes = count($arrExplo);
+
+            foreach ($arrExplo as $indice => $nombre) {
+                // Reconstruimos la ruta física para este punto
+                // Si el nombre es vacío, es la raíz "/"
+                if ($nombre === "") {
+                    $rutaDestino = DIRECTORY_SEPARATOR;
+                } else {
+                    // Quitamos el primer elemento vacío para reconstruir la ruta de carpetas reales
+                    $carpetasReales = array_filter(array_slice($arrExplo, 0, $indice + 1));
+                    $rutaDestino = DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, $carpetasReales);
+                }
+
+                $arrDestino = explode(DIRECTORY_SEPARATOR, trim($rutaDestino, DIRECTORY_SEPARATOR));
+
+                // --- CÁLCULO DE RELATIVIDAD ---
+                $maxComun = 0;
+                $minLen = min(count($arrBase), count($arrDestino));
+                for ($i = 0; $i < $minLen; $i++) {
+                    if (isset($arrBase[$i], $arrDestino[$i]) && $arrBase[$i] === $arrDestino[$i]) {
+                        $maxComun = $i + 1;
+                    } else {
+                        break;
+                    }
+                }
+
+                $subidas = count($arrBase) - $maxComun;
+                $relativo = "";
+                for ($i = 0; $i < $subidas; $i++) {
+                    $relativo .= "../";
+                }
+
+                $bajadas = array_slice($arrDestino, $maxComun);
+                if (!empty($bajadas)) {
+                    $relativo .= implode("/", $bajadas);
+                }
+
+                // Normalización de Trail Slash y Prefijo
+                $enlaceLimpio = trim($relativo, "/");
+                if ($enlaceLimpio !== "") {
+                    $enlaceLimpio = "/" . $enlaceLimpio . "/";
+                } else {
+                    $enlaceLimpio = "/";
+                }
+
+                // --- DIBUJAR LINK ---
+                // Si el nombre está vacío, mostramos el símbolo de Raíz "/"
+                $label = ($nombre === "") ? "/" : $nombre;
+                
+                echo "<a href='?c=" . htmlspecialchars($enlaceLimpio) . "' style='color:#2c4c5e; font-weight:bold;'>$label</a>";
+                
+                if ($indice < $totalPartes - 1) {
+                    echo " <span style='color:#ccc;'>/</span> ";
+                }
+            }
+///fin de parceador ////            
+
+
+?>
+
+                 </b>
 			</div>
 		</div>
 	</div> <br>
