@@ -2429,12 +2429,12 @@ $totalPartes = count($arrExplo);
 
                 // --- DIBUJAR LINK ---
                 // Si el nombre está vacío, mostramos el símbolo de Raíz "/"
-                $label = ($nombre === "") ? "/" : $nombre;
+                $label = ($nombre === "") ? " / " : $nombre;
                 
                 echo "<a href='?c=" . htmlspecialchars($enlaceLimpio) . "' style='color:#2c4c5e; font-weight:bold;'>$label</a>";
                 
                 if ($indice < $totalPartes - 1) {
-                    echo " <span style='color:#ccc;'>/</span> ";
+                    echo " <span style='color:#ccc;'> ➡︎ </span> ";
                 }
             }
 ///fin de parceador ////            
