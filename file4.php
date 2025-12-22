@@ -5,8 +5,7 @@
 #                           `----------' zIDRAvE[ ))"-,                   |
 #                     FILE MANAGER V4.3.7        ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
-# 2025 y no la olvido xxxwwwwwwxxxx
-
+# 2025 y para adelante
 //////////////POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
 $tokenplus = "e%OfwwwwuFoewwwCpPZDq"; // cambie este valor es para darle mas seguridad a su script
 $pepper = "e%OrrrrpPZDq_U7tXz9#mK2@pL4wN"; // cambie este valor es para darle mas seguridad a su script
