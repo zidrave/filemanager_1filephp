@@ -356,17 +356,20 @@ if (file_exists($configFile)) {
 
 
 
-if (!$is_authenticated && $mod !== 'config') {
-        echo "$seguridadcabeza";
-        echo '<form action="" method="post">';
-        echo ' <b>Usuario </b>: <input type="text" name="fuser" required> ';
-        echo ' <b>Contraseña </b>: <input type="password" name="fpass" required placeholder="Ingrese su contraseña"> ';
-        echo '<input type="submit" value="Entrar"> ';
-        echo '</form> <hr> <small>Seguridad '.$scriptfile.' - '.$fversion.' </small>';
-        exit;
-    }
-}
 
+// Si el archivo de configuración existe, forzamos el login SIEMPRE
+if (!$is_authenticated) {
+    echo "$seguridadcabeza";
+    echo '<form action="" method="post">';
+    echo ' <b>Usuario </b>: <input type="text" name="fuser" required> ';
+    echo ' <b>Contraseña </b>: <input type="password" name="fpass" required placeholder="Ingrese su contraseña"> ';
+    echo '<input type="submit" value="Entrar"> ';
+    echo '</form> <hr> <small>Seguridad '.$scriptfile.' - '.$fversion.' </small>';
+    
+    // Al ejecutar exit aquí, matamos cualquier proceso posterior (upload, delete, config)
+    exit;
+ }
+}
 
 
 
