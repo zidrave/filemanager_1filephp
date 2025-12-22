@@ -1165,19 +1165,32 @@ if (isset($_GET['fconfiguracion'])) {
 
 
 
-// Eliminar archivo
+// Eliminar archivo (Versión con Protección de Configuración)
 if (isset($_GET['deleteFile'])) {
-$cadena = $_GET['deleteFile'];
-$archivoname = basename($cadena);
-#    $fileToDelete = $uploadDir . $_GET['deleteFile'];
     $fileToDelete = $_GET['deleteFile'];
-    if (file_exists($fileToDelete)) {
-        unlink($fileToDelete);
-        echo "$alertaini ⚠️El archivo <span style='color:red;'> $archivoname </span> a sido eliminado... $alertafin";
-    } else {
-        echo "$alertaini ⚠️El archivo  <span style='color:red;'> $archivoname </span> no fue encontrado. $alertafin";
+    $archivoname = basename($fileToDelete);
+
+    // --- PROTECCIÓN ---
+    // 1. No se puede borrar el archivo definido en $configFile
+    // 2. No se puede borrar el propio script ejecutable (file4.php)
+    if ($archivoname === $configFile || $archivoname === "$scriptfile.php") {
+        echo "$alertaini ❌ ERROR: El archivo <span style='color:yellow;'>$archivoname</span> es un archivo de sistema y NO puede ser eliminado. $alertafin";
+    } 
+    else {
+        // Proceder con el borrado si no es un archivo protegido
+        if (file_exists($fileToDelete)) {
+            if (unlink($fileToDelete)) {
+                echo "$alertaini ⚠️ El archivo <span style='color:red;'>$archivoname</span> ha sido eliminado... $alertafin";
+            } else {
+                echo "$alertaini ❌ Error al intentar eliminar el archivo. $alertafin";
+            }
+        } else {
+            echo "$alertaini ⚠️ El archivo <span style='color:red;'>$archivoname</span> no fue encontrado. $alertafin";
+        }
     }
 }
+
+
 
 // Crear carpeta
 if (isset($_POST['createFolder'])) {
