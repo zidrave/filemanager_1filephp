@@ -362,7 +362,12 @@ if (file_exists($configFile)) {
 
 
 
-
+//Detectamos honeypot//////
+if (!empty($_POST['fhemail'])) {
+    // Si el robot llenó este campo, detenemos todo en seco
+    die("Bot suck.");
+}
+////////honeypot///////
 
 
 // Si el archivo de configuración existe, forzamos el login SIEMPRE
@@ -371,7 +376,12 @@ if (!$is_authenticated) {
     echo '<form action="" method="post">';
     echo ' <b>Usuario </b>: <input type="text" name="fuser" required> ';
     echo ' <b>Contraseña </b>: <input type="password" name="fpass" required placeholder="Ingrese su contraseña"> ';
-    echo '<input type="submit" value="Entrar"> ';
+    echo '<input type="submit" value="Acceso"> ';
+    echo '
+<div style="display:none;">
+    <input type="text" name="fhemail" value="">
+</div>
+    ';
     echo '</form> <hr> <small>Seguridad '.$scriptfile.' - '.$fversion.' </small>';
     
     // Al ejecutar exit aquí, matamos cualquier proceso posterior (upload, delete, config)
