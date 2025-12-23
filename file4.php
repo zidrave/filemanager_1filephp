@@ -3,23 +3,27 @@
 #   - - - |_________________,----------._ [____]  ""-,__  __....-----=====
 #                        (_(||||||||||||)___________/   ""                |
 #                           `----------' zIDRAvE[ ))"-,                   |
-#                     FILE MANAGER V4.3.8        ""    `,  _,--....___    |
+#                     FILE MANAGER V4.3.9        ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
 # 2025 y para adelante
 //////////////POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
-$tokenplus = "55555wwwwuFoewwwCpPZDq"; // cambie este valor es para darle mas seguridad a su script, desde aqui obtenemos el $masterkey para
+$tokenplus = "pvt0zwwwwuFoewwwCpPZDq"; // cambie este valor es para darle mas seguridad a su script, desde aqui obtenemos el $masterkey para
                                        // acceder sin esperar  ejemplo: file4.php?unlock=pvt0z  para cambiarlo cambia el tokenplus las primeras 5 letras
 $pepper = "e%OrrrrpPZDq_U7tXz9#mK2@pL4wN"; // cambie este valor es para darle mas seguridad a su script
 ////// Cambiar estos valores TOKENPLUS y PEPPER antes de crear tu usuario administrador, si lo cambias despues de configurar tu cuenta
 ////// admin nunca logeara la unica solución es que borres manualmente el archivo fconfig.json 
-$configFile = "fconfig.json"; //obligatorio cambiar el archivo config pero siempre con .json ejemplo x69cfg69x.json
+$configFile = 'fconfigXX26.json'; //obligatorio cambiar el archivo config pero siempre con .json ejemplo x69cfg69x.json
 //////////////POR SEGURIDAD CAMBIE ESTOS VALORES ANTES DE GRABAR EL USUARIO///////////
+
+ob_start(); // 1. Siempre primero para evitar Error 500
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
+
 
 $nombreMaquina = gethostname();
 $hashCompleto = hash('sha256', $nombreMaquina);
 $tokenhost = substr($hashCompleto, 0, 10);
 #formato de mensajes de alerta
-$fversion="4.3.8";
+$fversion="4.3.9";
 $alertaini=" <div class='mensajex'> <h2>";
 $alertafin="  </h2> </div> ";
 $scriptfile="file4"; //no cambiar este nombre por que se decalibran varias cosas
@@ -44,9 +48,12 @@ if (isset($_GET['unlock']) && $_GET['unlock'] === $master_key) {
 
 
 ////Cookie Reforce
-$cookiePath = "/; SameSite=Strict";
+$cookiePath = "/"; // Simplificado para evitar errores de parseo
+$cookieParams = "; SameSite=Lax"; // Lax es compatible con HTTPS y redirecciones
+//$cookiePath = "/; SameSite=Strict";
 $cookieDomain = ""; // Dejar vacío para el host actual
-$isSecure = false;  // Cambiar a true si usas HTTPS (recomendado)
+//$isSecure = false;  // Cambiar a true si usas HTTPS (recomendado)
+$isSecure = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on');
 $isHttpOnly = true; // ACTIVADO: Protege contra robo por JavaScript
 ////
 
@@ -146,7 +153,16 @@ if (isset($_COOKIE['language'])) {
     $lang = 'es';
     
     // Crear la cookie 'language' con el valor por defecto
-    setcookie('language', $lang, $expire_time, '/');
+    // setcookie('language', $lang, $expire_time, '/');
+$options_lang = [
+    'expires' => $expire_time,
+    'path' => '/',
+    'secure' => $isSecure,
+    'httponly' => false, // False para que JS pueda leer el idioma si es necesario
+    'samesite' => 'Lax'
+];
+setcookie('language', $lang, $options_lang);
+
 }
 
 
@@ -168,8 +184,21 @@ function loadTranslations($lang) {
 // Obtener el idioma desde la URL (por defecto español)
 //$lang = isset($_GET['lang']) ? $_GET['lang'] : 'es';
 if (isset($_GET['lang'])) {
+
+$options_lang = [
+    'expires' => $expire_time,
+    'path' => '/',
+    'secure' => $isSecure,
+    'httponly' => false, 
+    'samesite' => 'Lax'
+];
+
 $lang = $_GET['lang'];
-setcookie('language', "$lang", $expire_time, '/');
+
+//setcookie('language', "$lang", $expire_time, '/');
+setcookie('language', $lang, $options_lang);
+
+
 } else {
     // Si no existe el parámetro lang en la URL, verificar si la cookie 'language' está configurada
     $lang = isset($_COOKIE['language']) ? $_COOKIE['language'] : 'es';  // Idioma por defecto 'es'
@@ -248,7 +277,7 @@ $stylealert = <<<EOD
 
     header {
     background-color: #98a6b0; /* Gris oscuro */
-    background-image: linear-gradient(to bottom, #98a6b0, #c0cad1); /
+    background-image: linear-gradient(to bottom, #98a6b0, #c0cad1); 
     color: #000; /* Texto blanco */
     text-align: left; /* alineacion */
     width: 99%; /* Ocupa todo el ancho */
@@ -317,8 +346,26 @@ if (file_exists($configFile)) {
 
             //setcookie('loggedin', 'true', $expire_time, '/');
             //setcookie('Hash', $tokenhash_valid, $expire_time, '/');
-              setcookie('loggedin', 'true', $expire_time, $cookiePath, $cookieDomain, $isSecure, $isHttpOnly);
-              setcookie('Hash', $tokenhash_valid, $expire_time, $cookiePath, $cookieDomain, $isSecure, $isHttpOnly);
+             // setcookie('loggedin', 'true', $expire_time, $cookiePath, $cookieDomain, $isSecure, $isHttpOnly);
+             // setcookie('Hash', $tokenhash_valid, $expire_time, $cookiePath, $cookieDomain, $isSecure, $isHttpOnly);
+
+
+
+// --- CREACIÓN DE COOKIES SINCRONIZADA ---
+        // Usamos la misma estructura que en fexit para evitar errores de red o protocolo
+        $options = [
+            'expires' => $expire_time,
+            'path' => $cookiePath,
+            'domain' => $cookieDomain,
+            'secure' => $isSecure,
+            'httponly' => $isHttpOnly,
+            'samesite' => 'Lax' // Lax es vital para que la cookie sobreviva al redireccionamiento
+        ];
+
+        setcookie('loggedin', 'true', $options);
+        setcookie('Hash', $tokenhash_valid, $options);
+
+
             
             // Actualizar IP en el JSON
             $configData['fhash'] = $haship;
@@ -412,30 +459,6 @@ if (!$is_authenticated) {
 
 //////// VERIFICAR SEGURIDAD FIN /////////////////////////
 
-
-
-
-
-///////fexit////////////////////////
-if (isset($_GET['fexit'])) {
-// 1. Destruir la sesión en el servidor
-    if (session_status() === PHP_SESSION_NONE) { session_start(); }
-session_unset();
-session_destroy();
-
-
-// 2. Eliminar las cookies en el navegador (expiración en el pasado)
-
-$past = time() - 3600;
-setcookie('loggedin', '', $past, $cookiePath, $cookieDomain, $isSecure, $isHttpOnly);
-setcookie('Hash', '', $past, $cookiePath, $cookieDomain, $isSecure, $isHttpOnly);
-
-    setcookie('PTM', '', $past, '/'); // Limpiamos también el token PTM
-
-header("Location: $scriptfile.php");
-
-    exit;
-}
 
 
 
@@ -558,15 +581,55 @@ if (isset($_GET['guardax'])) {
 
 
 
+/////// fexit (Cierre de Sesión Seguro) ////////////////////////
+if (isset($_GET['fexit'])) {
+    // 1. Limpiar variables de sesión y destruirla
+    if (session_status() === PHP_SESSION_NONE) { session_start(); }
+    $_SESSION = array();
+    session_destroy();
+
+    // 2. Preparar expiración en el pasado
+    $past = time() - 3600;
+
+    // 3. Borrado de cookies usando array de opciones (Igual que en el Login)
+    $logoutOptions = [
+        'expires' => $past,
+        'path' => $cookiePath,
+        'domain' => $cookieDomain,
+        'secure' => $isSecure,
+        'httponly' => $isHttpOnly,
+        'samesite' => 'Lax'
+    ];
+
+    setcookie('loggedin', '', $logoutOptions);
+    setcookie('Hash', '', $logoutOptions);
+    setcookie('PTMx', '', $logoutOptions);
+    
+    // 4. Redirigir al archivo limpio
+    header("Location: $scriptfile.php");
+    exit;
+}
+
+
 
 ///////EDITOR PLUS COOKIEr////////////////////////
 
 $cokiruta=$_GET['c'];
 $cokifile=$_GET['editFile'];
-///////EDITOR PLUS COOKIEr////////////////////////
-if (isset($_GET['oneditor'])) {
 
-setcookie('editor', 'true', $expire_time, '/'); 
+///////EDITOR PLUS COOKIEr////////////////////////
+$options_editor = [
+    'expires' => $expire_time,
+    'path' => '/',
+    'secure' => $isSecure,
+    'httponly' => true,
+    'samesite' => 'Lax'
+];
+
+if (isset($_GET['oneditor'])) {
+ setcookie('editor', 'true', $options_editor);
+//setcookie('editor', 'true', $expire_time, '/'); 
+
 #usleep(500000);
 header("Location: $scriptfile.php?editFile=$cokifile&c=$cokiruta/");
 exit;
@@ -575,7 +638,8 @@ exit;
 ///////EDITOR PLUS COOKIEr////////////////////////
 if (isset($_GET['offeditor'])) {
 
-setcookie('editor', '', $expire_time, '/'); 
+ //setcookie('editor', '', $expire_time, '/'); 
+   setcookie('editor', '', $options_editor);
 #usleep(500000);
 header("Location: $scriptfile.php?editFile=$cokifile&c=$cokiruta/");
 exit;
@@ -602,9 +666,7 @@ exit;
 
 
 
-
-
-/////// BORRAR Configuración (CON PROTECCIÓN DE IDENTIDAD) /////////////////////////////////
+////// BORRAR Configuración (CON PROTECCIÓN DE IDENTIDAD) /////////////////////////////////
 if (isset($_GET['fborrarconfiguracion'])) {
     
     // Si ya envió la contraseña de confirmación vía POST
@@ -613,10 +675,37 @@ if (isset($_GET['fborrarconfiguracion'])) {
         
         // Verificamos contra la clave actual en el JSON
         if (password_verify($peppered_confirm, $configData['fpass'])) {
-            // ELIMINACIÓN AUTORIZADA
-            setcookie('loggedin', '', time() - 3600, $cookiePath, $cookieDomain, $isSecure, $isHttpOnly);
-            setcookie('Hash', '', time() - 3600, $cookiePath, $cookieDomain, $isSecure, $isHttpOnly);
+            
+            // 1. DESTRUCCIÓN TOTAL DE SESIÓN
+            if (session_status() === PHP_SESSION_NONE) { session_start(); }
+            $_SESSION = array(); // Limpiar variables
+            
+            // Destruir la cookie de sesión (PHPSESSID) en el navegador
+            if (ini_get("session.use_cookies")) {
+                $params = session_get_cookie_params();
+                setcookie(session_name(), '', time() - 42000,
+                    $params["path"], $params["domain"],
+                    $params["secure"], $params["httponly"]
+                );
+            }
+            session_destroy(); // Matar sesión en el servidor
 
+            // 2. Limpiar cookies de persistencia (Zidrave Tokens)
+            $past = time() - 3600;
+            $logoutOptions = [
+                'expires' => $past,
+                'path' => $cookiePath,
+                'domain' => $cookieDomain,
+                'secure' => $isSecure,
+                'httponly' => $isHttpOnly,
+                'samesite' => 'Lax'
+            ];
+
+            setcookie('loggedin', '', $logoutOptions);
+            setcookie('Hash', '', $logoutOptions);
+            setcookie('PTMx', '', $logoutOptions);
+
+            // 3. ELIMINACIÓN DEL ARCHIVO FÍSICO
             if (file_exists($configFile)) {
                 unlink($configFile);
                 header("Location: $scriptfile.php");
@@ -627,7 +716,7 @@ if (isset($_GET['fborrarconfiguracion'])) {
         }
     }
 
-    // Interfaz de confirmación (Se muestra si no se ha validado el POST)
+    // Interfaz de confirmación
     echo "$seguridadcabeza";
     echo "<div class='mensajex'>
             <h2>⚠️ Confirmar Acción Crítica</h2>
@@ -1091,7 +1180,7 @@ if (isset($_GET['fupdate'])) {
         echo "<div class='mensajex'>
                 <h2>🚀 Actualizar Sistema ($fversion)</h2>
                 <p>Esta acción descargará la última versión desde GitHub y sobrescribirá el archivo actual.</p>
-                <p style='color:#ffeb3b;'>⚠️ <b>Nota:</b> El sistema parchará automáticamente el nuevo archivo para mantener tu TokenPlus, Pepper y Nombre de Configuración actual.</p>
+                <p style='color:#ffeb3b;'>⚠️ <b>Nota:</b> El sistema parchará automáticamente el nuevo archivo para mantener tus archivos de Configuración y Seguridad actuales.</p>
                 <form method='POST'>
                     <input type='password' name='confirm_update_pass' required placeholder='Tu contraseña de admin' class='formtext'>
                     <input type='submit' value='INICIAR ACTUALIZACIÓN SEGURA' style='background:#04ab8a;'>
@@ -2865,4 +2954,3 @@ echo "<a href='?editFile=/../$scriptfile.php'  class='naranja' role='button'><b>
 </footer> 
 </body>
 </html>
-
