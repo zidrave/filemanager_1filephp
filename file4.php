@@ -12,7 +12,7 @@ $tokenplus = "pvt0zwwwwuFoewwwCpPZDq"; // cambie este valor es para darle mas se
 $pepper = "e%OrrrrpPZDq_U7tXz9#mK2@pL4wN"; // cambie este valor es para darle mas seguridad a su script
 ////// Cambiar estos valores TOKENPLUS y PEPPER antes de crear tu usuario administrador, si lo cambias despues de configurar tu cuenta
 ////// admin nunca logeara la unica solución es que borres manualmente el archivo fconfig.json 
-$configFile = 'fconfig.json'; //obligatorio cambiar el archivo config pero siempre con .json ejemplo x69cfg69x.json
+$configFile = "fconfigXX26.json"; //obligatorio cambiar el archivo config pero siempre con .json ejemplo x69cfg69x.json
 //////////////POR SEGURIDAD CAMBIE ESTOS VALORES ANTES DE GRABAR EL USUARIO///////////
 
 $nombreMaquina = gethostname();
@@ -1082,20 +1082,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['fileToUpload'])) {
 
 
 
-
-/////// ACTUALIZAR SISTEMA (CON PROTECCIÓN DE IDENTIDAD Y PERSISTENCIA) /////////////////////////////////
+/////// ACTUALIZAR SISTEMA (CON PROTECCIÓN DE IDENTIDAD Y PARCHEO DINÁMICO) /////////////////////////////////
 if (isset($_GET['fupdate'])) {
 
-    // 1. Interfaz de Confirmación (Si no se ha enviado el POST)
+    // 1. Interfaz de Confirmación (Prevención CSRF)
     if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['confirm_update_pass'])) {
         echo "$seguridadcabeza";
         echo "<div class='mensajex'>
                 <h2>🚀 Actualizar Sistema ($fversion)</h2>
-                <p>Esta acción descargará la última versión y sobrescribirá el archivo actual.</p>
-                <p style='color:#ffeb3b;'>⚠️ <b>Nota:</b> Se intentará mantener automáticamente tu TokenPlus y Nombre de Configuración.</p>
+                <p>Esta acción descargará la última versión desde GitHub y sobrescribirá el archivo actual.</p>
+                <p style='color:#ffeb3b;'>⚠️ <b>Nota:</b> El sistema parchará automáticamente el nuevo archivo para mantener tu TokenPlus, Pepper y Nombre de Configuración actual.</p>
                 <form method='POST'>
-                    <input type='password' name='confirm_update_pass' required placeholder='Tu contraseña' class='formtext'>
-                    <input type='submit' value='EMPEZAR ACTUALIZACIÓN' style='background:#04ab8a;'>
+                    <input type='password' name='confirm_update_pass' required placeholder='Tu contraseña de admin' class='formtext'>
+                    <input type='submit' value='INICIAR ACTUALIZACIÓN SEGURA' style='background:#04ab8a;'>
                     <a href='?c=$carpetaz/' class='naranja'>CANCELAR</a>
                 </form>
               </div>";
@@ -1105,16 +1104,16 @@ if (isset($_GET['fupdate'])) {
     // 2. Validación de Identidad
     $peppered_confirm = hash_hmac("sha512", $_POST['confirm_update_pass'], $pepper);
     if (!password_verify($peppered_confirm, $configData['fpass'])) {
-        die("$seguridadcabeza <div class='mensajex' style='background:red;'><h2>❌ Contraseña incorrecta. Operación cancelada.</h2></div>");
+        die("$seguridadcabeza <div class='mensajex' style='background:red;'><h2>❌ Contraseña incorrecta. Operación cancelada por seguridad.</h2></div>");
     }
 
-    // 3. Proceso de Descarga y Parcheo
+    // 3. Proceso de Descarga
     $furl = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/file4.php';
     $furlicon = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/favicon.ico';
     $furlidioma = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/en.json';
     $furlidioma2 = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/de.json';
 
-    $rutaArchivoLocal = isset($_GET['updatefile']) ? $_GET['updatefile'] . ".php" : "file4.php";
+    $rutaArchivoLocal = isset($_GET['updatefile']) ? $_GET['updatefile'] . ".php" : "$scriptfile.php";
 
     $fcontenido = @file_get_contents($furl);
     $fcontenidoicon = @file_get_contents($furlicon);
@@ -1122,18 +1121,23 @@ if (isset($_GET['fupdate'])) {
     $fcontenidolang2 = @file_get_contents($furlidioma2);
 
     if ($fcontenido === FALSE) {
-        die(" $alertaini ⚠️ No se pudo descargar el archivo desde GitHub. $alertafin ");
+        die(" $alertaini ⚠️ No se pudo descargar el archivo desde GitHub. Revisa la conexión del servidor. $alertafin ");
     }
 
-    // --- EL TRUCO MÁGICO: Preservar tus variables de seguridad ---
-    // Reemplazamos los valores por defecto del nuevo archivo con tus valores actuales
-    $fcontenido = preg_replace('/\$tokenplus\s*=\s*".*";/', '$tokenplus = "' . $tokenplus . '";', $fcontenido);
-    $fcontenido = preg_replace('/\$pepper\s*=\s*".*";/', '$pepper = "' . $pepper . '";', $fcontenido);
-    $fcontenido = preg_replace('/\$configFile\s*=\s*".*";/', '$configFile = "' . $configFile . '";', $fcontenido);
+    // --- 4. EL TRUCO MÁGICO: Parcheo Dinámico con Regex Robusta ---
+    // Esta regex busca $variable = "..." o '...' sin importar los espacios y mantiene tus valores actuales.
+    
+    $patrones = [
+        '/\$tokenplus\s*=\s*(["\']).*?\1;/'  => '$tokenplus = "' . $tokenplus . '";',
+        '/\$pepper\s*=\s*(["\']).*?\1;/'     => '$pepper = "' . $pepper . '";',
+        '/\$configFile\s*=\s*(["\']).*?\1;/' => '$configFile = "' . $configFile . '";'
+    ];
 
-    // 4. Reemplazo de Archivos
+    $fcontenido = preg_replace(array_keys($patrones), array_values($patrones), $fcontenido);
+
+    // 5. Reemplazo de Archivos en Disco
     if (file_put_contents($rutaArchivoLocal, $fcontenido) === FALSE) {
-        die(" $alertaini ⚠️ Error al escribir el archivo local. Revisa permisos. $alertafin ");
+        die(" $alertaini ⚠️ Error crítico: No se pudo escribir en $rutaArchivoLocal. Verifica permisos de escritura. $alertafin ");
     }
 
     if ($fcontenidoicon) file_put_contents("favicon.ico", $fcontenidoicon);
