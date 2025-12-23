@@ -34,7 +34,8 @@ $expire_time = time() + 2592000; //valor puesto para 30 dias
 #$ippublic = file_get_contents('https://api.ipify.org/'); //solo con internet
 $miip = $_SERVER['REMOTE_ADDR'];
 $haship = hash('sha256', $miip);
-$ihash = hash('sha256', $miip);
+//$ihash = hash('sha256', $miip);
+$ihash = hash('sha256', $miip . $pepper); // Usamos el Pepper para mayor seguridad
 $archivo_bloqueo = 'bloqueo.lock';
 $segundos_bloqueo = 20;
 $is_authenticated = false; // Por defecto nadie está autenticado
@@ -336,13 +337,18 @@ if (isset($_GET['unlock'])) {
     $ahora = time();
     $registros = [];
     
+/////// Cargamos configuración para ver la IP de confianza /////////////////
+// 1. DECLARACIÓN FALTANTE: Obtener y hashear la IP actual del visitante
+    $mi_ip_actual = $_SERVER['REMOTE_ADDR'];
+    $mi_ip_actual_hash = hash('sha256', $mi_ip_actual . $pepper); // Usamos el Pepper para coincidir con 'ihash'
 
-    // Cargamos configuración para ver la IP de confianza
+
     $configData = json_decode(file_get_contents($configFile), true);
     $ip_confianza = isset($configData['ihash']) ? $configData['ihash'] : '';
 
     // ¿Es el dueño en su IP de siempre?
     $es_owner_reconocido = ($mi_ip_actual_hash === $ip_confianza);
+
 
     // 1. Cargamos el historial existente
     if (file_exists($archivo_registro_unlock)) {
@@ -357,7 +363,8 @@ if (isset($_GET['unlock'])) {
     $conteo_intentos = count($registros_recientes);
 
     // 3. Verificamos si aún tiene intentos disponibles (Límite de 10)
-    if ($conteo_intentos < 10) {
+    // logica maestra q verifica intentos o ip en json
+    if ($conteo_intentos < 10 || $es_owner_reconocido) {
         
         // --- ACCIÓN FÍSICA SIEMPRE: Registramos el timestamp en el log ---
         // Esto sucede tanto si el token es "12345" como si es "pvt0z"
@@ -808,7 +815,8 @@ if (isset($_GET["fconfiguracion"])) {
         }
 
         // 4. Actualizar Identificadores de IP (Huella Digital Secreta)
-        $ihash_actual = hash('sha256', $_SERVER['REMOTE_ADDR'] . $pepper);
+     //   $ihash_actual = hash('sha256', $_SERVER['REMOTE_ADDR'] . $pepper);
+          $ihash_actual = $ihash;
 
         // 5. Crear el array final
         $config = [
