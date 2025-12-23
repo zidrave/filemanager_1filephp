@@ -12,7 +12,7 @@ $tokenplus = "pvt0zwwwwuFoewwwCpPZDq"; // cambie este valor es para darle mas se
 $pepper = "e%OrrrrpPZDq_U7tXz9#mK2@pL4wN"; // cambie este valor es para darle mas seguridad a su script
 ////// Cambiar estos valores TOKENPLUS y PEPPER antes de crear tu usuario administrador, si lo cambias despues de configurar tu cuenta
 ////// admin nunca logeara la unica solución es que borres manualmente el archivo fconfig.json 
-$configFile = 'fconfig.json'; //obligatorio cambiar el archivo config pero siempre con .json ejemplo x69cfg69x.json
+$configFile = 'fconfigXX26.json'; //obligatorio cambiar el archivo config pero siempre con .json ejemplo x69cfg69x.json
 //////////////POR SEGURIDAD CAMBIE ESTOS VALORES ANTES DE GRABAR EL USUARIO///////////
 
 ob_start(); // 1. Siempre primero para evitar Error 500
@@ -34,6 +34,7 @@ $expire_time = time() + 2592000; //valor puesto para 30 dias
 #$ippublic = file_get_contents('https://api.ipify.org/'); //solo con internet
 $miip = $_SERVER['REMOTE_ADDR'];
 $haship = hash('sha256', $miip);
+$ihash = hash('sha256', $miip);
 $archivo_bloqueo = 'bloqueo.lock';
 $segundos_bloqueo = 20;
 $is_authenticated = false; // Por defecto nadie está autenticado
@@ -335,6 +336,14 @@ if (isset($_GET['unlock'])) {
     $ahora = time();
     $registros = [];
     
+
+    // Cargamos configuración para ver la IP de confianza
+    $configData = json_decode(file_get_contents($configFile), true);
+    $ip_confianza = isset($configData['ihash']) ? $configData['ihash'] : '';
+
+    // ¿Es el dueño en su IP de siempre?
+    $es_owner_reconocido = ($mi_ip_actual_hash === $ip_confianza);
+
     // 1. Cargamos el historial existente
     if (file_exists($archivo_registro_unlock)) {
         $registros = explode("\n", trim(file_get_contents($archivo_registro_unlock)));
@@ -390,6 +399,7 @@ if (file_exists($configFile)) {
 
     // --- VARIABLES MAESTRAS ---
     $master = $configData['fuser']; 
+    $mastermail = $configData['fmail']; 
     $tokenhash_db = $configData['fpass'];
     $tokenhash_valid = hash('sha256', "$tokenplus$tokenhost$tokenhash_db");
 
@@ -448,6 +458,7 @@ if (file_exists($configFile)) {
             setcookie('Hash', $tokenhash_valid, $options);
 
             $configData['fhash'] = $haship;
+            $configData['ihash'] = $ihash;
             file_put_contents($configFile, json_encode($configData, JSON_PRETTY_PRINT));
             
             header("Location: $scriptfile.php");
@@ -697,9 +708,6 @@ exit;
 
 
 
-
-
-
 ////// BORRAR Configuración (CON PROTECCIÓN DE IDENTIDAD) /////////////////////////////////
 if (isset($_GET['fborrarconfiguracion'])) {
     
@@ -769,10 +777,69 @@ if (isset($_GET['fborrarconfiguracion'])) {
 
 
 
+<?php
+
+/////// Guardar Configuración /////////////////////////////////
+// Detectamos el parámetro GET que envía tu formulario
+if (isset($_GET["fconfiguracion"])) {
+
+//echo "VERIFICAR GUARDANDO DATOS";
+
+    // 1. Verificamos que se haya enviado por POST para procesar datos
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        
+        // Cargamos la configuración actual para no perder lo que no se cambie
+        $configActual = json_decode(file_get_contents($configFile), true);
+
+        // 2. Recoger datos del formulario
+        $fuser = $_POST['afuser'];
+        $mastermail = $_POST['fmail'];
+        $fskin = $_POST['fskin'];
+        $flanguaje = $_POST['flanguaje'];
+
+        // 3. LÓGICA INTELIGENTE DE CONTRASEÑA
+        if (!empty($_POST['afpass'])) {
+            // Si el usuario escribió una nueva clave, la hasheamos con Pepper
+            $peppered_pass = hash_hmac("sha512", $_POST['afpass'], $pepper);
+            $fpass_final = password_hash($peppered_pass, PASSWORD_DEFAULT);
+        } else {
+            // Si el campo llegó vacío, mantenemos la contraseña que ya estaba guardada
+            $fpass_final = $configActual['fpass'];
+        }
+
+        // 4. Actualizar Identificadores de IP (Huella Digital Secreta)
+        $ihash_actual = hash('sha256', $_SERVER['REMOTE_ADDR'] . $pepper);
+
+        // 5. Crear el array final
+        $config = [
+            'fuser'     => $fuser,
+            'fpass'     => $fpass_final,
+            'fmail'     => $mastermail,
+            'fskin'     => $fskin,
+            'fhash'     => $haship, // Hash para el auto-login (IP plana o con sal)
+            'flanguaje' => $flanguaje,
+            'ihash'  => $ihash_actual // Hash para la inmunidad del unlock
+        ];
+
+        // 6. Guardado Atómico con Bloqueo
+        if (file_put_contents($configFile, json_encode($config, JSON_PRETTY_PRINT), LOCK_EX)) {
+            echo "$seguridadcabeza $alertaini ✅ Configuración guardada correctamente. $alertafin";
+        } else {
+            echo "$seguridadcabeza $alertaini ❌ Error crítico: No se pudo escribir en el archivo JSON. $alertafin";
+        }
+
+        echo "<br><a href='$scriptfile.php' class='naranja'> <b>VOLVER AL INICIO</b></a>";
+        exit;
+    }
+}
 
 
 
 
+
+
+
+?>
 
 
 
@@ -1205,6 +1272,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['fileToUpload'])) {
 
 
 
+
+
+
+
 /////// ACTUALIZAR SISTEMA (CON PROTECCIÓN DE IDENTIDAD Y PARCHEO DINÁMICO) /////////////////////////////////
 if (isset($_GET['fupdate'])) {
 
@@ -1294,46 +1365,6 @@ if (isset($_GET['fupdate'])) {
 
 
 
-
-
-
-
-
-
-
-///////Guardar Configracion /////////////////////////////////
-if (isset($_GET['fconfiguracion'])) {
-
-    // Recoger datos del formulario
-    $fuser = $_POST['fuser'];
-// IMPORTANTE: Aplicar pepper al guardar la nueva clave
-    $peppered_pass = hash_hmac("sha512", $_POST['fpass'], $pepper);
-    $fpass_hashed = password_hash($peppered_pass, PASSWORD_DEFAULT);
-
-
-    $fmail = $_POST['fmail'];
-    $fskin = $_POST['fskin'];
-    $flanguaje = $_POST['flanguaje'];
-
-
-    // Crear un array asociativo con los datos
-    $config = [
-        'fuser' => $fuser,
-        'fpass' => $fpass_hashed, // Guardamos el hash blindado
-        'fmail' => $fmail,
-        'fskin' => $fskin,
-        'fhash' => $haship,
-        'flanguaje' => $flanguaje
-
-    ];
-
-    // Guardar los datos en el archivo de configuracion
-    file_put_contents("$configFile", json_encode($config, JSON_PRETTY_PRINT));
-    echo "$alertaini ⚠️ Configuracion guardada. $alertafin";
-
-    echo "<a href='?c=$carpetaz/' class='naranja' role='button'> <b>RECARGAR </b></a>";
-    exit;
-}
 
 
 
@@ -2134,10 +2165,10 @@ $mod = isset($_GET['mod']) ? $_GET['mod'] : '';
 			<div class="celda"> 
 
    <h2> ⚙️ <?php echo $tl['configuration'];?> </h2>
-    <form action="?fconfiguracion=ok&c=<?php echo "$carpetaz/";?>" method="post">
+    <form action="?fconfiguracion=ok" method="POST">
         <?php echo $tl['msgconfiguration'];?>. <br><br>
-        <input type="text" name="fuser" required class="formtext" value="<?php echo "$master";?>"> <?php echo $tl['user'];?> <br>
-        <input type="text" name="fpass" required class="formtext"> <?php echo $tl['password'];?> <br>
+        <input type="text" name="afuser" required class="formtext" value="<?php echo "$master";?>"> <?php echo $tl['user'];?> <br>
+        <input type="text" name="afpass"  class="formtext"> <?php echo $tl['password'];?> <br>
         <input type="text" name="fmail" required class="formtext" value="<?php echo "$mastermail";?>"> <?php echo $tl['email'];?> <br>
         <input type="text" name="fskin" required class="formtext" value="white" readonly>  <?php echo $tl['theme'];?> <br>
         <input type="text" name="flanguaje" required class="formtext" value="spanish" readonly> <?php echo $tl['language'];?> <br><br>
