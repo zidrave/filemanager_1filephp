@@ -604,27 +604,42 @@ exit;
 
 
 
-
-/////// BORRAR Configracion /////////////////////////////////
+/////// BORRAR Configuración (CON PROTECCIÓN DE IDENTIDAD) /////////////////////////////////
 if (isset($_GET['fborrarconfiguracion'])) {
-#$_SESSION['loggedin'] = false; 
-    setcookie('loggedin', '', $past, $cookiePath, $cookieDomain, $isSecure, $isHttpOnly);
-    setcookie('Hash', '', $past, $cookiePath, $cookieDomain, $isSecure, $isHttpOnly);
+    
+    // Si ya envió la contraseña de confirmación vía POST
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_pass'])) {
+        $peppered_confirm = hash_hmac("sha512", $_POST['confirm_pass'], $pepper);
+        
+        // Verificamos contra la clave actual en el JSON
+        if (password_verify($peppered_confirm, $configData['fpass'])) {
+            // ELIMINACIÓN AUTORIZADA
+            setcookie('loggedin', '', time() - 3600, $cookiePath, $cookieDomain, $isSecure, $isHttpOnly);
+            setcookie('Hash', '', time() - 3600, $cookiePath, $cookieDomain, $isSecure, $isHttpOnly);
 
-
-    if (file_exists("$configFile")) {
-        unlink("$configFile"); // Borrar el archivo de configuracion
-        #echo "$alertaini ⚠️ Configuración borrada correctamente. $alertafin";
-        header("Location: $scriptfile.php");
-    } else {
-        echo "$alertaini ⚠️ No se encontró ninguna configuración para borrar. $alertafin";
+            if (file_exists($configFile)) {
+                unlink($configFile);
+                header("Location: $scriptfile.php");
+                exit;
+            }
+        } else {
+            echo "$seguridadcabeza <div class='mensajex' style='background:red;'><h2>❌ Contraseña de confirmación incorrecta.</h2></div>";
+        }
     }
 
-    echo "<a href='?c=$carpetaz/' class='naranja' role='button'> <b>RECARGAR </b></a>";
+    // Interfaz de confirmación (Se muestra si no se ha validado el POST)
+    echo "$seguridadcabeza";
+    echo "<div class='mensajex'>
+            <h2>⚠️ Confirmar Acción Crítica</h2>
+            <p>Para borrar la configuración y el usuario administrador, ingrese su contraseña actual:</p>
+            <form method='POST'>
+                <input type='password' name='confirm_pass' required placeholder='Tu contraseña' class='formtext'>
+                <input type='submit' value='BORRAR TODO' style='background:red;'>
+                <a href='?c=$carpetaz/' class='verde'>CANCELAR</a>
+            </form>
+          </div>";
     exit;
 }
-
-
 
 
 ?>
