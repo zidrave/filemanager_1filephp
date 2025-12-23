@@ -1083,52 +1083,67 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['fileToUpload'])) {
 
 
 
-///////
+/////// ACTUALIZAR SISTEMA (CON PROTECCIÓN DE IDENTIDAD Y PERSISTENCIA) /////////////////////////////////
 if (isset($_GET['fupdate'])) {
-#echo " $alertaini ⚠️ Actualizando Sistema Listo $alertafin <br>";
-$furl = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/file4.php';
-$furlicon = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/favicon.ico';
-$furlidioma = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/en.json';
-$furlidioma2 = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/de.json';
 
-// Ruta del archivo local que se va a reemplazar
+    // 1. Interfaz de Confirmación (Si no se ha enviado el POST)
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['confirm_update_pass'])) {
+        echo "$seguridadcabeza";
+        echo "<div class='mensajex'>
+                <h2>🚀 Actualizar Sistema ($fversion)</h2>
+                <p>Esta acción descargará la última versión y sobrescribirá el archivo actual.</p>
+                <p style='color:#ffeb3b;'>⚠️ <b>Nota:</b> Se intentará mantener automáticamente tu TokenPlus y Nombre de Configuración.</p>
+                <form method='POST'>
+                    <input type='password' name='confirm_update_pass' required placeholder='Tu contraseña' class='formtext'>
+                    <input type='submit' value='EMPEZAR ACTUALIZACIÓN' style='background:#04ab8a;'>
+                    <a href='?c=$carpetaz/' class='naranja'>CANCELAR</a>
+                </form>
+              </div>";
+        exit;
+    }
 
-$rutaArchivoLocal = 'file4.php';
-$rutaArchivoLocalicon = 'favicon.ico';
-$rutaArchivoLocallang = 'en.json';
+    // 2. Validación de Identidad
+    $peppered_confirm = hash_hmac("sha512", $_POST['confirm_update_pass'], $pepper);
+    if (!password_verify($peppered_confirm, $configData['fpass'])) {
+        die("$seguridadcabeza <div class='mensajex' style='background:red;'><h2>❌ Contraseña incorrecta. Operación cancelada.</h2></div>");
+    }
 
+    // 3. Proceso de Descarga y Parcheo
+    $furl = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/file4.php';
+    $furlicon = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/favicon.ico';
+    $furlidioma = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/en.json';
+    $furlidioma2 = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/de.json';
 
-if (isset($_GET['updatefile'])) {
- #    echo "El parámetro 'updatefile' está presente en la URL.";
-      $validscript=$_GET['updatefile'];
-$rutaArchivoLocal= "$validscript.php";
-$rutaverificadora= "$validscript.php";
-}
+    $rutaArchivoLocal = isset($_GET['updatefile']) ? $_GET['updatefile'] . ".php" : "file4.php";
 
-// Descargar el archivo desde GitHub
-$fcontenido = file_get_contents($furl);
-$fcontenidoicon = file_get_contents($furlicon);
-$fcontenidolang = file_get_contents($furlidioma);
-$fcontenidolang2 = file_get_contents($furlidioma2);
+    $fcontenido = @file_get_contents($furl);
+    $fcontenidoicon = @file_get_contents($furlicon);
+    $fcontenidolang = @file_get_contents($furlidioma);
+    $fcontenidolang2 = @file_get_contents($furlidioma2);
 
-if ($fcontenido === FALSE) {
-    die(" $alertaini ⚠️No se pudo descargar el archivo desde GitHub. $alertafin <br>");
-}
+    if ($fcontenido === FALSE) {
+        die(" $alertaini ⚠️ No se pudo descargar el archivo desde GitHub. $alertafin ");
+    }
 
-// Reemplazar el archivo local con el contenido descargado
-if (file_put_contents($rutaArchivoLocal, $fcontenido) === FALSE) {
-    die(" $alertaini ⚠️ No se pudo actualizar el archivo.  $alertafin ");
-}
+    // --- EL TRUCO MÁGICO: Preservar tus variables de seguridad ---
+    // Reemplazamos los valores por defecto del nuevo archivo con tus valores actuales
+    $fcontenido = preg_replace('/\$tokenplus\s*=\s*".*";/', '$tokenplus = "' . $tokenplus . '";', $fcontenido);
+    $fcontenido = preg_replace('/\$pepper\s*=\s*".*";/', '$pepper = "' . $pepper . '";', $fcontenido);
+    $fcontenido = preg_replace('/\$configFile\s*=\s*".*";/', '$configFile = "' . $configFile . '";', $fcontenido);
 
-file_put_contents("favicon.ico", $fcontenidoicon);
-file_put_contents("en.json", $fcontenidolang);
-file_put_contents("de.json", $fcontenidolang2);
-echo " $alertaini ⚠️ ".$tl['okupdate']."   $alertafin";
+    // 4. Reemplazo de Archivos
+    if (file_put_contents($rutaArchivoLocal, $fcontenido) === FALSE) {
+        die(" $alertaini ⚠️ Error al escribir el archivo local. Revisa permisos. $alertafin ");
+    }
 
-    echo "<a href='?c=$carpetaz/' class='naranja' role='button'> <b> ".$tl['reload']." </b></a>";
+    if ($fcontenidoicon) file_put_contents("favicon.ico", $fcontenidoicon);
+    if ($fcontenidolang) file_put_contents("en.json", $fcontenidolang);
+    if ($fcontenidolang2) file_put_contents("de.json", $fcontenidolang2);
+
+    echo " $alertaini ⚠️ " . $tl['okupdate'] . " $alertafin";
+    echo "<a href='?c=$carpetaz/' class='naranja' role='button'> <b> " . $tl['reload'] . " </b></a>";
     exit;
 }
-
 
 
 
