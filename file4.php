@@ -3,7 +3,7 @@
 #   - - - |_________________,----------._ [____]  ""-,__  __....-----=====
 #                        (_(||||||||||||)___________/   ""                |
 #                           `----------' zIDRAvE[ ))"-,                   |
-#                     FILE MANAGER V4.3.9        ""    `,  _,--....___    |
+#                     FILE MANAGER V4.4.0        ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
 # 2025 y para adelante
 //////////////POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
@@ -23,7 +23,7 @@ $nombreMaquina = gethostname();
 $hashCompleto = hash('sha256', $nombreMaquina);
 $tokenhost = substr($hashCompleto, 0, 10);
 #formato de mensajes de alerta
-$fversion="4.3.9";
+$fversion="4.4.0";
 $alertaini=" <div class='mensajex'> <h2>";
 $alertafin="  </h2> </div> ";
 $scriptfile="file4"; //no cambiar este nombre por que se decalibran varias cosas
@@ -39,12 +39,24 @@ $segundos_bloqueo = 20;
 $is_authenticated = false; // Por defecto nadie está autenticado
 $master = ""; // Inicializar para evitar errores
 $acceso_emergencia = false;
+$archivo_registro_unlock = 'unlocks_hist.log'; // Registro de timestamps, no hace falta cambiar
+$limite_horas = 24 * 3600; // 24 horas en segundos
 $master_key = substr($tokenplus, 0, 5);
 
-//activando acceso de emergencia 
-if (isset($_GET['unlock']) && $_GET['unlock'] === $master_key) {
-    $acceso_emergencia = true;
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ////Cookie Reforce
@@ -310,6 +322,48 @@ EOD;
  
 
 
+
+
+
+
+
+//activando acceso de emergencia 
+if (isset($_GET['unlock']) && $_GET['unlock'] === $master_key) {
+    $ahora = time();
+    $registros = [];
+    
+    // Leer registros previos si existen
+    if (file_exists($archivo_registro_unlock)) {
+        $registros = explode("\n", trim(file_get_contents($archivo_registro_unlock)));
+    }
+
+    // Filtrar solo los registros que ocurrieron en las últimas 24 horas
+    $registros_recientes = array_filter($registros, function($timestamp) use ($ahora, $limite_horas) {
+        return ($ahora - (int)$timestamp) < $limite_horas;
+    });
+
+    $unlocking = count($registros_recientes);
+    if (count($registros_recientes) < 10) {
+
+        // PERMITIDO: Registrar este nuevo uso y activar emergencia
+        $registros_recientes[] = $ahora;
+        file_put_contents($archivo_registro_unlock, implode("\n", $registros_recientes));
+        $acceso_emergencia = true;
+    } else {
+        // DENEGADO: Ya se usó 10 veces en 24h
+        die("$stylealert $seguridadcabeza <div class='mensajex' style='background:white;'>
+            <h2>🚫 Límite de Emergencia Agotado - va $unlocking intentos</h2>
+            <p>El Acceso de Emergencia solo se permite <b>$unlocking veces cada 24 horas</b>.</p>
+            <p>Por favor, espere a que expire el plazo de seguridad.</p>
+            </div>");
+    }
+}
+
+
+
+
+
+
 //////// VERIFICAR SEGURIDAD (FLUJO UNIFICADO Y GLOBAL) /////////////////////////
 
     if (session_status() === PHP_SESSION_NONE) { session_start(); }
@@ -319,77 +373,15 @@ EOD;
 
 
 if (file_exists($configFile)) {
-
     $configData = json_decode(file_get_contents($configFile), true);
     $seguridadcabeza = "$stylealert <header> <h1> 🌀 File Manager </h1></header> <br>";
 
-    // --- VARIABLES MAESTRAS (Necesarias para todo el script) ---
-    $master     = $configData['fuser']; 
-    $mastermail = $configData['fmail'];
-    $masterskin = $configData['fskin'];
-    $masterlang = $configData['flanguaje'];
-    
-    // --- CÁLCULO DEL TOKEN DE PERSISTENCIA ---
+    // --- VARIABLES MAESTRAS ---
+    $master = $configData['fuser']; 
     $tokenhash_db = $configData['fpass'];
-  //$tokenhash_valid = md5("$tokenplus$tokenhost$tokenhash_db");
     $tokenhash_valid = hash('sha256', "$tokenplus$tokenhost$tokenhash_db");
 
-    // 1. INTENTO DE LOGIN (Procesar Formulario POST)
-//    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fuser'], $_POST['fpass'])) {
-      if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fuser'], $_POST['fpass']) && (!file_exists($archivo_bloqueo) || $acceso_emergencia)) {
-        $peppered_input = hash_hmac("sha512", $_POST['fpass'], $pepper);
-
-        if ($_POST['fuser'] === $master && password_verify($peppered_input, $configData['fpass'])) {
-            session_regenerate_id(true);
-            $_SESSION['user_auth'] = true;
-            $_SESSION['user_name'] = $master;
-
-            //setcookie('loggedin', 'true', $expire_time, '/');
-            //setcookie('Hash', $tokenhash_valid, $expire_time, '/');
-             // setcookie('loggedin', 'true', $expire_time, $cookiePath, $cookieDomain, $isSecure, $isHttpOnly);
-             // setcookie('Hash', $tokenhash_valid, $expire_time, $cookiePath, $cookieDomain, $isSecure, $isHttpOnly);
-
-
-
-// --- CREACIÓN DE COOKIES SINCRONIZADA ---
-        // Usamos la misma estructura que en fexit para evitar errores de red o protocolo
-        $options = [
-            'expires' => $expire_time,
-            'path' => $cookiePath,
-            'domain' => $cookieDomain,
-            'secure' => $isSecure,
-            'httponly' => $isHttpOnly,
-            'samesite' => 'Lax' // Lax es vital para que la cookie sobreviva al redireccionamiento
-        ];
-
-        setcookie('loggedin', 'true', $options);
-        setcookie('Hash', $tokenhash_valid, $options);
-
-
-            
-            // Actualizar IP en el JSON
-            $configData['fhash'] = $haship;
-            file_put_contents($configFile, json_encode($configData, JSON_PRETTY_PRINT));
-            session_write_close(); // Asegurar grabado de sesión
-
-            header("Location: $scriptfile.php?c=$getruta");
-            exit;
-        } else {
-            // claves incorrectas
-            touch($archivo_bloqueo);
-            echo "$seguridadcabeza <div class='mensajex'><h2>🤨 Credenciales incorrectas.</h2></div>";
-
-
-
-
-            exit;
-        }
-    }
-
-
-
-
-    // 2. AUTO-LOGIN (Sincronizar Cookie con Sesión)
+    // 1. AUTO-LOGIN (Sincronizar Cookie con Sesión)
     if (!isset($_SESSION['user_auth']) || $_SESSION['user_auth'] !== true) {
         if (isset($_COOKIE['Hash']) && $_COOKIE['Hash'] === $tokenhash_valid && $haship === $configData['fhash']) {
             $_SESSION['user_auth'] = true;
@@ -397,62 +389,92 @@ if (file_exists($configFile)) {
         }
     }
 
-    // 3. MURO DE ACCESO (Si después de lo anterior no hay sesión, bloquear)
-    $is_authenticated = isset($_SESSION['user_auth']) && $_SESSION['user_auth'] === true;
+    $is_authenticated = (isset($_SESSION['user_auth']) && $_SESSION['user_auth'] === true);
 
+    // 2. MURO DE BLOQUEO (Solo para no autenticados)
+    if (!$is_authenticated && file_exists($archivo_bloqueo) && !$acceso_emergencia) {
+        $intentos = (int)trim(file_get_contents($archivo_bloqueo));
+        if ($intentos < 1) $intentos = 1;
+        
+        $tiempo_creacion = filemtime($archivo_bloqueo);
+        $segundos_espera = $segundos_bloqueo * pow(2, $intentos - 1);
+        if ($segundos_espera > 86400) $segundos_espera = 86400;
 
+        $tiempo_transcurrido = time() - $tiempo_creacion;
 
-
-
-//creacion del bloqueador
-
-
-  if (file_exists($archivo_bloqueo) && (!$is_authenticated )) {
-
-if (!$acceso_emergencia) {
-    $tiempo_creacion = filemtime($archivo_bloqueo); // Obtiene timestamp de creación
-    $tiempo_transcurrido = time() - $tiempo_creacion;
-
-    if ($tiempo_transcurrido < $segundos_bloqueo) {
-        // El bloqueo sigue vigente, cerramos el paso de inmediato
-        die("$stylealert <div class='mensajex'><h2>⏳ Sistema bloqueado.</h2><p>Reintente en " . ($segundos_bloqueo - $tiempo_transcurrido) . " segundos.</p></div>");
-    } else {
-        unlink($archivo_bloqueo);
+        if ($tiempo_transcurrido < $segundos_espera) {
+            $restante = $segundos_espera - $tiempo_transcurrido;
+            die("$stylealert $seguridadcabeza <div class='mensajex' style='background:#ffffff;'>
+                <h2>⏳ Acceso Restringido</h2>
+                <p>Demasiados fallos detectados (Intento #$intentos).</p>
+                <p>Por seguridad, espere: <b style='color:red; font-size:1.5em;'>" . gmdate("H:i:s", $restante) . "</b></p>
+                <br> 
+                </div>");
+        }
     }
-  }
-}
+
+    // 3. PROCESAR LOGIN POST
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fuser'], $_POST['fpass'])) {
+        // Honeypot check
+        if (!empty($_POST['fhemail'])) { die("Bot detected."); }
+
+        $peppered_input = hash_hmac("sha512", $_POST['fpass'], $pepper);
+
+        if ($_POST['fuser'] === $master && password_verify($peppered_input, $configData['fpass'])) {
+            // LOGIN EXITOSO
+            session_regenerate_id(true);
+            $_SESSION['user_auth'] = true;
+            $_SESSION['user_name'] = $master;
+
+            if (file_exists($archivo_bloqueo)) { unlink($archivo_bloqueo); }
+
+            $options = [
+                'expires' => $expire_time, 'path' => $cookiePath, 'domain' => $cookieDomain,
+                'secure' => $isSecure, 'httponly' => $isHttpOnly, 'samesite' => 'Lax'
+            ];
+            setcookie('loggedin', 'true', $options);
+            setcookie('Hash', $tokenhash_valid, $options);
+
+            $configData['fhash'] = $haship;
+            file_put_contents($configFile, json_encode($configData, JSON_PRETTY_PRINT));
+            
+            header("Location: $scriptfile.php");
+            exit;
+        } else {
+            // LOGIN FALLIDO
+            $intentos = 1;
+            if (file_exists($archivo_bloqueo)) {
+                $contenido = trim(file_get_contents($archivo_bloqueo));
+                $intentos = (is_numeric($contenido)) ? (int)$contenido + 1 : 1;
+            }
+            file_put_contents($archivo_bloqueo, (string)$intentos, LOCK_EX);
+            
+            header("Location: $scriptfile.php"); // Redirigimos para que el "Muro" arriba atrape el bloqueo
+            exit;
+        }
+    }
+
+ // 4. MOSTRAR FORMULARIO (Si no está autenticado)
+    if (!$is_authenticated) {
+        echo "$seguridadcabeza";
+        echo '<form action="" method="post">';
+        echo ' <b>Usuario </b>: <input type="text" name="fuser" required> ';
+        echo ' <b>Contraseña </b>: <input type="password" name="fpass" required placeholder="Ingrese su contraseña"> ';
+        echo '<input type="submit" value="Acceso"> ';
+        echo '
+    <div style="display:none;">
+        <input type="text" name="fhemail" value="">
+    </div>
+        ';
+        echo '</form> <hr> <small>Seguridad '.$scriptfile.' - '.$fversion.' </small>';
+        
+        exit;
+    }
 
 
+// ELIMINAR DESDE AQUÍ:
 
-
-
-
-
-//Detectamos honeypot//////
-if (!empty($_POST['fhemail'])) {
-    // Si el robot llenó este campo, detenemos todo en seco
-    die("Bot suck.");
-}
-////////honeypot///////
-
-
-// Si el archivo de configuración existe, forzamos el login SIEMPRE
-if (!$is_authenticated) {
-    echo "$seguridadcabeza";
-    echo '<form action="" method="post">';
-    echo ' <b>Usuario </b>: <input type="text" name="fuser" required> ';
-    echo ' <b>Contraseña </b>: <input type="password" name="fpass" required placeholder="Ingrese su contraseña"> ';
-    echo '<input type="submit" value="Acceso"> ';
-    echo '
-<div style="display:none;">
-    <input type="text" name="fhemail" value="">
-</div>
-    ';
-    echo '</form> <hr> <small>Seguridad '.$scriptfile.' - '.$fversion.' </small>';
-    
-    // Al ejecutar exit aquí, matamos cualquier proceso posterior (upload, delete, config)
-    exit;
- }
+// HASTA AQUÍ (Fin de lo que debes borrar)
 }
 
 
