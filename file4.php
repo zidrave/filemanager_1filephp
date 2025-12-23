@@ -328,38 +328,49 @@ EOD;
 
 
 //activando acceso de emergencia 
-// if (isset($_GET['unlock']) && $_GET['unlock'] === $master_key) {
-   if (isset($_GET['unlock'])) {
+// if (isset($_GET['unlock']) && $_GET['unlock'] === $master_key) { //solo acepta la key maestra
+//   if (isset($_GET['unlock'])) { //acepta cualquier cosa pero solo da pocos intentos
+// --- CONTROL DE ACCESO DE EMERGENCIA ANTI-INTELIGENCIA (Zidrave V4.4.0) ---
+if (isset($_GET['unlock'])) {
     $ahora = time();
     $registros = [];
     
-    // Leer registros previos si existen
+    // 1. Cargamos el historial existente
     if (file_exists($archivo_registro_unlock)) {
         $registros = explode("\n", trim(file_get_contents($archivo_registro_unlock)));
     }
 
-    // Filtrar solo los registros que ocurrieron en las últimas 24 horas
+    // 2. Filtramos los registros de las últimas 24 horas
     $registros_recientes = array_filter($registros, function($timestamp) use ($ahora, $limite_horas) {
         return ($ahora - (int)$timestamp) < $limite_horas;
     });
 
-    $unlocking = count($registros_recientes);
-    if (count($registros_recientes) < 10) {
+    $conteo_intentos = count($registros_recientes);
 
-        // PERMITIDO: Registrar este nuevo uso y activar emergencia
+    // 3. Verificamos si aún tiene intentos disponibles (Límite de 10)
+    if ($conteo_intentos < 10) {
+        
+        // --- ACCIÓN FÍSICA SIEMPRE: Registramos el timestamp en el log ---
+        // Esto sucede tanto si el token es "12345" como si es "pvt0z"
         $registros_recientes[] = $ahora;
         file_put_contents($archivo_registro_unlock, implode("\n", $registros_recientes));
-        $acceso_emergencia = true;
+
+        // --- VALIDACIÓN LÓGICA PRIVADA ---
+        // Solo si el token coincide exactamente con los primeros 5 caracteres de $tokenplus
+        if ($_GET['unlock'] === $master_key) {
+            $acceso_emergencia = true; 
+        }
+        // Si no es correcto, $acceso_emergencia se queda en false (valor por defecto)
+        
     } else {
-        // DENEGADO: Ya se usó 10 veces en 24h
+        // Bloqueo total si excedió los 10 registros en el log
         die("$stylealert $seguridadcabeza <div class='mensajex' style='background:white;'>
-            <h2>🚫 Límite de Emergencia Agotado - va $unlocking intentos</h2>
-            <p>El Acceso de Emergencia solo se permite <b>$unlocking veces cada 24 horas</b>.</p>
-            <p>Por favor, espere a que expire el plazo de seguridad.</p>
+            <h2>🚫 Límite de Emergencia Agotado</h2>
+            <p>Se han detectado <b>$conteo_intentos intentos</b> de acceso en las últimas 24 horas.</p>
+            <p>Por seguridad, esta función ha sido inhabilitada temporalmente.</p>
             </div>");
     }
 }
-
 
 
 
