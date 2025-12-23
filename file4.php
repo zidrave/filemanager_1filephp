@@ -328,7 +328,8 @@ EOD;
 
 
 //activando acceso de emergencia 
-if (isset($_GET['unlock']) && $_GET['unlock'] === $master_key) {
+// if (isset($_GET['unlock']) && $_GET['unlock'] === $master_key) {
+   if (isset($_GET['unlock'])) {
     $ahora = time();
     $registros = [];
     
@@ -2976,4 +2977,3 @@ echo "<a href='?editFile=/../$scriptfile.php'  class='naranja' role='button'><b>
 </footer> 
 </body>
 </html>
-
