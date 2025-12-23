@@ -7,7 +7,8 @@
 #                     https://github.com/zidrave/        `/           """"
 # 2025 y para adelante
 //////////////POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
-$tokenplus = "e%OfwwwwuFoewwwCpPZDq"; // cambie este valor es para darle mas seguridad a su script
+$tokenplus = "pvt0zwwwwuFoewwwCpPZDq"; // cambie este valor es para darle mas seguridad a su script, desde aqui obtenemos el $masterkey para
+                                       // acceder sin esperar  ejemplo: file4.php?unlock=pvt0z  para cambiarlo cambia el tokenplus las primeras 5 letras
 $pepper = "e%OrrrrpPZDq_U7tXz9#mK2@pL4wN"; // cambie este valor es para darle mas seguridad a su script
 ////// Cambiar estos valores TOKENPLUS y PEPPER antes de crear tu usuario administrador, si lo cambias despues de configurar tu cuenta
 ////// admin nunca logeara la unica solución es que borres manualmente el archivo fconfig.json 
@@ -33,6 +34,14 @@ $archivo_bloqueo = 'bloqueo.lock';
 $segundos_bloqueo = 20;
 $is_authenticated = false; // Por defecto nadie está autenticado
 $master = ""; // Inicializar para evitar errores
+$acceso_emergencia = false;
+$master_key = substr($tokenplus, 0, 5);
+
+//activando acceso de emergencia 
+if (isset($_GET['unlock']) && $_GET['unlock'] === $master_key) {
+    $acceso_emergencia = true;
+}
+
 
 ////Cookie Reforce
 $cookiePath = "/; SameSite=Strict";
@@ -297,7 +306,8 @@ if (file_exists($configFile)) {
     $tokenhash_valid = hash('sha256', "$tokenplus$tokenhost$tokenhash_db");
 
     // 1. INTENTO DE LOGIN (Procesar Formulario POST)
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fuser'], $_POST['fpass'])) {
+//    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fuser'], $_POST['fpass'])) {
+      if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fuser'], $_POST['fpass']) && (!file_exists($archivo_bloqueo) || $acceso_emergencia)) {
         $peppered_input = hash_hmac("sha512", $_POST['fpass'], $pepper);
 
         if ($_POST['fuser'] === $master && password_verify($peppered_input, $configData['fpass'])) {
@@ -348,7 +358,11 @@ if (file_exists($configFile)) {
 
 
 //creacion del bloqueador
+
+
   if (file_exists($archivo_bloqueo) && (!$is_authenticated )) {
+
+if (!$acceso_emergencia) {
     $tiempo_creacion = filemtime($archivo_bloqueo); // Obtiene timestamp de creación
     $tiempo_transcurrido = time() - $tiempo_creacion;
 
@@ -358,7 +372,12 @@ if (file_exists($configFile)) {
     } else {
         unlink($archivo_bloqueo);
     }
+  }
 }
+
+
+
+
 
 
 
