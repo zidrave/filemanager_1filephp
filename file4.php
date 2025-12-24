@@ -34,16 +34,15 @@ $expire_time = time() + 2592000; //valor puesto para 30 dias
 #$ippublic = file_get_contents('https://api.ipify.org/'); //solo con internet
 $miip = $_SERVER['REMOTE_ADDR'];
 $haship = hash('sha256', $miip);
-//$ihash = hash('sha256', $miip);
 $ihash = hash('sha256', $miip . $pepper); // Usamos el Pepper para mayor seguridad
 $archivo_bloqueo = 'bloqueo.lock';
 $segundos_bloqueo = 20;
 $is_authenticated = false; // Por defecto nadie está autenticado
 $master = ""; // Inicializar para evitar errores
-$acceso_emergencia = false;
+$acceso_emergencia = false; //aqui siempre false 
 $archivo_registro_unlock = 'unlocks_hist.log'; // Registro de timestamps, no hace falta cambiar
 $limite_horas = 24 * 3600; // 24 horas en segundos
-$master_key = substr($tokenplus, 0, 5);
+$master_key = substr($tokenplus, 0, 5); //estoy servira para el unlock
 
 
 
@@ -328,12 +327,9 @@ EOD;
 
 
 
-
-//activando acceso de emergencia 
-// if (isset($_GET['unlock']) && $_GET['unlock'] === $master_key) { //solo acepta la key maestra
-//   if (isset($_GET['unlock'])) { //acepta cualquier cosa pero solo da pocos intentos
-// --- CONTROL DE ACCESO DE EMERGENCIA ANTI-INTELIGENCIA (Zidrave V4.4.0) ---
-if (isset($_GET['unlock'])) {
+//     ACCESO DE EMERGENCIA
+// --- CONTROL DE ACCESO DE EMERGENCIA ANTI-INTELIGENCIA (filemanager V4.4.0) ---
+if (isset($_POST['unlock'])) {
     $ahora = time();
     $registros = [];
     
@@ -362,6 +358,13 @@ if (isset($_GET['unlock'])) {
 
     $conteo_intentos = count($registros_recientes);
 
+    // LÓGICA: Auto-limpieza de logs para evitar inundacion en el log
+    if ($conteo_intentos > 30) { 
+        // Si el log se ensucia demasiado, lo reseteamos a los últimos 5 para que no pese megabytes
+        $registros_recientes = array_slice($registros_recientes, -5);
+    }
+
+
     // 3. Verificamos si aún tiene intentos disponibles (Límite de 10)
     // logica maestra q verifica intentos o ip en json
     if ($conteo_intentos < 10 || $es_owner_reconocido) {
@@ -373,7 +376,11 @@ if (isset($_GET['unlock'])) {
 
         // --- VALIDACIÓN LÓGICA PRIVADA ---
         // Solo si el token coincide exactamente con los primeros 5 caracteres de $tokenplus
-        if ($_GET['unlock'] === $master_key) {
+        if ($_POST['unlock'] === $master_key) {
+
+       // SOLUCIÓN CAMBIO GET A POST: Guardamos el bypass en la sesión para que dure en la siguiente recarga
+            $_SESSION['bypass_active'] = true;
+            $_SESSION['bypass_time'] = time();
             $acceso_emergencia = true; 
         }
         // Si no es correcto, $acceso_emergencia se queda en false (valor por defecto)
@@ -386,6 +393,48 @@ if (isset($_GET['unlock'])) {
             <p>Por seguridad, esta función ha sido inhabilitada temporalmente.</p>
             </div>");
     }
+}
+
+
+// 2. VERIFICACIÓN DE SESIÓN PARA EL BYPASS (Esto nose usaba en GET pero POST si necesita recordar $acceso_emergencia=true)
+if (isset($_SESSION['bypass_active']) && $_SESSION['bypass_active'] === true) {
+    // El bypass dura 5 minutos (300 segundos) para que te dé tiempo a logearte
+    if ((time() - $_SESSION['bypass_time']) < 300) {
+        $acceso_emergencia = true;
+    } else {
+        unset($_SESSION['bypass_active'], $_SESSION['bypass_time']);
+    }
+}
+
+
+
+
+
+
+
+// 4. MOSTRAR FORMULARIO DE DESBLOQUEO UNLOCK (Micro-Diseño Zidrave V4.4.9)
+if (isset($_GET['unlockmode'])) {
+    echo "$seguridadcabeza";
+    echo "
+    <div style='
+        max-width: 320px; 
+        margin: 40px auto; 
+        padding: 15px; 
+        background: #f4f4f4; 
+        border: 1px solid #ccc; 
+        border-radius: 4px; 
+        font-family: Arial, sans-serif;'>
+        
+        <form action='?' method='post' style='display: flex; align-items: center; gap: 8px;'>
+            <span style='color: #444; font-size: 13px; font-weight: bold;'>Bypass:</span>
+            
+            <input type='password' name='unlock' required 
+                   style='flex: 1; padding: 6px; border: 1px solid #bbb; border-radius: 3px; font-size: 13px;'>
+            
+            <input type='submit' value='Enviar' 
+                   style='padding: 6px 12px; background: #2c3e50; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 13px; font-weight: bold;'>
+        </form>
+    </div>";
 }
 
 
@@ -490,7 +539,7 @@ if (file_exists($configFile)) {
         echo '<form action="" method="post">';
         echo ' <b>Usuario </b>: <input type="text" name="fuser" required> ';
         echo ' <b>Contraseña </b>: <input type="password" name="fpass" required placeholder="Ingrese su contraseña"> ';
-        echo '<input type="submit" value="Acceso"> ';
+        echo ' <input type="submit" value="Acceso"> ';
         echo '
     <div style="display:none;">
         <input type="text" name="fhemail" value="">
@@ -510,6 +559,13 @@ if (file_exists($configFile)) {
 
 
 //////// VERIFICAR SEGURIDAD FIN /////////////////////////
+
+
+
+
+
+
+
 
 
 
