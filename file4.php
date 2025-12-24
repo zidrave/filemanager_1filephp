@@ -443,7 +443,7 @@ if (isset($_GET['unlockmode'])) {
 
 //////// VERIFICAR SEGURIDAD (FLUJO UNIFICADO Y GLOBAL) /////////////////////////
 
-    if (session_status() === PHP_SESSION_NONE) { session_start(); }
+   // if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
  
 
@@ -594,6 +594,13 @@ $rutarealserver = realpath($uploadDir);
 ///////////////////////////////////////
 if (isset($_GET['varios'])) {
 
+    // 1. PROTECCIÓN DE SESIÓN: Si no está autenticado, el script muere aquí.
+    if (!isset($is_authenticated) || $is_authenticated !== true) {
+        header('HTTP/1.1 403 Forbidden');
+        exit("Error: Acceso no autorizado.");
+    }
+
+
 $ruta = $_GET['c'];
 #echo "subiendo varios test en uploads$ruta";
 echo "
@@ -636,10 +643,6 @@ exit;
 
 
 
-
-
-
-
       
 //////////////////////////////////
 ///      Guardar X AJAX     //////
@@ -647,7 +650,11 @@ exit;
 if (isset($_GET['guardax'])) {
      
 #echo "guardando en ajax";
-
+    // PROTECCIÓN EXTRA: Si por alguna razón llegó aquí sin sesión, matamos el proceso.
+    if (!$is_authenticated) { 
+        header('HTTP/1.1 403 Forbidden');
+        exit("Acceso denegado."); 
+    }
   
   
  if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -692,7 +699,7 @@ if (isset($_GET['guardax'])) {
 /////// fexit (Cierre de Sesión Seguro) ////////////////////////
 if (isset($_GET['fexit'])) {
     // 1. Limpiar variables de sesión y destruirla
-    if (session_status() === PHP_SESSION_NONE) { session_start(); }
+   // if (session_status() === PHP_SESSION_NONE) { session_start(); }
     $_SESSION = array();
     session_destroy();
 
@@ -782,7 +789,7 @@ if (isset($_GET['fborrarconfiguracion'])) {
         if (password_verify($peppered_confirm, $configData['fpass'])) {
             
             // 1. DESTRUCCIÓN TOTAL DE SESIÓN
-            if (session_status() === PHP_SESSION_NONE) { session_start(); }
+          //  if (session_status() === PHP_SESSION_NONE) { session_start(); }
             $_SESSION = array(); // Limpiar variables
             
             // Destruir la cookie de sesión (PHPSESSID) en el navegador
