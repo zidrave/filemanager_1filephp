@@ -1208,6 +1208,43 @@ if (file_exists($externalStyle)) {
             text-decoration: underline;
         }
 
+
+
+        .editor-wrapper {
+            display: flex;
+            border: 1px solid #ccc;
+            overflow: hidden;
+            height: 450px; /* Altura ajustada */
+            width: 1200px; /* Anchura ajustada */
+        }
+        .line-numbers {
+            background-color: #5e737d;
+            font-family: Fira Code, Consolas, Courier New, monospace;
+            padding: 8px 10px;
+            line-height: 1.25;
+            text-align: right;
+            user-select: none;
+            overflow: hidden;
+            color: #ffffff;
+        }
+        .code-editor {
+           font-family: Fira Code, Consolas, Courier New, monospace;
+            width: 100%;
+            border: none;
+            outline: none;
+            padding: 8px;
+            resize: none;
+            line-height: 1.5;
+            overflow-y: scroll;
+            white-space: nowrap;
+            background-color: #d7dfe0;
+        }
+        .editor-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
 </style>
 
 <?php 
@@ -1996,40 +2033,7 @@ if (isset($_COOKIE['editor']) && $_COOKIE['editor'] === 'true') {
 
     <style>
 
-        .editor-wrapper {
-            display: flex;
-            border: 1px solid #ccc;
-            overflow: hidden;
-            height: 450px; /* Altura ajustada */
-            width: 1200px; /* Anchura ajustada */
-        }
-        .line-numbers {
-            background-color: #5e737d;
-            font-family: Fira Code, Consolas, Courier New, monospace;
-            padding: 8px 10px;
-            line-height: 1.25;
-            text-align: right;
-            user-select: none;
-            overflow: hidden;
-            color: #ffffff;
-        }
-        .code-editor {
-           font-family: Fira Code, Consolas, Courier New, monospace;
-            width: 100%;
-            border: none;
-            outline: none;
-            padding: 8px;
-            resize: none;
-            line-height: 1.5;
-            overflow-y: scroll;
-            white-space: nowrap;
-            background-color: #d7dfe0;
-        }
-        .editor-container {
-            display: flex;
-            width: 100%;
-            height: 100%;
-        }
+
     </style>
  
 <div class="editor-wrapper">
@@ -2755,7 +2759,7 @@ $totalPartes = count($arrExplo);
                 // Si el nombre está vacío, mostramos el símbolo de Raíz "/"
                 $label = ($nombre === "") ? " / " : $nombre;
                 
-                echo "<a href='?c=" . htmlspecialchars($enlaceLimpio) . "' style='color:#2c4c5e; font-weight:bold;'>$label</a>";
+                echo "<a href='?c=" . htmlspecialchars($enlaceLimpio) . "' style='color:#2c4c5e; font-weight:bold;'>📂$label</a> ";
                 
                 if ($indice < $totalPartes - 1) {
                     echo " <span style='color:#ccc;'> ➡︎ </span> ";
