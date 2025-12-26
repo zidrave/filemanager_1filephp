@@ -398,8 +398,8 @@ if (isset($_POST['unlock'])) {
 
 // 2. VERIFICACIÓN DE SESIÓN PARA EL BYPASS (Esto nose usaba en GET pero POST si necesita recordar $acceso_emergencia=true)
 if (isset($_SESSION['bypass_active']) && $_SESSION['bypass_active'] === true) {
-    // El bypass dura 5 minutos (300 segundos) para que te dé tiempo a logearte
-    if ((time() - $_SESSION['bypass_time']) < 300) {
+    // El bypass dura  (10 segundos) para que te dé tiempo a logearte
+    if ((time() - $_SESSION['bypass_time']) < 10) {
         $acceso_emergencia = true;
     } else {
         unset($_SESSION['bypass_active'], $_SESSION['bypass_time']);
@@ -843,11 +843,11 @@ if (isset($_GET['fborrarconfiguracion'])) {
 }
 
 
-?>
 
 
 
-<?php
+
+
 
 /////// Guardar Configuración /////////////////////////////////
 // Detectamos el parámetro GET que envía tu formulario
@@ -911,20 +911,23 @@ if (isset($_GET["fconfiguracion"])) {
 
 
 ?>
-
-
-
-
-
-
-
-
-
 <!DOCTYPE html>
 <html>
 <head>
     <title>File Manager V4</title>
-    <style>
+
+<?php
+// Definimos la ruta del archivo de estilo externo
+$externalStyle = 'fmstyle.css';
+
+if (file_exists($externalStyle)) {
+    // 1. Si el archivo existe, cargamos el link externo (Ignora el estilo interno)
+    echo '<link rel="stylesheet" type="text/css" href="' . $externalStyle . '?v=' . filemtime($externalStyle) . '">';
+} else {
+    // 2. Si NO existe, cargamos tu style predeterminado (Softpedia Style)
+?>
+
+<style>
         body {
 	    background-color: #f0f0f0; /* Fondo gris claro */
             font-family: Arial, sans-serif; /* Tipo de letra Arial */
@@ -1205,7 +1208,13 @@ if (isset($_GET["fconfiguracion"])) {
             text-decoration: underline;
         }
 
-    </style>
+</style>
+
+<?php 
+} // Cierre del else style external
+?>
+
+
 </head>
 <body>
 
