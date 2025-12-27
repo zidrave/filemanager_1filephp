@@ -3,7 +3,7 @@
 #   - - - |_________________,----------._ [____]  ""-,__  __....-----=====
 #                        (_(||||||||||||)___________/   ""                |
 #                           `----------' zIDRAvE[ ))"-,                   |
-#                     FILE MANAGER V4.4.0        ""    `,  _,--....___    |
+#                     FILE MANAGER V4.4.1        ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
 # 2025 y para adelante
 //////////////POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
@@ -23,7 +23,7 @@ $nombreMaquina = gethostname();
 $hashCompleto = hash('sha256', $nombreMaquina);
 $tokenhost = substr($hashCompleto, 0, 10);
 #formato de mensajes de alerta
-$fversion="4.4.0";
+$fversion="4.4.1";
 $alertaini=" <div class='mensajex'> <h2>";
 $alertafin="  </h2> </div> ";
 $scriptfile="file4"; //no cambiar este nombre por que se decalibran varias cosas
@@ -82,7 +82,7 @@ $tl = array(
     'welcome' => 'Bienvenido',
     'exit' => 'Salir',
     'foldercontent' => 'Contenido de la carpeta',
-    'allowphpfile' => 'Permitir archivos PHP',
+    'allowphpfile' => 'Permitir PHP',
     'uploadmultiplefiles' => 'Subir multiples Archivos',
     'systeminformation' => 'Informacion del Sistema',
     'usedspace' => 'Espacio Usado',
@@ -918,7 +918,10 @@ if (isset($_GET["fconfiguracion"])) {
 
 <?php
 // Definimos la ruta del archivo de estilo externo
-$externalStyle = 'fmstyle.css';
+$themeActivo = $_COOKIE['fm_theme'] ?? '';
+// Esto elimina puntos (.), barras (/) y caracteres especiales
+$themeActivo = preg_replace('/[^a-zA-Z0-9_-]/', '', $themeActivo);
+$externalStyle = 'fmstyle_'.$themeActivo.'.css';
 
 if (file_exists($externalStyle)) {
     // 1. Si el archivo existe, cargamos el link externo (Ignora el estilo interno)
@@ -1948,15 +1951,20 @@ if (isset($_GET['uploadmultiple']) && $_GET['uploadmultiple'] === '1') {
 <?php
 } else {
 ?>
-
-    <form action="" method="post" enctype="multipart/form-data">
-        ✅ <b><?php echo $tl['uploadfile'];?> :</b>
-        <input type="file" name="fileToUpload" id="fileToUpload" class="formtext2">
+<div class="upload-section">
+    <form action="" method="post" enctype="multipart/form-data" class="upload-form">
+        
+<div class="file-input-wrapper">
+        <input type="file" name="fileToUpload" id="fileToUpload"  >
+</div>
         <label>
             <input type="checkbox" name="allowPhpUpload" value="yes"> <?php echo $tl['allowphpfile'];?>
         </label>
-        <input type="submit" value="<?php echo $tl['uploadfile'];?>" name="submit">  <a href="?c=<?php echo "$carpetaz/";?>&uploadmultiple=1" class=azulin2> <?php echo $tl['uploadmultiplefiles'];?> </a>
+
+        <input type="submit" value=" ⬆️ <?php echo $tl['uploadfile'];?>" name="submit" class="btn btn-primary">
+      <a href="?c=<?php echo "$carpetaz/";?>&uploadmultiple=1" class="btn btn-warning"> <?php echo $tl['uploadmultiplefiles'];?> </a>
     </form>
+</div>
 
 <br>
 <?php
@@ -2759,7 +2767,7 @@ $totalPartes = count($arrExplo);
                 // Si el nombre está vacío, mostramos el símbolo de Raíz "/"
                 $label = ($nombre === "") ? " / " : $nombre;
                 
-                echo "<a href='?c=" . htmlspecialchars($enlaceLimpio) . "' style='color:#2c4c5e; font-weight:bold;'>📂$label</a> ";
+                echo "<a href='?c=" . htmlspecialchars($enlaceLimpio) . "' style='color:var(--navigation); font-weight:bold;'>📂$label</a> ";
                 
                 if ($indice < $totalPartes - 1) {
                     echo " <span style='color:#ccc;'> ➡︎ </span> ";
@@ -3046,7 +3054,7 @@ $os = php_uname('s') . ' ' . php_uname('r');
 ?>
 
 
-        <br>
+        
 	<div class="tabla">
 		<div class="filasinfx">
 			<div class="celda"> 
@@ -3077,9 +3085,9 @@ echo " \n";
 	</div> <br>
 
 
-<hr> 
+<div class="upload-section"> 
 FILE MANAGER | Full Version <b><?php echo "$fversion";?> </b> <?php echo $tl['createdby'];?> <a href='https://zidrave.net/' target='_black'>http://zidrave.net</a><br>
-
+</div>
 
 <hr>
 
