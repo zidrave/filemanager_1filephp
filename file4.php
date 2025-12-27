@@ -1427,12 +1427,24 @@ if (isset($_GET['fupdate'])) {
     $furlidioma = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/en.json';
     $furlidioma2 = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/de.json';
 
+    $furlskin1 = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/fmstyle_dark-zidrave.css';
+    $furlskin2 = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/fmstyle_original.css';
+    $furlskin3 = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/fmstyle_taringa.css';
+    $furlskin4 = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/fmstyle_dark-red.css';
+    $furlskin5 = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/fmstyle_dark-leonardo.css';
+
     $rutaArchivoLocal = isset($_GET['updatefile']) ? $_GET['updatefile'] . ".php" : "$scriptfile.php";
 
     $fcontenido = @file_get_contents($furl);
     $fcontenidoicon = @file_get_contents($furlicon);
     $fcontenidolang = @file_get_contents($furlidioma);
     $fcontenidolang2 = @file_get_contents($furlidioma2);
+
+    $fcontenidoskin1 = @file_get_contents($furlskin1);
+    $fcontenidoskin2 = @file_get_contents($furlskin2);
+    $fcontenidoskin3 = @file_get_contents($furlskin3);
+    $fcontenidoskin4 = @file_get_contents($furlskin4);
+    $fcontenidoskin5 = @file_get_contents($furlskin5);
 
     if ($fcontenido === FALSE) {
         die(" $alertaini ⚠️ No se pudo descargar el archivo desde GitHub. Revisa la conexión del servidor. $alertafin ");
@@ -1457,6 +1469,13 @@ if (isset($_GET['fupdate'])) {
     if ($fcontenidoicon) file_put_contents("favicon.ico", $fcontenidoicon);
     if ($fcontenidolang) file_put_contents("en.json", $fcontenidolang);
     if ($fcontenidolang2) file_put_contents("de.json", $fcontenidolang2);
+
+    if ($fcontenidoskin1) file_put_contents("fmstyle_dark-zidrave.css", $fcontenidoskin1);
+    if ($fcontenidoskin2) file_put_contents("fmstyle_original.css", $fcontenidoskin2);
+    if ($fcontenidoskin3) file_put_contents("fmstyle_taringa.css", $fcontenidoskin3);
+    if ($fcontenidoskin4) file_put_contents("fmstyle_dark-red.css", $fcontenidoskin4);
+    if ($fcontenidoskin5) file_put_contents("fmstyle_dark-leonardo.css", $fcontenidoskin5);
+    
 
     echo " $alertaini ⚠️ " . $tl['okupdate'] . " $alertafin";
     echo "<a href='?c=$carpetaz/' class='naranja' role='button'> <b> " . $tl['reload'] . " </b></a>";
