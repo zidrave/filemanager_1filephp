@@ -896,19 +896,20 @@ if (isset($_GET["fconfiguracion"])) {
 // =========================
 // 2. Procesar skin por POST
 // =========================
+$themex = $_POST['fskin'];
+if (!preg_match('/^[a-zA-Z0-9_-]+$/', $themex)) {
+    die("Nombre de theme inválido");
+}
 
-    $themex = $_POST['fskin'];
 
-
-        setcookie(
-            'fm_theme',
-            $themex,
-            time() + (30 * 24 * 60 * 60),
-            '/',
-            '',
-            false,
-            true
-        );
+$theme_options = [
+    'expires' => time() + (30 * 24 * 60 * 60),
+    'path' => '/',
+    'secure' => $isSecure,  // ✅ Usar tu variable existente
+    'httponly' => false,     // Puede ser false porque no es sensible
+    'samesite' => 'Lax'
+];
+setcookie('fm_theme', $themex, $theme_options);
  
 
 
@@ -945,7 +946,8 @@ $externalStyle = 'fmstyle_'.$themeActivo.'.css';
 
 if (file_exists($externalStyle)) {
     // 1. Si el archivo existe, cargamos el link externo (Ignora el estilo interno)
-    echo '<link rel="stylesheet" type="text/css" href="' . $externalStyle . '?v=' . filemtime($externalStyle) . '">';
+  //echo '<link rel="stylesheet" type="text/css" href="' . $externalStyle . '?v=' . filemtime($externalStyle) . '">';
+    echo '<link rel="stylesheet" type="text/css" href="' . htmlspecialchars($externalStyle, ENT_QUOTES, 'UTF-8') . '?v=' . filemtime($externalStyle) . '">';
 } else {
     // 2. Si NO existe, cargamos tu style predeterminado (Softpedia Style)
 ?>
@@ -2322,6 +2324,11 @@ $skinpalabras = [];
 
 foreach ($skinarchivos as $archivo) {
     $nombre = basename($archivo);
+
+    if (!preg_match('/^fmstyle_[a-zA-Z0-9_-]+\.css$/', $nombre)) {
+        continue; // Saltar archivos con nombres inválidos
+    }
+
     $palabra = str_replace(['fmstyle', '.css'], '', $nombre);
     $palabra = ltrim($palabra, '-_');
 
