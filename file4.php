@@ -878,7 +878,7 @@ if (isset($_GET["fconfiguracion"])) {
         }
 
         // 4. Actualizar Identificadores de IP (Huella Digital Secreta)
-     //   $ihash_actual = hash('sha256', $_SERVER['REMOTE_ADDR'] . $pepper);
+        //$ihash_actual = hash('sha256', $_SERVER['REMOTE_ADDR'] . $pepper);
           $ihash_actual = $ihash;
 
         // 5. Crear el array final
@@ -892,6 +892,26 @@ if (isset($_GET["fconfiguracion"])) {
             'ihash'  => $ihash_actual // Hash para la inmunidad del unlock
         ];
 
+
+// =========================
+// 2. Procesar skin por POST
+// =========================
+
+    $themex = $_POST['fskin'];
+
+
+        setcookie(
+            'fm_theme',
+            $themex,
+            time() + (30 * 24 * 60 * 60),
+            '/',
+            '',
+            false,
+            true
+        );
+ 
+
+
         // 6. Guardado Atómico con Bloqueo
         if (file_put_contents($configFile, json_encode($config, JSON_PRETTY_PRINT), LOCK_EX)) {
             echo "$seguridadcabeza $alertaini ✅ Configuración guardada correctamente. $alertafin";
@@ -899,7 +919,7 @@ if (isset($_GET["fconfiguracion"])) {
             echo "$seguridadcabeza $alertaini ❌ Error crítico: No se pudo escribir en el archivo JSON. $alertafin";
         }
 
-        echo "<br><a href='$scriptfile.php' class='naranja'> <b>VOLVER AL INICIO</b></a>";
+        echo "<br><a href='$scriptfile.php?mod=config' class='naranja'> <b>VOLVER AL INICIO</b></a>";
         exit;
     }
 }
@@ -1513,6 +1533,12 @@ if (isset($_GET['fupdate'])) {
 
 // Eliminar archivo (Versión con Protección de Configuración)
 if (isset($_GET['deleteFile'])) {
+
+    if (!isset($is_authenticated) || $is_authenticated !== true) {
+        header('HTTP/1.1 403 Forbidden');
+        exit("Error: Acceso no autorizado.");
+    }
+
     $fileToDelete = $_GET['deleteFile'];
     $archivoname = basename($fileToDelete);
 
@@ -2281,7 +2307,45 @@ $mod = isset($_GET['mod']) ? $_GET['mod'] : '';
         <input type="text" name="afuser" required class="formtext" value="<?php echo "$master";?>"> <?php echo $tl['user'];?> <br>
         <input type="text" name="afpass"  class="formtext"> <?php echo $tl['password'];?> <br>
         <input type="text" name="fmail" required class="formtext" value="<?php echo "$mastermail";?>"> <?php echo $tl['email'];?> <br>
-        <input type="text" name="fskin" required class="formtext" value="white" readonly>  <?php echo $tl['theme'];?> <br>
+
+
+
+<?php
+$themeActivo = $_COOKIE['fm_theme'] ?? '';
+
+// ========================
+// 1. Buscar themes reales
+// ========================
+$skindirectorio = __DIR__;
+$skinarchivos = glob($skindirectorio . '/fmstyle*.css');
+$skinpalabras = [];
+
+foreach ($skinarchivos as $archivo) {
+    $nombre = basename($archivo);
+    $palabra = str_replace(['fmstyle', '.css'], '', $nombre);
+    $palabra = ltrim($palabra, '-_');
+
+    if ($palabra !== '') {
+        $skinpalabras[] = $palabra;
+    }
+}
+
+$skinpalabras = array_unique($skinpalabras);
+sort($skinpalabras);
+
+?>
+
+
+<select name="fskin" class="formtext">
+    <option value="">🎨 Seleccionar tema _______</option>
+    <?php foreach ($skinpalabras as $theme): ?>
+        <option value="<?= htmlspecialchars($theme) ?>"
+            <?= $theme === $themeActivo ? 'selected' : '' ?>>
+            <?= htmlspecialchars(ucfirst($theme)) ?>
+        </option>
+    <?php endforeach; ?>
+</select> <?php echo $tl['theme'];?> <br>
+
         <input type="text" name="flanguaje" required class="formtext" value="spanish" readonly> <?php echo $tl['language'];?> <br><br>
 
         <input type="submit" value="<?php echo $tl['saveconfiguration'];?>"> <br><br>
