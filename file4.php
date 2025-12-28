@@ -936,7 +936,7 @@ setcookie('fm_theme', $themex, $theme_options);
 <html>
 <head>
     <title>File Manager V4</title>
-
+	<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABICAMAAABiM0N1AAAAwFBMVEVMaXEhZZlLoeZUrO0obqRUrO0hZZkob69UrO5UrO4iZpkhZZlTq+1Vf6wiZJohZphUrO5UrO4hZZkhZZlUrO4hZZkiZJpVrO0hZplFldNUq+48icRFltRUrO1UrO5Uq+0hZZlVq+4eZJohZphUrO5Mn94iZplVrO4hZZlJm9tXruwiZphDlNFWrO1UrO1Vq+1VrO5Uq+0veK8mbKFOouM2gbpRp+hTqus6h8IzfbZEldNAkc0jaJwsc6lHmtgiZpkio2ylAAAAMHRSTlMA/A039JHTB96uLZYdAyiRcviI29XoTc2+zepM0VaewKZfIZh89l/z8+wp9O9HgmUP4OQcAAABgElEQVR4Ae3UBXbdQBBE0RYzmNkOg7HF5tn/qsLtz6IKJ3cBb0ZSHdF/fyo/sc/UNG3Lfrkd0UBOoKllNrYHdnbVKsGgSwVqtWdD3o+mWqxTb4lq9Yb6slWrM596eqfabb2gflSXjRgNibN138FC7Xk78dGQ0AIHDYldBw2J5HuFNB8NieR7hezvFTobGSqq27LmGfsnqT40VNw1vIxrDAvlNa+wZgwJ3WS8kusQ2BHPe4fyhtt4fUMPNbfaJLAjXAK/l9jpESryWxb93tH9p9lmPI41FcpLHi+dhKqMAUc0tTeEIaGiZkgooWuGrEUSKhni0rfQPWNOJPTAmGMJ3TDmUkLXjLmS0B1jLiT0yJhTCZWM0SXUMGSfvoUKxuxIKGeMJ6GKMZaE0BmlEkJndCQhdEaGhNAZhd9C9xn8WyP6HjNy6RMT/GgyIzp/KKqGMa/ok0OGZSF9cpAx6pjou1zJ1ekL/T3YCekbfS8D3o+n08TB3uuGR3i7aRn0B/vvI/0jAVz6iypMAAAAAElFTkSuQmCC">
 <?php
 // Definimos la ruta del archivo de estilo externo
 $themeActivo = $_COOKIE['fm_theme'] ?? '';
