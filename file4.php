@@ -3127,11 +3127,53 @@ $memUsed = $memTotal - $memFree;
 
 // Obtener carga del procesador
 // Obtener carga del procesador y calcular porcentaje estimado
-$loadAvg = sys_getloadavg();
-$cpuLoad = $loadAvg[0];
+//$loadAvg = sys_getloadavg();
+//$cpuLoad = $loadAvg[0];
 // Suponiendo un máximo de 1 núcleo, ajustar según sea necesario
-$maxLoad = 4;
-$cpuUsage = round(($cpuLoad / $maxLoad) * 100, 2) . '%';
+//$maxLoad = 4;
+//$cpuUsage = round(($cpuLoad / $maxLoad) * 100, 2) . '%';
+
+ 
+function get_cpu_cores() {
+    $cores = 1;
+    if (stristr(PHP_OS, 'WIN')) {
+        // Windows
+        $process = popen('wmic cpu get NumberOfLogicalProcessors', 'rb');
+        if (false !== $process) {
+            fgets($process);
+            $cores = intval(fgets($process));
+            pclose($process);
+        }
+    } else {
+        // Linux / BSD / MacOS
+        if (is_readable('/proc/cpuinfo')) {
+            $cpuinfo = file_get_contents('/proc/cpuinfo');
+            preg_match_all('/^processor/m', $cpuinfo, $matches);
+            $cores = count($matches[0]);
+        } elseif (($process = popen('sysctl -n hw.ncpu', 'rb')) !== false) {
+            // MacOS / BSD
+            $cores = intval(fgets($process));
+            pclose($process);
+        } else {
+            // Fallback para otros Linux
+            $cores = intval(shell_exec('nproc')) ?: 1;
+        }
+    }
+    return $cores > 0 ? $cores : 1;
+}
+
+
+// 1. Obtener carga y núcleos
+$numCores = get_cpu_cores();
+$loadAvg  = sys_getloadavg();
+$cpuLoad  = $loadAvg[0]; // Carga del último minuto
+
+// 2. Calcular porcentaje real basado en núcleos
+// Un load de 1.0 en 4 núcleos es 25%. Un load de 4.0 en 4 núcleos es 100%.
+$cpuUsagePercent = round(($cpuLoad / $numCores) * 100, 2);
+$cpuUsage = $cpuUsagePercent . '%';
+
+
 
 // Obtener temperatura del núcleo (si disponible)
 $coreTemp = 'N/A';
@@ -3159,12 +3201,13 @@ echo " ✅ ".$tl['availablespace'].": " . formatSize($diskFree) . "<br>\n";
 echo " ✅ ".$tl['usedmemory'].": <b> " . formatSize($memUsed) . " </b><br>\n";
 echo " ✅ ".$tl['totalmemory'].": <b>" . formatSize($memTotal) . " </b><br>\n";
 #echo "<li>Uso del procesador: " . $cpuLoad . " (carga promedio)<br>\n";
-echo " ✅ ".$tl['processorusage'].": <b> " . $cpuLoad . " (".$tl['averageload'].") - " . $cpuUsage . " </b><br>\n";
+//echo " ✅ ".$tl['processorusage'].": <b> " . $cpuLoad . " (".$tl['averageload'].") - " . $cpuUsage . " </b><br>\n";
+echo " ✅ " . ($tl['processorusage'] ?? 'Carga CPU') . ": <b> " . $cpuLoad . " (" . ($tl['averageload'] ?? 'Promedio') . ") - " . $cpuUsage . " (" . $numCores . " Cores)</b><br>\n";
 echo " ✅ ".$tl['coretemperature'].": <b> " . $coreTemp . "  </b><br>\n";
 //echo " ⏱️ ".$tl['uptime'].": <b>" . getUptime() . "</b><br>\n";
 echo " ⏱️ Online: <b>" . getUptime() . "</b><br>\n";
 echo " ✴️ ".$tl['operatingsystem'].": " . $os . "</li>\n";
-echo " \n";
+echo " <hr>\n";
 
 ?>
 
