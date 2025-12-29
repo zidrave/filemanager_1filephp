@@ -222,7 +222,7 @@ footer {
     background-color: #21262d;
     color: #58a6ff;
     padding: 6px 14px;
-    border: 1px solid #30363d;
+    border: 1px solid #607680;
     border-radius: 6px;
     display: inline-block;
     transition: background 0.15s, border-color 0.15s;
@@ -234,9 +234,9 @@ footer {
 }
 
 .formtext, .formtext2 {
-    background-color: #323b49;
+    background-color: #1a2232; 
     color: #c9d1d9;
-    border: 1px solid #30363d;
+    border: 1px solid #607680;
     padding: 6px;
     margin: 3px;
     border-radius: 6px;
@@ -276,6 +276,24 @@ footer {
 }
 
 
+.fileperms{
+    //background-color: #bb8009;
+    color: #dc9c2e;
+    //padding: 4px 10px;
+   // border-radius: 6px;
+   // display: inline-block;
+}
+.fileperms2{
+
+    color: #fecc76;
+}
+
+.file-time{
+
+    color: #5f7586;
+}
+
+
         .editor-wrapper {
             display: flex;
             border: 1px solid #ccc;
@@ -285,7 +303,7 @@ footer {
 
         }
         .line-numbers {
-            background-color: #5e737d;
+            background-color: #050a0f;
             font-family: Fira Code, Consolas, Courier New, monospace;
             padding: 8px 10px;
             line-height: 1.25;
@@ -296,7 +314,7 @@ footer {
         }
         .code-editor {
            font-family: Fira Code, Consolas, Courier New, monospace;
-            color: #769aad;
+            color: #78a9c4;
             width: 100%;
             border: none;
             outline: none;
@@ -305,7 +323,7 @@ footer {
             line-height: 1.5;
             overflow-y: scroll;
             white-space: nowrap;
-            background-color: #1a262d;
+            background-color: #1a2232;
         }
         .editor-container {
             display: flex;
