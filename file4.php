@@ -3,9 +3,9 @@
 #   - - - |_________________,----------._ [____]  ""-,__  __....-----=====
 #                        (_(||||||||||||)___________/   ""                |
 #                           `----------' zIDRAvE[ ))"-,                   |
-#                     FILE MANAGER V4.4.1        ""    `,  _,--....___    |
+#                     FILE MANAGER V4.4.2        ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
-# 2025 y para adelante
+# 2025 reval
 //////////////POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
 $tokenplus = "pvt0zwwwwuFoewwwCpPZDq"; // cambie este valor es para darle mas seguridad a su script, desde aqui obtenemos el $masterkey para
                                        // acceder sin esperar  ejemplo: file4.php?unlock=pvt0z  para cambiarlo cambia el tokenplus las primeras 5 letras
@@ -19,16 +19,16 @@ ob_start(); // 1. Siempre primero para evitar Error 500
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
 
+$fversion="4.4.2";
 $nombreMaquina = gethostname();
 $hashCompleto = hash('sha256', $nombreMaquina);
 $tokenhost = substr($hashCompleto, 0, 10);
 #formato de mensajes de alerta
-$fversion="4.4.1";
 $alertaini=" <div class='mensajex'> <h2>";
 $alertafin="  </h2> </div> ";
 $scriptfile="file4"; //no cambiar este nombre por que se decalibran varias cosas
 $scriptfm = $scriptfile;
-$scriptfm = strtoupper($scriptfm); #pasar a mayuscula papi
+$scriptfm = strtoupper($scriptfm); #pasar a mayuscula
 $mod = isset($_GET['mod']) ? $_GET['mod'] : ''; // algunas cositas van con mod
 $expire_time = time() + 2592000; //valor puesto para 30 dias
 #$ippublic = file_get_contents('https://api.ipify.org/'); //solo con internet
@@ -551,9 +551,7 @@ if (file_exists($configFile)) {
     }
 
 
-// ELIMINAR DESDE AQUÍ:
-
-// HASTA AQUÍ (Fin de lo que debes borrar)
+ 
 }
 
 
@@ -852,6 +850,21 @@ if (isset($_GET['fborrarconfiguracion'])) {
 /////// Guardar Configuración /////////////////////////////////
 // Detectamos el parámetro GET que envía tu formulario
 if (isset($_GET["fconfiguracion"])) {
+
+if (!file_exists('.htaccess')) {
+    $htaccess = <<<EOT
+<Files "*.json">
+    Require all denied
+</Files>
+<Files "*.lock">
+    Require all denied
+</Files>
+<Files "*.log">
+    Require all denied
+</Files>
+EOT;
+    @file_put_contents('.htaccess', $htaccess);
+}
 
 //echo "VERIFICAR GUARDANDO DATOS";
 
@@ -1578,13 +1591,10 @@ if (isset($_POST['createFolder'])) {
 }
 
 // Eliminar carpeta /////////////////////////////////////////////////////////////////////////////////////////////////////BORRAR FOLDER
-#$elfolder=$_GET['deleteFolder'];
-#$elfolder=$_POST['deleteFolder'];
-
-if (isset($_POST['deleteFolder'])) {
-    $elfolder=$_POST['deleteFolder'];
-    $folderToDelete = "$uploadDir$elfolder"; //$uploadDir$item
-#    $folderToDelete = "$elfolder";
+if (isset($_POST['deleteFolder']) || isset($_GET['deleteFolder'])) {
+    $elfolder = $_POST['deleteFolder'] ?? $_GET['deleteFolder'];
+    $folderToDelete = $uploadDir . $elfolder;
+    
     if (is_dir($folderToDelete)) {
         rmdir($folderToDelete);
         echo "$alertaini ⚠️Carpeta eliminada solo si estaba vacia. $alertafin";
@@ -1592,19 +1602,6 @@ if (isset($_POST['deleteFolder'])) {
         echo "$alertaini ⚠️ Carpeta no encontrada. $alertafin";
     }
 }
-
-if (isset($_GET['deleteFolder'])) {
-    $elfolder=$_GET['deleteFolder'];
-    $folderToDelete = $uploadDir . $_GET['deleteFolder'];
-#     $folderToDelete = $elfolder;
-    if (is_dir($folderToDelete)) {
-        rmdir($folderToDelete);
-        echo "$alertaini ⚠️Carpeta eliminada solo si estaba vacia. $alertafin";
-    } else {
-        echo "$alertaini ⚠️ Carpeta no encontrada. $alertafin";
-    }
-}
-
 
 
 
@@ -2890,25 +2887,88 @@ $totalPartes = count($arrExplo);
 
         <?php
 /////////// inicio del bucle
-echo " 
-
-
- ";
 
 
 
 
+// 1. Detectar el protocolo (http o https)
+$wprotocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
 
+// 2. Obtener el host (192.168.0.74)
+$whost = $_SERVER['HTTP_HOST'];
+
+// 3. Obtener el directorio del script actual (/subir/)
+$wcurrentDir = dirname($_SERVER['SCRIPT_NAME']);
+
+// 4. Limpiar y normalizar la ruta del directorio
+// Nos aseguramos de que termine en / y no tenga barras duplicadas
+$wcurrentDir = rtrim($wcurrentDir, '/\\') . '/';
+
+// 5. Construir la URL completa
+$wbaseurl = $wprotocol . $whost . $wcurrentDir;
+
+
+
+?>
+
+<style>
+        /* --- Modal de Imagen --- */
+        #image-modal {
+            cursor:pointer;
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4);
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(6px);
+            gap: 20px;
+        }
+
+        .copy-path-input {
+            width: 90%;
+            max-width: 700px;
+            padding: 12px;
+            border: 2px solid #444;
+            background: #222;
+            color: #fff;
+            border-radius: 6px;
+            text-align: center;
+            font-family: monospace;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        #image-modal img {
+            backdrop-filter: blur(6px);
+            max-width: 95%;
+            max-height: 80%;
+            border-radius: 10px;
+            box-shadow: 0 0 40px rgba(0,0,0,0.5);
+            object-fit: contain;
+        }
+    </style> 
+
+
+<?php
+
+#///agregando iconos personalzados para el visualizador de imagenes ////
+$imageExts = ["jpg", "jpeg", "png", "gif", "webp", "bmp", "svg", "jfif"];
+
+// BUCLE DE LISTADO DE ARCHIVOS
         foreach ($items as $item) {
 
             if ($item != '.' && $item != '..') {
-$uploadDir = empty($uploadDir) ? '/' : $uploadDir; //arreglito aer
+            $uploadDir = empty($uploadDir) ? '/' : $uploadDir;  
             $filePath = $uploadDir . $item;
             $filePerms = substr(sprintf('%o', fileperms($filePath)), -4);
             $fileOwner = posix_getpwuid(fileowner($filePath))['name'];
-#            $fileModTime = date("Y-m-d / H:i", filemtime($filePath)); //d-m-Y H:i:s
-            $fileModTime = date("d-m-Y / H:i", filemtime($filePath)); //d-m-Y H:i:s
 
+          //$fileModTime = date("d-m-Y / H:i", filemtime($filePath)); //d-m-Y H:i:s
+            $fileModTime = date("d-m-Y", filemtime($filePath)) . " / <span class='file-time'>" . date("H:i", filemtime($filePath)) . "</span>";
 
 
 
@@ -2974,42 +3034,47 @@ $uploadDir = empty($uploadDir) ? '/' : $uploadDir; //arreglito aer
             }
         }
 
-#///agregando iconos personalzados ////
-
 
 
 
                 if (is_dir($uploadDir . $item)) {
 
+// estos son carpetas
 echo " 
     <div class='fila'>
-        <div class='celda'> ◽ $icon <a href='?c=$carpetaz/$item/'><b>$item</b>  </a> </div>
-        <div class='celda'> ".$tl['folder']." </div>
+        <div class='celda'> ◽ $icon <a href='?c=$carpetaz/$item/'><b>$item </b>  </a> </div>
+        <div class='celda'>   ".$tl['folder']."  </div>
         <div class='celda'>  $fileModTime </div>
-        <div class='celda'>  $filePerms </div>
+        <div class='celda'> <div class='fileperms'> <b>$filePerms </b></div> </div> 
         <div class='celda'>  $fileOwner </div>
-<!--	<div class='celda'>  [<a href='?archivoacambiarnombre=$uploadDir$item&c=$carpetaz/'>🖊️</a>] [<a href='?deleteFolder=$uploadDir$item&c=$carpetaz/'>❌</a>] --> 
 	<div class='celda'>  [<a href='?archivoacambiarnombre=$item&c=$carpetaz/'>🖊️</a>] [<a href='?deleteFolder=$item&c=$carpetaz/'>❌</a>] [<a href='?comprimir=$item&c=$carpetaz/'>📚</a>]
      </div>
     </div>
  ";
 
                 } else {
-                 $fileSize = filesize($uploadDir . $item);
 
+$fileSize = filesize($uploadDir . $item);
 
+//Estos son archivos
 $itemr = $item;
-if (strlen($itemr) > 33) {
-    $itemr = substr($itemr, -33);
+
+if (strlen($itemr) > 30) {
+    $itemr = substr($itemr, -30);
     $itemr = "➰".$itemr;
 }
 
 echo " 
-    <div class='fila'>
-        <div class='celda'> ◽ $icon <a href='$uploadDir$item' target='_black'>$itemr </a> </div>
-        <div class='celda'> " . formatSize($fileSize) . " </div>
+    <div class='fila'> ";
+    // ARCHIVOS aplican lógica especial para imagenes
+    if (in_array($extension, $imageExts)) {
+echo "  <div class='celda'> ◽ $icon <a href='#' class='file-link image-link' data-file='$uploadDir$item'> $itemr </a> ➡︎ <a href='$uploadDir$item' target='_black'>🔗</a> </div> ";
+} else {
+echo "  <div class='celda'> ◽ $icon <a href='$uploadDir$item' target='_black'>$itemr  </a> </div> ";
+}
+echo "  <div class='celda'> " . formatSize($fileSize) . " </div>
         <div class='celda'>  $fileModTime </div>
-        <div class='celda'>  $filePerms </div>
+        <div class='celda'>  <div class='fileperms2'> $filePerms </div></div> 
         <div class='celda'>  $fileOwner </div>
 	<div class='celda'>  [<a href='?editFile=$item&c=$carpetaz/'>✏️</a>] [<a href='?archivoacambiarnombre=$item&c=$carpetaz/'>🖊️</a>] [<a href='#eliminar_$item'>❌</a>] [<a href='?comprimir=$item&c=$carpetaz/'>📚</a>] </div>
     </div>
@@ -3037,36 +3102,12 @@ echo "
         }
         
 
-
-echo " <!--
-    <div class='fila'>
-        <div class='celda'> <a href='?'> ◽ 📁 <b> / </b></a> </div>
-        <div class='celda'> ".$tl['folder']." </div>
-        <div class='celda'>  Null </div>
-        <div class='celda'>  Null </div>
-        <div class='celda'>  ".$tl['system']." </div>
-	<div class='celda'>   </div>
-    </div>  -->
- ";
-
-echo " <!--
-    <div class='fila'>
-        <div class='celda'>  ◽ 📁 <a href='?c=$carpetaz/'> <b> . </b></a> </div>
-        <div class='celda'> ".$tl['folder']." </div>
-        <div class='celda'>  Null </div>
-        <div class='celda'>  Null </div>
-        <div class='celda'>  ".$tl['system']." </div>
-	<div class='celda'>   </div>
-    </div>
-    -->
- ";
-
 echo " 
     <div class='fila'>
         <div class='celda'> ◽  <a href='?c=$carpetaz/../'>📁 <b>.. </b></a> </div>
         <div class='celda'> ".$tl['folder']." </div>
         <div class='celda'>  Null </div>
-        <div class='celda'>  Null </div>
+        <div class='celda'>  <div class='fileperms2'> Null </div> </div>
         <div class='celda'>  ".$tl['system']." </div>
 	<div class='celda'>   </div>
     </div>
@@ -3125,14 +3166,8 @@ preg_match('/MemFree:\s+(\d+) kB/', $memInfo, $matches);
 $memFree = $matches[1] * 1024;
 $memUsed = $memTotal - $memFree;
 
-// Obtener carga del procesador
-// Obtener carga del procesador y calcular porcentaje estimado
-//$loadAvg = sys_getloadavg();
-//$cpuLoad = $loadAvg[0];
-// Suponiendo un máximo de 1 núcleo, ajustar según sea necesario
-//$maxLoad = 4;
-//$cpuUsage = round(($cpuLoad / $maxLoad) * 100, 2) . '%';
 
+// Obtener carga del procesador y calcular porcentaje estimado
  
 function get_cpu_cores() {
     $cores = 1;
@@ -3219,7 +3254,7 @@ echo " <hr>\n";
 
 
 <div class="upload-section"> 
-FILE MANAGER | Full Version <b><?php echo "$fversion";?> </b> <?php echo $tl['createdby'];?> <a href='https://zidrave.net/' target='_black'>http://zidrave.net</a><br>
+ 🗂️ FILE MANAGER | Full Version <b><?php echo "$fversion";?> </b> <?php echo $tl['createdby'];?> <a href='https://zidrave.net/' target='_black'>http://zidrave.net</a><br>
 </div>
 
 <hr>
@@ -3242,5 +3277,73 @@ echo "<a href='?editFile=/../$scriptfile.php'  class='naranja' role='button'><b>
 <a href='https://www.tiktok.com/@zidrave' target='_black3' class='azulin' role='button'><b>▶️ Tiktok 🟣</b></a> 
 <a href='https://www.paypal.com/donate?business=zidravex@gmail.com&currency_code=USD' target='_black4' class='naranja' role='button'><b>💲 <?php echo $tl['donatepaypal'];?> 💲</b></a>     
 </footer> 
+
+
+
+
+    <div id="image-modal"></div>
+
+<script>
+    const modal = document.getElementById('image-modal');
+
+    document.querySelectorAll('.image-link').forEach(link => {
+        link.addEventListener('click', e => {
+            e.preventDefault();
+            const fileUrl = link.dataset.file;
+            
+            modal.innerHTML = `
+                <img src="${fileUrl}" alt="Vista previa">
+                <input type="text" class="copy-path-input" value="<?php echo "$wbaseurl";?>${fileUrl}" readonly>
+                <p style="color: #22c55e; font-weight: bold; margin:0; display:none;" id="copy-msg">¡Copiado al portapapeles!</p>
+
+            `;
+            
+            modal.style.display = 'flex';
+
+            const input = modal.querySelector('.copy-path-input');
+            const msg = modal.querySelector('#copy-msg');
+
+            input.addEventListener('click', (event) => {
+                event.stopPropagation();
+                
+                // 1. Seleccionar el texto
+                input.select();
+                input.setSelectionRange(0, 99999); 
+
+                // 2. Intentar copiar con API moderna
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(input.value).then(() => {
+                        confirmarCopiado(input, msg);
+                    });
+                } else {
+                    // 3. Fallback: Método antiguo para sitios sin HTTPS o locales
+                    try {
+                        document.execCommand('copy');
+                        confirmarCopiado(input, msg);
+                    } catch (err) {
+                        alert("Error al copiar. Por favor, copia manualmente.");
+                    }
+                }
+            });
+        });
+    });
+
+    function confirmarCopiado(el, msg) {
+        const originalColor = el.style.borderColor;
+        el.style.borderColor = "var(--success)";
+        msg.style.display = "block";
+        
+        setTimeout(() => {
+            el.style.borderColor = originalColor;
+            msg.style.display = "none";
+        }, 2000);
+    }
+
+    modal.addEventListener('click', () => {
+        modal.style.display = 'none';
+        modal.innerHTML = ''; 
+    });
+</script>
+
 </body>
 </html>
