@@ -164,13 +164,13 @@ header {
 
 footer {
     width: 1000px;
-    background: var(--bg-secondary);
+    background: #1d4f91;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
     padding: 15px;
     border-radius: 12px;
     margin-bottom: 15px;
     border: 1px solid var(--secondary);
-    color: var(--text-secondary);
+    color: #acc1dd;
 }
 
 .mensajex {
