@@ -1467,6 +1467,14 @@ if (isset($_GET['fupdate'])) {
     $furlskin3 = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/fmstyle_taringa.css';
     $furlskin4 = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/fmstyle_dark-red.css';
     $furlskin5 = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/fmstyle_dark-leonardo.css';
+    $furlskin6 = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/fmstyle_blue.css';
+    $furlskin7 = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/fmstyle_identi.css';
+    $furlskin8 = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/fmstyle_invision.css';
+    $furlskin9 = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/fmstyle_phpbb.css';
+    $furlskin10 = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/fmstyle_phpnuke.css';
+    $furlskin11 = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/fmstyle_steam.css';
+    $furlskin12 = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/fmstyle_vbulletin.css';
+    $furlskin13 = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/fmstyle_whatsapp.css';
 
     $rutaArchivoLocal = isset($_GET['updatefile']) ? $_GET['updatefile'] . ".php" : "$scriptfile.php";
 
@@ -1480,6 +1488,14 @@ if (isset($_GET['fupdate'])) {
     $fcontenidoskin3 = @file_get_contents($furlskin3);
     $fcontenidoskin4 = @file_get_contents($furlskin4);
     $fcontenidoskin5 = @file_get_contents($furlskin5);
+    $fcontenidoskin6 = @file_get_contents($furlskin6);
+    $fcontenidoskin7 = @file_get_contents($furlskin7);
+    $fcontenidoskin8 = @file_get_contents($furlskin8);
+    $fcontenidoskin9 = @file_get_contents($furlskin9);
+    $fcontenidoskin10 = @file_get_contents($furlskin10);
+    $fcontenidoskin11 = @file_get_contents($furlskin11);
+    $fcontenidoskin12 = @file_get_contents($furlskin12);
+    $fcontenidoskin13 = @file_get_contents($furlskin13);
 
     if ($fcontenido === FALSE) {
         die(" $alertaini ⚠️ No se pudo descargar el archivo desde GitHub. Revisa la conexión del servidor. $alertafin ");
@@ -1510,6 +1526,15 @@ if (isset($_GET['fupdate'])) {
     if ($fcontenidoskin3) file_put_contents("fmstyle_taringa.css", $fcontenidoskin3);
     if ($fcontenidoskin4) file_put_contents("fmstyle_dark-red.css", $fcontenidoskin4);
     if ($fcontenidoskin5) file_put_contents("fmstyle_dark-leonardo.css", $fcontenidoskin5);
+
+    if ($fcontenidoskin6) file_put_contents("fmstyle_blue.css", $fcontenidoskin6);
+    if ($fcontenidoskin7) file_put_contents("fmstyle_identi.css", $fcontenidoskin7);
+    if ($fcontenidoskin8) file_put_contents("fmstyle_invision.css", $fcontenidoskin8);
+    if ($fcontenidoskin9) file_put_contents("fmstyle_phpbb.css", $fcontenidoskin9);
+    if ($fcontenidoskin10) file_put_contents("fmstyle_phpnuke.css", $fcontenidoskin10);
+    if ($fcontenidoskin11) file_put_contents("fmstyle_steam.css", $fcontenidoskin11);
+    if ($fcontenidoskin12) file_put_contents("fmstyle_vbulletin.css", $fcontenidoskin12);
+    if ($fcontenidoskin13) file_put_contents("fmstyle_whatsapp.css", $fcontenidoskin13);
     
 
     echo " $alertaini ⚠️ " . $tl['okupdate'] . " $alertafin";
