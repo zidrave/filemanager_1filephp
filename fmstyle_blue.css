@@ -16,7 +16,7 @@
     --bg-secondary2: #eceef0;
     --bg-card: #ffffff;
     --text-primary: #333333; /* Texto casi negro para lectura */
-    --text-secondary: #666666; /* Gris para metadatos */
+    --text-secondary: #f9da10;  
     --border: #d0d4d9;
     --hover: #00458e;
     --navigation: #fff;
@@ -238,7 +238,7 @@ footer {
 }
 
 .line-numbers {
-    background-color: var(--bg-secondary);
+    background-color: #11274b;
     font-family: Fira Code, Consolas, Courier New, monospace;
     padding: 8px 9px;
     line-height: 1.2495;
@@ -259,8 +259,8 @@ footer {
     line-height: 1.5;
     overflow-y: scroll;
     white-space: nowrap;
-    background-color: #ffffff;
-    color: #333;
+    background-color: #103570;
+    color: #ffffff;
 }
 
 .editor-container {
