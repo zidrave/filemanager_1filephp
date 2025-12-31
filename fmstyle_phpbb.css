@@ -1,0 +1,323 @@
+* {
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    /* phpBB 3.x Prosilver Palette */
+    --primary: #12A3EB; /* El azul brillante de los enlaces y bordes phpBB */
+    --primary-dark: #006699;
+    --secondary: #eef5f9; /* Fondo de celdas claras */
+    --success: #228822;
+    --danger: #BC2A4D;
+    --warning: #F0AD4E;
+    --bg-main: #CADCEB; /* El azul grisáceo de fondo de página */
+    --bg-secondary: #FFFFFF;
+    --bg-secondary2: #e1ebf2; /* Color de bloques y formularios */
+    --bg-card: #f7f9fb;
+    --text-primary: #333333;
+    --text-secondary: #536482; /* El color de texto clásico de Prosilver */
+    --border: #12A3EB;
+    --hover: #CFE1F1;
+    --navigation: #ddf2fd;
+}
+
+body {
+    background-color: #CADCEB; 
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif; 
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+a {
+    text-decoration: none;
+    color: #105289; /* Azul oscuro de enlace phpBB */
+    transition: color 0.2s;
+}
+
+a:hover {
+    color: #D31141; /* El rojo característico de hover en phpBB */
+}
+
+hr {
+    border: none;
+    height: 1px;
+    width: 100%;
+    max-width: 1000px;
+    background: linear-gradient(90deg, transparent, #12A3EB, transparent);
+    margin: 24px 0;
+}
+
+.tabla {
+    display: table;
+    width: 1000px;
+    border-collapse: separate;
+    border-spacing: 0;
+    background-color: #FFFFFF;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border: 1px solid #12A3EB;
+    margin: 10px 5px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.filasinfx {
+    display: table-row;
+    background: #006699;
+    background-image: linear-gradient(to bottom, #12A3EB, #006699); /* Degradado de cabecera phpBB */
+    color: #FFFFFF;
+}
+
+.fila {
+    display: table-row;
+    border-bottom: 1px solid #FFFFFF;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+/* Efecto de relleno phpBB al hacer hover */
+.fila::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    height: 100%;
+    width: 100%;
+    background-color: #CFE1F1; 
+    z-index: 0;
+}
+
+.fila:hover::before {
+    left: 0;
+}
+
+.fila:nth-child(even):hover::before {
+    background-color: #CFE1F1 !important;
+}
+
+.fila * {
+    position: relative;
+    z-index: 1;
+}
+
+.celda, .celda2, .celda3, .celda4 {
+    display: table-cell;
+    padding: 2px 2px; 
+    border: 1px solid #FFFFFF;
+    vertical-align: middle;
+}
+
+.celda2 { width: 190px; }
+.celda3 { width: 85px; }
+.celda4 { width: 390px; }
+
+.fila:nth-child(even) {
+    background-color: #e1ebf2; /* Color alterno Prosilver */
+}
+
+/* Botones Estilo phpBB 3.x */
+button, input[type="submit"] {
+    background: #FFFFFF;
+    background-image: linear-gradient(to bottom, #FFFFFF, #e1ebf2);
+    border: 1px solid #B4BAC0;
+    color: #105289;
+    padding: 6px 14px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: background-color 0.2s;
+}
+
+button:hover, input[type="submit"]:hover {
+    background-color: #D31141;
+    color: #D31141;
+    border-color: #A41034;
+}
+
+        .btn {
+            padding: 7px 18px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            border: 1px solid #B4BAC0;
+        }
+
+        .btn-primary { background: linear-gradient(to bottom, #0056ad, #06305b); } 
+        .btn-success { background: linear-gradient(to bottom, #7cbd43, #67a53b); }
+        .btn-danger { background: linear-gradient(to bottom, #ff5e5e, #ff4141); }
+        .btn-warning { 
+
+    background: #FFFFFF;
+    background-image: linear-gradient(to bottom, #FFFFFF, #e1ebf2);
+    border: 1px solid #B4BAC0;
+    color: #105289;
+    padding: 6px 14px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: background-color 0.2s;
+
+
+        }
+
+        .btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+
+
+header {
+    background-color: #12A3EB;
+    background-image: linear-gradient(to bottom, #12A3EB, #006699); 
+    color: #ffffff;
+    text-align: left;
+    width: 100%;
+    padding: 15px;
+    box-sizing: border-box;
+    border-bottom: 3px solid #FFFFFF;
+}
+
+footer {
+    width: 1000px;
+    background-color: #e1ebf2;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #12A3EB;
+    color: #536482;
+}
+
+.mensajex {
+    background-color: #e1ebf2;
+    color: #105289;
+    padding: 15px;
+    border: 1px solid #12A3EB;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.rojito { background-color: #BC2A4D; color: #fff; padding: 8px 16px; text-decoration: none; border-radius: 3px; display: inline-block; }
+.verde { background-color: #228822; color: #fff; padding: 8px 16px; text-decoration: none; border-radius: 3px; display: inline-block; }
+.naranja { background-color: #F0AD4E; color: #fff; padding: 8px 16px; text-decoration: none; border-radius: 3px; display: inline-block; }
+.snaranja { background-color: #F0AD4E; color: #fff; padding: 5px 10px; text-decoration: none; border-radius: 3px; display: inline-block; }
+.azulin, .azulin2, .enlacez { background-color: #006699; color: #fff; padding: 6px 14px; text-decoration: none; border-radius: 3px; border: 1px solid #b0d2e8; display: inline-block; transition: background 0.3s; }
+
+.enlacez:hover {
+    background-color: #D31141;
+}
+
+.formtext, .formtext2 {
+    background-color: #fff;
+    color: #333;
+    border: 1px solid #B4BAC0;
+    padding: 6px;
+    margin: 3px;
+    border-radius: 3px;
+}
+
+.mensaje {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #ffffff;
+    padding: 25px;
+    border: 1px solid #12A3EB;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    width: 320px;
+    z-index: 10;
+    border-radius: 5px;
+}
+
+.mensaje:target { display: block; }
+
+.cerrar {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 6px 12px;
+    background-color: #006699;
+    color: white;
+    text-decoration: none;
+    border-radius: 3px;
+}
+
+.editor-wrapper {
+    display: flex;
+    border: 1px solid #12A3EB;
+    overflow: hidden;
+    height: 450px;
+    width: 1000px;
+}
+
+.line-numbers {
+    background-color: #38749f;
+    font-family: Fira Code, Consolas, Courier New, monospace;
+    padding: 8px 9px;
+    line-height: 1.2495;
+    text-align: right;
+    user-select: none;
+    overflow: hidden;
+    color: #fff;
+    border-right: 1px solid #12A3EB;
+}
+
+.code-editor {
+    font-family: Fira Code, Consolas, Courier New, monospace;
+    width: 100%;
+    border: none;
+    outline: none;
+    padding: 8px;
+    resize: none;
+    line-height: 1.5;
+    overflow-y: scroll;
+    white-space: nowrap;
+    background-color: #ebeff5;
+}
+
+        .editor-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+.upload-section {
+    width: 1000px;
+    background: #e1ebf2;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #12A3EB;
+}
+        .upload-form {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .file-input-wrapper {
+            position: relative;
+            flex: 1;
+            min-width: 280px;
+        }
+input[type="file"] {
+    width: 450px;
+    padding: 12px 15px;
+    background: #ffffff;
+    border: 2px dashed #12A3EB;
+    border-radius: 8px;
+    color: #536482;
+}
+        input[type="file"]:hover {
+            border-color: var(--primary);
+            background: var(--bg-main);
+        }
+

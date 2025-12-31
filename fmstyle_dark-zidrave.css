@@ -60,6 +60,7 @@ a:hover {
     background-color: #161b22;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     margin: 10px 0;
+            border-left:8px solid #172c35;
 }
 
 .filasinfx {
@@ -172,7 +173,7 @@ footer {
             border-radius: 8px;
             margin-bottom: 15px;
             border: 1px solid var(--border);
-
+            border-left:4px solid #778da9;
 
 }
 
@@ -304,9 +305,9 @@ footer {
         }
         .line-numbers {
             background-color: #050a0f;
-            font-family: Fira Code, Consolas, Courier New, monospace;
-            padding: 8px 10px;
-            line-height: 1.25;
+    font-family: Fira Code, Consolas, Courier New, monospace;
+    padding: 8px 9px;
+    line-height: 1.2495;
             text-align: right;
             user-select: none;
             overflow: hidden;
@@ -335,13 +336,16 @@ footer {
 
         /* Upload Section */
         .upload-section {
+
             width: 1000px;
             background: var(--bg-secondary2);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             padding: 10px;
             border-radius: 8px;
+
             margin-bottom: 15px;
             border: 1px solid var(--border);
+            border-left:4px solid #778da9;
         }
 
         .upload-form {
@@ -417,3 +421,7 @@ footer {
             padding: 10px 15px;
             font-size: 18px;
         }
+
+.info-box {line-height: 1.8; font-size:20px; background:#031a30; border:1px solid #415a77; padding:20px; margin-bottom:25px; border-left:4px solid #778da9; border-radius:5px;}
+.info-box strong {color:#edf6f9;}
+

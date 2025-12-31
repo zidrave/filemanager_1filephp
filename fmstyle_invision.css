@@ -1,0 +1,329 @@
+* {
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    /* IPB 3.1 Classic Palette (Circa 2010) */
+    --primary: #325075; /* Azul IPB Header */
+    --primary-dark: #22364f;
+    --secondary: #edf3f8; /* Azul muy pálido de celdas */
+    --success: #67a53b;
+    --danger: #cf4242;
+    --warning: #f2a413;
+    --bg-main: #d8e2e8; /* Gris azulado de fondo general */
+    --bg-secondary: #ffffff;
+    --bg-secondary2: #f0f5fa; /* Tono de formularios y bloques */
+    --bg-card: #f9f9f9;
+    --text-primary: #284b72;
+    --text-secondary: #5a7191;
+    --border: #5a7191; /* Borde acero característico */
+    --hover: #e0e9f1;
+    --navigation: #ffffff;
+}
+
+body {
+    background-color: #d8e2e8; /* Fondo clásico IPB */
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif; 
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+a {
+    text-decoration: none;
+    color: #284b72; 
+    /* font-weight: bold; */
+    transition: color 0.2s;
+}
+
+a:hover {
+    color: #cf4242; /* Naranja/Rojo sutil de IPB en hover */
+}
+
+hr {
+    border: none;
+    height: 1px;
+    width: 100%;
+    max-width: 1000px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 24px 0;
+}
+
+.tabla {
+    display: table;
+    width: 1000px;
+    border-collapse: separate;
+    border-spacing: 0;
+    background-color: var(--bg-secondary);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border: 1px solid #34547a;
+    margin: 10px 0;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.filasinfx {
+    display: table-row;
+    background: #34547a;
+    background-image: linear-gradient(to bottom, #3e638e, #34547a); /* Degradado IPB */
+    color: #ffffff;
+}
+
+.fila {
+    display: table-row;
+    border-bottom: 1px solid #dce5ee;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+/* Efecto de relleno IPB en hover */
+.fila::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    height: 100%;
+    width: 100%;
+    background-color: #e0e9f1; 
+    z-index: 0;
+}
+
+.fila:hover::before {
+    left: 0;
+}
+
+.fila:nth-child(even):hover::before {
+    background-color: #e0e9f1 !important;
+}
+
+.fila * {
+    position: relative;
+    z-index: 1;
+}
+
+.celda, .celda2, .celda3, .celda4 {
+    display: table-cell;
+    padding: 2px 2px; 
+    border: 1px solid #dce5ee;
+    vertical-align: middle;
+}
+
+.celda2 { width: 190px; }
+.celda3 { width: 85px; }
+.celda4 { width: 390px; }
+
+.fila:nth-child(even) {
+    background-color: #f0f5fa; /* Alternancia suave IPB */
+}
+
+/* Botones Estilo IPB 3.x */
+button, input[type="submit"] {
+    background-color: #34547a;
+    background-image: linear-gradient(to bottom, #4a6d96, #34547a);
+    border: 1px solid #22364f;
+    color: #fff;
+    padding: 6px 14px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: background-color 0.2s;
+}
+
+.btn-warning {
+    background-color: #34547a;
+    background-image: linear-gradient(to bottom, #4a6d96, #34547a);
+    border: 1px solid #22364f;
+    color: #fff;
+    padding: 6px 14px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: background-color 0.2s;
+}
+
+.btn-warning:hover {
+    background-image: linear-gradient(to bottom, #34547a, #4a6d96);
+}
+
+button:hover, input[type="submit"]:hover {
+    background-color: #3e638e;
+    background-image: none;
+}
+
+header {
+    background-color: #325075;
+    background-image: linear-gradient(to bottom, #4c7099, #325075); 
+    color: #ffffff;
+    text-align: left;
+    width: 100%;
+    padding: 15px;
+    box-sizing: border-box;
+    border-bottom: 3px solid #1d4863; /* Línea de acento clásica de IPB */
+}
+
+footer {
+    width: 1000px;
+    background-color: #f0f5fa;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #bcd0de;
+    color: var(--text-secondary);
+}
+
+.mensajex {
+    background-color: #edf3f8;
+    color: #284b72;
+    padding: 15px;
+    border: 1px solid #34547a;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.rojito { background-color: #cf4242; color: #fff; padding: 8px 16px; text-decoration: none; border-radius: 3px; display: inline-block; }
+.verde { background-color: #67a53b; color: #fff; padding: 8px 16px; text-decoration: none; border-radius: 3px; display: inline-block; }
+.naranja { background-color: #f2a413; color: #fff; padding: 8px 16px; text-decoration: none; border-radius: 3px; display: inline-block; }
+.snaranja { background-color: #f2a413; color: #fff; padding: 5px 10px; text-decoration: none; border-radius: 3px; display: inline-block; }
+.azulin, .azulin2, .enlacez { background-color: #34547a; color: #fff; padding: 6px 13px; text-decoration: none; border-radius: 3px; display: inline-block; transition: background 0.3s; }
+
+.enlacez:hover {
+    background-color: #2a4a63;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.formtext, .formtext2 {
+    background-color: #fff;
+    color: #333;
+    border: 1px solid #bcd0de;
+    padding: 6px;
+    margin: 3px;
+    border-radius: 3px;
+}
+
+.mensaje {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #ffffff;
+    padding: 25px;
+    border: 1px solid #34547a;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    width: 320px;
+    z-index: 10;
+    border-radius: 5px;
+}
+
+.mensaje:target { display: block; }
+
+.cerrar {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 6px 12px;
+    background-color: #34547a;
+    color: white;
+    text-decoration: none;
+    border-radius: 3px;
+}
+
+.editor-wrapper {
+    display: flex;
+    border: 1px solid #bcd0de;
+    overflow: hidden;
+    height: 450px;
+    width: 1000px;
+}
+
+.line-numbers {
+    background-color: #34547a;
+    font-family: Fira Code, Consolas, Courier New, monospace;
+    padding: 8px 9px;
+    line-height: 1.2495;
+    text-align: right;
+    user-select: none;
+    overflow: hidden;
+    color: #ffffff;
+}
+
+.code-editor {
+    font-family: Fira Code, Consolas, Courier New, monospace;
+    width: 100%;
+    border: none;
+    outline: none;
+    padding: 8px;
+    resize: none;
+    line-height: 1.5;
+    overflow-y: scroll;
+    white-space: nowrap;
+    background-color: #edf1f2;
+}
+
+        .editor-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+.upload-section {
+    width: 1000px;
+    background: #f0f5fa;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #bcd0de;
+}
+
+        .upload-form {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .file-input-wrapper {
+            position: relative;
+            flex: 1;
+            min-width: 280px;
+        }
+
+input[type="file"] {
+    width: 450px;
+    padding: 12px 15px;
+    background: #fff;
+    border: 2px dashed #34547a;
+    border-radius: 8px;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+        input[type="file"]:hover {
+            border-color: var(--primary);
+            background: var(--bg-main);
+        }
+
+/* --- REGLA DINÁMICA ACTUALIZADA --- */
+@media (max-width: 700px) {
+    .upload-form {
+        flex-direction: column;    /* Alinea los elementos uno debajo del otro */
+        align-items: flex-start;  /* ALINEA A LA IZQUIERDA y mantiene tamaño original */
+        gap: 10px;                 /* Espacio entre el input y el botón */
+    }
+    
+    .file-input-wrapper, 
+    input[type="file"] {
+        width: 100%;              /* El input sí suele ser mejor que ocupe todo el ancho */
+        max-width: 100%;
+    }
+
+    .upload-form button {
+        width: auto;               /* Garantiza que el botón no se estire */
+        align-self: flex-start;    /* Refuerza la alineación a la izquierda */
+    }
+}

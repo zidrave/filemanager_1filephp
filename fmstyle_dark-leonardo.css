@@ -286,9 +286,9 @@
         }
         .line-numbers {
             background-color: #401739;
-            font-family: Fira Code, Consolas, Courier New, monospace;
-            padding: 8px 10px;
-            line-height: 1.25;
+    font-family: Fira Code, Consolas, Courier New, monospace;
+    padding: 8px 9px;
+    line-height: 1.2495;
             text-align: right;
             user-select: none;
             overflow: hidden;
