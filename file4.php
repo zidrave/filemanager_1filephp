@@ -3,9 +3,9 @@
 #   - - - |_________________,----------._ [____]  ""-,__  __....-----=====
 #                        (_(||||||||||||)___________/   ""                |
 #                           `----------' zIDRAvE[ ))"-,                   |
-#                     FILE MANAGER V4.4.2        ""    `,  _,--....___    |
+#                     FILE MANAGER V4.4.3        ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
-# 2025 reval
+# 2025 sander
 //////////////POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
 $tokenplus = "pvt0zwwwwuFoewwwCpPZDq"; // cambie este valor es para darle mas seguridad a su script, desde aqui obtenemos el $masterkey para
                                        // acceder sin esperar  ejemplo: file4.php?unlock=pvt0z  para cambiarlo cambia el tokenplus las primeras 5 letras
@@ -19,7 +19,7 @@ ob_start(); // 1. Siempre primero para evitar Error 500
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
 
-$fversion="4.4.2";
+$fversion="4.4.3";
 $nombreMaquina = gethostname();
 $hashCompleto = hash('sha256', $nombreMaquina);
 $tokenhost = substr($hashCompleto, 0, 10);
@@ -578,6 +578,78 @@ if (isset($_GET['test'])) {
 echo "prueba master es $master";
 exit;
 }
+
+
+
+
+//Zona Download file/////////////////////////////////////// 
+if (isset($_GET['dfile'])) {
+    // 1. PROTECCIÓN DE SESIÓN: Si no está autenticado, el script muere aquí.
+    if (!isset($is_authenticated) || $is_authenticated !== true) {
+        header('HTTP/1.1 403 Forbidden');
+        exit("Error: Acceso no autorizado.");
+    }
+$archivoSolicitado = $_GET['dfile'] ?? null;
+
+if (!$archivoSolicitado) {
+    die("❌ Error: No se especificó ningún archivo.");
+}
+// rutas de las carpetas donde estaran los archivos
+$baseOrigen = __DIR__ . "/uploads";
+//$rutaOrigen = $baseOrigen . basename($archivoSolicitado); // basename() limpia rutas como ../../
+$rutaOrigen = $baseOrigen . $archivoSolicitado; 
+// Definimos la carpeta temporal y la ruta completa del archivo
+$carpetaTemporal = __DIR__ . "/temp/";
+$rutaTemporal = $carpetaTemporal . basename($archivoSolicitado);
+
+// 🔹 Lógica de creación automática de carpeta
+if (!file_exists($carpetaTemporal)) {
+    // Creamos la carpeta con permisos 0755 (lectura/escritura para el servidor)
+    // El parámetro 'true' permite creación recursiva si fuera necesario
+    mkdir($carpetaTemporal, 0755, true);
+    
+    // Opcional: Crear un archivo .htaccess para proteger la carpeta temp
+    file_put_contents($carpetaTemporal . ".htaccess", "Deny from all");
+}
+
+// 3. Validación de Seguridad: ¿El archivo existe y está en la ruta permitida?
+if (file_exists($rutaOrigen) && is_file($rutaOrigen)) {
+    
+    // 4. Copiar temporalmente al directorio actual
+    if (copy($rutaOrigen, $rutaTemporal)) {
+        
+        // 5. Headers para forzar descarga
+        header('Content-Description: File Transfer');
+        header('Content-Type: application/octet-stream');
+        header('Content-Disposition: attachment; filename="' . basename($rutaTemporal) . '"');
+        header('Content-Transfer-Encoding: binary');
+        header('Expires: 0');
+        header('Cache-Control: must-revalidate');
+        header('Pragma: public');
+        header('Content-Length: ' . filesize($rutaTemporal));
+        
+        // Limpiar buffer
+        if (ob_get_level()) ob_end_clean();
+        
+        // 6. Enviar archivo y borrar
+        readfile($rutaTemporal);
+        
+        // Eliminamos la copia temporal
+        unlink($rutaTemporal);
+        exit;
+        
+    } else {
+        echo "❌ Error: Permisos insuficientes para copiar el archivo en el servidor.";
+    }
+} else {
+    echo "❌ Error: El archivo no existe o el acceso está denegado.";
+}
+//echo "prueba descargador : probando $master : $rutaOrigen [temp]$rutaTemporal";
+exit;
+}
+////////////////////////////////////////////////////////////
+
+
 
 
 /////
@@ -1355,6 +1427,32 @@ if (isset($getruta)) {
     $carpetaz = rtrim($carpetaz, '/');
     // Sanitización básica (considera usar funciones más robustas)
     $carpetax = filter_var($carpetax, FILTER_SANITIZE_STRING);
+
+  
+
+
+ $dcarpetaz = $carpetaz;
+
+// 1. Normalización de seguridad: Eliminamos posibles dobles barras
+// Esto evita errores como "uploads//carpeta"
+$dcarpetaz = str_replace('//', '/', $dcarpetaz);
+
+// 2. Lógica de Directorio Raíz:
+// Si después de limpiar, la ruta está vacía, aseguramos que sea "/"
+if (trim($dcarpetaz) == "") {
+    $dcarpetaz = "/";
+}
+
+// 3. Formato de Directorio:
+// Nos aseguramos de que siempre termine en "/" para que los enlaces concatenen bien
+if (substr($dcarpetaz, -1) !== '/') {
+    $dcarpetaz .= '/';
+}
+
+
+
+
+
 
     // Crear la ruta completa a la carpeta
 #   $uploadDir = 'uploads/' . $carpetax;
@@ -3072,7 +3170,7 @@ echo "
         <div class='celda'>  $fileModTime </div>
         <div class='celda'> <div class='fileperms'> <b>$filePerms </b></div> </div> 
         <div class='celda'>  $fileOwner </div>
-	<div class='celda'>  [<a href='?archivoacambiarnombre=$item&c=$carpetaz/'>🖊️</a>] [<a href='?deleteFolder=$item&c=$carpetaz/'>❌</a>] [<a href='?comprimir=$item&c=$carpetaz/'>📚</a>]
+	<div class='celda'>  <a href='?archivoacambiarnombre=$item&c=$carpetaz/'>🖊️</a> <a href='?deleteFolder=$item&c=$carpetaz/'>❌</a> <a href='?comprimir=$item&c=$carpetaz/'>📚</a>
      </div>
     </div>
  ";
@@ -3097,11 +3195,12 @@ echo "  <div class='celda'> ◽ $icon <a href='#' class='file-link image-link' d
 } else {
 echo "  <div class='celda'> ◽ $icon <a href='$uploadDir$item' target='_black'>$itemr  </a> </div> ";
 }
+
 echo "  <div class='celda'> " . formatSize($fileSize) . " </div>
         <div class='celda'>  $fileModTime </div>
         <div class='celda'>  <div class='fileperms2'> $filePerms </div></div> 
         <div class='celda'>  $fileOwner </div>
-	<div class='celda'>  [<a href='?editFile=$item&c=$carpetaz/'>✏️</a>] [<a href='?archivoacambiarnombre=$item&c=$carpetaz/'>🖊️</a>] [<a href='#eliminar_$item'>❌</a>] [<a href='?comprimir=$item&c=$carpetaz/'>📚</a>] </div>
+	<div class='celda'>  <a href='?editFile=$item&c=$carpetaz/'>✏️</a> <a href='?archivoacambiarnombre=$item&c=$carpetaz/'>🖊️</a> <a href='#eliminar_$item'>❌</a> <a href='?comprimir=$item&c=$carpetaz/'>📚</a> <a href='?dfile=$dcarpetaz$item'>💾</a> </div>
     </div>
  ";
 
