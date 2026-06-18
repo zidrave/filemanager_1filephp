@@ -981,11 +981,14 @@ EOT;
 // =========================
 // 2. Procesar skin por POST
 // =========================
-$themex = $_POST['fskin'];
-if (!preg_match('/^[a-zA-Z0-9_-]+$/', $themex)) {
-    die("Nombre de theme inválido");
-}
+$themex = $_POST['fskin'] ?? '';
 
+// Si no está vacío, procedemos a validar su formato
+if (!empty($themex)) {
+    if (!preg_match('/^[a-zA-Z0-9_-]+$/', $themex)) {
+        die("Nombre de theme inválido");
+    }
+}
 
 $theme_options = [
     'expires' => time() + (30 * 24 * 60 * 60),
