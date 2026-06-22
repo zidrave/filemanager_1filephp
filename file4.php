@@ -3,7 +3,7 @@
 #   - - - |_________________,----------._ [____]  ""-,__  __....-----=====
 #                        (_(||||||||||||)___________/   ""                |
 #                           `----------' zIDRAvE[ ))"-,                   |
-#                     FILE MANAGER V4.4.3        ""    `,  _,--....___    |
+#                     FILE MANAGER V4.4.4        ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
 # 2025 sander
 //////////////POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
@@ -12,14 +12,14 @@ $tokenplus = "pvt0zwwwwuFoewwwCpPZDq"; // cambie este valor es para darle mas se
 $pepper = "e%OrrrrpPZDq_U7tXz9#mK2@pL4wN"; // cambie este valor es para darle mas seguridad a su script
 ////// Cambiar estos valores TOKENPLUS y PEPPER antes de crear tu usuario administrador, si lo cambias despues de configurar tu cuenta
 ////// admin nunca logeara la unica solución es que borres manualmente el archivo fconfig.json 
-$configFile = '.htconfig.json'; //obligatorio cambiar el archivo config pero siempre con .ht al inicio ejemplo: .htconfxx.json
+$configFile = ".htconfig.json"; //obligatorio cambiar el archivo config pero siempre con .ht al inicio ejemplo: .htconfxx.json
 //////////////POR SEGURIDAD CAMBIE ESTOS VALORES ANTES DE GRABAR EL USUARIO///////////
 
 ob_start(); // 1. Siempre primero para evitar Error 500
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
 
-$fversion="4.4.3";
+$fversion="4.4.4";
 $nombreMaquina = gethostname();
 $hashCompleto = hash('sha256', $nombreMaquina);
 $tokenhost = substr($hashCompleto, 0, 10);
@@ -654,7 +654,7 @@ exit;
 
 /////
 //buscando la ruta real de cada carpeta
-$ruta = $_GET['c'];
+$ruta = $_GET['c'] ?? "";
 $uploadDir = 'uploads'.$ruta.'';
 $rutarealserver = realpath($uploadDir);
 ////
@@ -730,8 +730,11 @@ if (isset($_GET['guardax'])) {
  if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     #$texto = filter_var($_POST['texto'], FILTER_SANITIZE_STRING); // Sanitizar el texto
     $texto = $_POST['texto'];
-      $filename = filter_var($_POST['miArchivo'], FILTER_SANITIZE_STRING); // Sanitizar el texto
-      $carpeta = filter_var($_POST['miCarpeta'], FILTER_SANITIZE_STRING); // Sanitizar el texto
+    // Sanitizar el nombre del archivo (mantiene el texto limpio de etiquetas HTML/Scripts)
+    $filename = htmlspecialchars($_POST['miArchivo'] ?? '', ENT_QUOTES, 'UTF-8');
+
+    // Sanitizar la carpeta (mantiene el texto limpio de etiquetas HTML/Scripts)
+    $carpeta = htmlspecialchars($_POST['miCarpeta'] ?? '', ENT_QUOTES, 'UTF-8');
 
     if (!empty($texto)) {
         $archivo = "uploads$carpeta/$filename";
@@ -799,8 +802,8 @@ if (isset($_GET['fexit'])) {
 
 ///////EDITOR PLUS COOKIEr////////////////////////
 
-$cokiruta=$_GET['c'];
-$cokifile=$_GET['editFile'];
+$cokiruta=$_GET['c'] ?? '';
+$cokifile=$_GET['editFile'] ?? '';
 
 ///////EDITOR PLUS COOKIEr////////////////////////
 $options_editor = [
@@ -1429,7 +1432,8 @@ if (isset($getruta)) {
     $carpetaz = $getruta;
     $carpetaz = rtrim($carpetaz, '/');
     // Sanitización básica (considera usar funciones más robustas)
-    $carpetax = filter_var($carpetax, FILTER_SANITIZE_STRING);
+    // $carpetax = filter_var($carpetax, FILTER_SANITIZE_STRING);
+    $carpetax = htmlspecialchars($carpetax, ENT_QUOTES, 'UTF-8');
 
   
 
@@ -1606,9 +1610,9 @@ if (isset($_GET['fupdate'])) {
     // Esta regex busca $variable = "..." o '...' sin importar los espacios y mantiene tus valores actuales.
     
     $patrones = [
-        '/\$tokenplus\s*=\s*(["\']).*?\1;/'  => '$tokenplus = "' . $tokenplus . '";',
-        '/\$pepper\s*=\s*(["\']).*?\1;/'     => '$pepper = "' . $pepper . '";',
-        '/\$configFile\s*=\s*(["\']).*?\1;/' => '$configFile = "' . $configFile . '";'
+        '/\$tokenplus\s*=\s*(["\']).*?\1;/'  => '$tokenplus = "pvt0zwwwwuFoewwwCpPZDq";',
+        '/\$pepper\s*=\s*(["\']).*?\1;/'     => '$pepper = "e%OrrrrpPZDq_U7tXz9#mK2@pL4wN";',
+        '/\$configFile\s*=\s*(["\']).*?\1;/' => '$configFile = ".htconfig.json";'
     ];
 
     $fcontenido = preg_replace(array_keys($patrones), array_values($patrones), $fcontenido);
@@ -1735,7 +1739,7 @@ if (isset($_POST['deleteFolder']) || isset($_GET['deleteFolder'])) {
 if (isset($_GET['editFile'])) {
 #    $fileToEdit = $uploadDir . $_GET['editFile']; //uploads$carpetaz/
 #    $fileToEdit = $_GET['editFile'];
-    $fileToEdit = $_GET['editFile'];
+    $fileToEdit = $_GET['editFile'] ?? '';
     $fileToEdit = "uploads$carpetaz/$fileToEdit";
     if (file_exists($fileToEdit)) {
         $fileContent = file_get_contents($fileToEdit);
@@ -1757,7 +1761,7 @@ if (isset($_POST['saveFile'])) {
     file_put_contents($fileToSave, $newContent);
     echo "$alertaini  ⚠️ Archivo Guardado. $alertafin";
 
-    $elarchivo = $_GET['editFile'];
+    $elarchivo = $_GET['editFile'] ?? '';
     echo "<a href='?editFile=$elarchivo&c=$c/' class='naranja' role='button'> <b> RECARGAR </b></a>";
     exit;
 }
@@ -1818,9 +1822,9 @@ if (isset($_POST['copyFile'])) {
 
 ////////////////// Comprimir archivo o carpeta 🚀 🚀🚀🚀🚀🚀🚀🚀
 if (isset($_POST['compressFile'])) {
-    $namefilec = $_POST['archivoacomprimir'];
-    $namefilepass = $_POST['password'];
-    $descripcion = $_POST['descripcion'];
+    $namefilec = $_POST['archivoacomprimir'] ?? '';
+    $namefilepass = $_POST['password'] ?? '';
+    $descripcion = $_POST['descripcion'] ?? '';
 
     $nombreZipa = isset($_POST['archivoacomprimir']) ? $_POST['archivoacomprimir'] . '.zip' : 'archivo_protegido.zip';
     $nombreZip = "uploads$getruta$nombreZipa";
@@ -2531,7 +2535,7 @@ sort($skinpalabras);
  
 <?php
 ///////////////////////////////////////// CREAR TEXTO ////////////
-$creartexto=$_GET['creartexto'];
+$creartexto=$_GET['creartexto'] ?? '';
 ?>
 
 <?php if ($mod == "creartexto"): ?>
@@ -2600,10 +2604,11 @@ $creartexto=$_GET['creartexto'];
 
 
 <?php
-$comprimir=$_GET['comprimir'];
+$comprimir=$_GET['comprimir'] ?? '';
 ?>
 
-<?php if (isset($comprimir)): ?>
+<?php /*if (isset($comprimir)): */?>
+<?php if (!empty($comprimir)): ?>
 
 <!--💦💦💦💦💦💦💦-->
 
@@ -2654,7 +2659,7 @@ $comprimir=$_GET['comprimir'];
 
 <?php
 //////////////////////////////////// cambiar nombre  ////////////
-$archivoacambiarnombre=$_GET['archivoacambiarnombre'];
+$archivoacambiarnombre=$_GET['archivoacambiarnombre'] ?? NULL;
 $archivoacambiarnombre2 = "uploads$carpetap$archivoacambiarnombre";
  if (isset($archivoacambiarnombre)):
 
@@ -2880,7 +2885,7 @@ if (in_array($extension, ['jpg', 'bmp', 'tiff', 'gif', 'jfif', 'jpeg', 'png', 'w
 <?php endif; ?>
 
 
-<?php if (!$comprimible == "ok"): ?>
+<?php if (empty($comprimible) || $comprimible !== "ok"): ?>
              <a href="?comprimir=<?php echo "$archivoacambiarnombre";?>&c=<?php echo "$carpetap";?>" class='verde'>   <?php echo $tl['compress'];?> </a>     
 <?php endif; ?>
 
@@ -3106,7 +3111,7 @@ $imageExts = ["jpg", "jpeg", "png", "gif", "webp", "bmp", "svg", "jfif"];
             $icon = '📂';
         } else {
             $fileType = 'file';
-            $fileSize = filesize($fullPath);
+            $fileSize = filesize($filePath);
             
             // Asignar iconos basados en la extensión del archivo
             $extension = pathinfo($item, PATHINFO_EXTENSION);
