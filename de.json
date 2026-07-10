@@ -75,5 +75,10 @@
     "activate": "Aktivieren",
     "desactivate": "Deaktivieren",
     "msgupdate": "Jetzt wird das System auf die neueste Version aktualisiert",
+
+    "efile": "Dateien",
+    "summary": "Zusammenfassung",
+
+
     "createdby": "erstellt von"
 }
