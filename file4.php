@@ -3,7 +3,7 @@
 #   - - - |_________________,----------._ [____]  ""-,__  __....-----=====
 #                        (_(||||||||||||)___________/   ""                |
 #                           `----------' zIDRAvE[ ))"-,                   |
-#                     FILE MANAGER V4.4.4        ""    `,  _,--....___    |
+#                     FILE MANAGER V4.4.5        ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
 # 2025 sander
 //////////////POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
@@ -12,14 +12,14 @@ $tokenplus = "pvt0zwwwwuFoewwwCpPZDq"; // cambie este valor es para darle mas se
 $pepper = "e%OrrrrpPZDq_U7tXz9#mK2@pL4wN"; // cambie este valor es para darle mas seguridad a su script
 ////// Cambiar estos valores TOKENPLUS y PEPPER antes de crear tu usuario administrador, si lo cambias despues de configurar tu cuenta
 ////// admin nunca logeara la unica solución es que borres manualmente el archivo fconfig.json 
-$configFile = ".htconfig.json"; //obligatorio cambiar el archivo config pero siempre con .ht al inicio ejemplo: .htconfxx.json
+$configFile = "fconfigXX26.json"; //obligatorio cambiar el archivo config pero siempre con .ht al inicio ejemplo: .htconfxx.json
 //////////////POR SEGURIDAD CAMBIE ESTOS VALORES ANTES DE GRABAR EL USUARIO///////////
 
 ob_start(); // 1. Siempre primero para evitar Error 500
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
 
-$fversion="4.4.4";
+$fversion="4.4.5";
 $nombreMaquina = gethostname();
 $hashCompleto = hash('sha256', $nombreMaquina);
 $tokenhost = substr($hashCompleto, 0, 10);
@@ -45,7 +45,9 @@ $limite_horas = 24 * 3600; // 24 horas en segundos
 $master_key = substr($tokenplus, 0, 5); //estoy servira para el unlock
 
 
-
+$totalArchivos = 0;
+$totalCarpetas = 0;
+$totalPesoCarpeta = 0;
 
 
 
@@ -150,6 +152,9 @@ $tl = array(
     'activate' => 'Activar',
     'desactivate' => 'Desactivar',
     'createdby' => 'creado por',
+
+    'efile' => 'Archivo',
+    'summary' => 'Resumen',
 
 
     'selectlanguage' => 'Seleccionar Idioma'
@@ -1612,7 +1617,7 @@ if (isset($_GET['fupdate'])) {
     $patrones = [
         '/\$tokenplus\s*=\s*(["\']).*?\1;/'  => '$tokenplus = "pvt0zwwwwuFoewwwCpPZDq";',
         '/\$pepper\s*=\s*(["\']).*?\1;/'     => '$pepper = "e%OrrrrpPZDq_U7tXz9#mK2@pL4wN";',
-        '/\$configFile\s*=\s*(["\']).*?\1;/' => '$configFile = ".htconfig.json";'
+        '/\$configFile\s*=\s*(["\']).*?\1;/' => '$configFile = "fconfigXX26.json";'
     ];
 
     $fcontenido = preg_replace(array_keys($patrones), array_values($patrones), $fcontenido);
@@ -3107,9 +3112,15 @@ $imageExts = ["jpg", "jpeg", "png", "gif", "webp", "bmp", "svg", "jfif"];
 
 #///agregando iconos personalzados ////
         if (is_dir($uploadDir . $item)) {
+
             $fileType = 'folder';
             $icon = '📂';
+$totalCarpetas++;
+
+
         } else {
+$totalArchivos++;
+$totalPesoCarpeta += filesize($uploadDir . '/' . $item); //solo mediremos el peso de archivos
             $fileType = 'file';
             $fileSize = filesize($filePath);
             
@@ -3248,9 +3259,22 @@ echo "
 
 ?>
     <!-- fin del bucle -->
-</div> <hr>
+</div>  
 
 
+
+<br>
+	<div class="tabla">
+		<div class="filasinfx">
+			<div class="celda"> 
+✅ <?php echo $tl['summary'];?>
+     ◽ 📁 <?php echo formatSize($totalPesoCarpeta); ?> <?php echo $tl['size'];?>
+     ◽ 📁 <?php echo $totalCarpetas; ?> <?php echo $tl['folder'];?>(s)
+     ◽ 📄 <?php echo $totalArchivos; ?> <?php echo $tl['efile'];?>(s)
+
+
+</div></div></div>
+<hr>
 
 
 
