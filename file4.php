@@ -3097,6 +3097,8 @@ $imageExts = ["jpg", "jpeg", "png", "gif", "webp", "bmp", "svg", "jfif"];
 // BUCLE DE LISTADO DE ARCHIVOS
         foreach ($items as $item) {
 
+ $itemSafe = htmlspecialchars($item, ENT_QUOTES, 'UTF-8'); 
+
             if ($item != '.' && $item != '..') {
             $uploadDir = empty($uploadDir) ? '/' : $uploadDir;  
             $filePath = $uploadDir . $item;
@@ -3184,12 +3186,12 @@ $totalPesoCarpeta += filesize($uploadDir . '/' . $item); //solo mediremos el pes
 // estos son carpetas
 echo " 
     <div class='fila'>
-        <div class='celda'> ◽ $icon <a href='?c=$carpetaz/$item/'><b>$item </b>  </a> </div>
+        <div class='celda'> ◽ $icon <a href='?c=$carpetaz/$itemSafe/'><b>$itemSafe </b>  </a> </div>
         <div class='celda'>   ".$tl['folder']."  </div>
         <div class='celda'>  $fileModTime </div>
         <div class='celda'> <div class='fileperms'> <b>$filePerms </b></div> </div> 
         <div class='celda'>  $fileOwner </div>
-	<div class='celda'>  <a href='?archivoacambiarnombre=$item&c=$carpetaz/'>🖊️</a> <a href='?deleteFolder=$item&c=$carpetaz/'>❌</a> <a href='?comprimir=$item&c=$carpetaz/'>📚</a>
+	<div class='celda'>  <a href='?archivoacambiarnombre=$itemSafe&c=$carpetaz/'>🖊️</a> <a href='?deleteFolder=$itemSafe&c=$carpetaz/'>❌</a> <a href='?comprimir=$itemSafe&c=$carpetaz/'>📚</a>
      </div>
     </div>
  ";
@@ -3199,7 +3201,7 @@ echo "
 $fileSize = filesize($uploadDir . $item);
 
 //Estos son archivos
-$itemr = $item;
+$itemr = $itemSafe;
 
 if (strlen($itemr) > 30) {
     $itemr = substr($itemr, -30);
@@ -3210,27 +3212,27 @@ echo "
     <div class='fila'> ";
     // ARCHIVOS aplican lógica especial para imagenes
     if (in_array($extension, $imageExts)) {
-echo "  <div class='celda'> ◽ $icon <a href='#' class='file-link image-link' data-file='$uploadDir$item'> $itemr </a> ➡︎ <a href='$uploadDir$item' target='_black'>🔗</a> </div> ";
+echo "  <div class='celda'> ◽ $icon <a href='#' class='file-link image-link' data-file='$uploadDir$itemSafe'> $itemr </a> ➡︎ <a href='$uploadDir$itemSafe' target='_black'>🔗</a> </div> ";
 } else {
-echo "  <div class='celda'> ◽ $icon <a href='$uploadDir$item' target='_black'>$itemr  </a> </div> ";
+echo "  <div class='celda'> ◽ $icon <a href='$uploadDir$itemSafe' target='_black'>$itemr  </a> </div> ";
 }
 
 echo "  <div class='celda'> " . formatSize($fileSize) . " </div>
         <div class='celda'>  $fileModTime </div>
         <div class='celda'>  <div class='fileperms2'> $filePerms </div></div> 
         <div class='celda'>  $fileOwner </div>
-	<div class='celda'>  <a href='?editFile=$item&c=$carpetaz/'>✏️</a> <a href='?archivoacambiarnombre=$item&c=$carpetaz/'>🖊️</a> <a href='#eliminar_$item'>❌</a> <a href='?comprimir=$item&c=$carpetaz/'>📚</a> <a href='?dfile=$dcarpetaz$item'>💾</a> </div>
+	<div class='celda'>  <a href='?editFile=$itemSafe&c=$carpetaz/'>✏️</a> <a href='?archivoacambiarnombre=$itemSafe&c=$carpetaz/'>🖊️</a> <a href='#eliminar_$itemSafe'>❌</a> <a href='?comprimir=$itemSafe&c=$carpetaz/'>📚</a> <a href='?dfile=$dcarpetaz$itemSafe'>💾</a> </div>
     </div>
  ";
 
 //zona de confirmaciones para eliminacion 
 
  echo "
-        <div id='eliminar_$item' class='mensaje'>
+        <div id='eliminar_$itemSafe' class='mensaje'>
             <center>
                 <p><b>¿ ".$tl['qdelete']." ?</b></p><br>
-                <p><h2>$item</h2></p><br>
-                <a class='cerrar' href='?deleteFile=$uploadDir$item&c=$carpetaz/'>".$tl['deletenow']."</a> 
+                <p><h2>$itemSafe</h2></p><br>
+                <a class='cerrar' href='?deleteFile=$uploadDir$itemSafe&c=$carpetaz/'>".$tl['deletenow']."</a> 
                 <a class='cerrar' href='#'>".$tl['cancel']."</a>
             </center>
         </div>";
