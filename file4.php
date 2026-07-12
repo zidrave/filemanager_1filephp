@@ -466,7 +466,9 @@ if (file_exists($configFile)) {
 
     // 1. AUTO-LOGIN (Sincronizar Cookie con Sesión)
     if (!isset($_SESSION['user_auth']) || $_SESSION['user_auth'] !== true) {
-        if (isset($_COOKIE['Hash']) && $_COOKIE['Hash'] === $tokenhash_valid && $haship === $configData['fhash']) {
+      //if (isset($_COOKIE['Hash']) && $_COOKIE['Hash'] === $tokenhash_valid && $haship === $configData['fhash']) {
+        if (isset($_COOKIE['Hash']) && hash_equals($tokenhash_valid, $_COOKIE['Hash']) && hash_equals($configData['fhash'], $haship)) {
+            session_regenerate_id(true);
             $_SESSION['user_auth'] = true;
             $_SESSION['user_name'] = $master;
         }
