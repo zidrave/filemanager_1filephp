@@ -3,23 +3,24 @@
 #   - - - |_________________,----------._ [____]  ""-,__  __....-----=====
 #                        (_(||||||||||||)___________/   ""                |
 #                           `----------' zIDRAvE[ ))"-,                   |
-#                     FILE MANAGER V4.4.5        ""    `,  _,--....___    |
+#                     FILE MANAGER V4.4.6        ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
 # 2025 sander
+# public_key_permanente: 3JBT7LrYkydYPS3upQhJwB8pEi12nEfi2rbSTVIw/cs=
 //////////////POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
 $tokenplus = "pvt0zwwwwuFoewwwCpPZDq"; // cambie este valor es para darle mas seguridad a su script, desde aqui obtenemos el $masterkey para
                                        // acceder sin esperar  ejemplo: file4.php?unlock=pvt0z  para cambiarlo cambia el tokenplus las primeras 5 letras
 $pepper = "e%OrrrrpPZDq_U7tXz9#mK2@pL4wN"; // cambie este valor es para darle mas seguridad a su script
 ////// Cambiar estos valores TOKENPLUS y PEPPER antes de crear tu usuario administrador, si lo cambias despues de configurar tu cuenta
 ////// admin nunca logeara la unica solución es que borres manualmente el archivo .htfconfigxx.json 
-$configFile = ".htfconfig26.json"; //obligatorio cambiar el archivo config pero siempre con .ht al inicio ejemplo: .htconfxx.json
+$configFile = ".htconfig.json"; //obligatorio cambiar el archivo config pero siempre con .ht al inicio ejemplo: .htconfxx.json
 //////////////POR SEGURIDAD CAMBIE ESTOS VALORES ANTES DE GRABAR EL USUARIO///////////
 
 ob_start(); // 1. Siempre primero para evitar Error 500
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
 
-$fversion="4.4.5";
+$fversion="4.4.6";
 $nombreMaquina = gethostname();
 $hashCompleto = hash('sha256', $nombreMaquina);
 $tokenhost = substr($hashCompleto, 0, 10);
@@ -43,6 +44,7 @@ $acceso_emergencia = false; //aqui siempre false
 $archivo_registro_unlock = 'unlocks_hist.log'; // Registro de timestamps, no hace falta cambiar
 $limite_horas = 24 * 3600; // 24 horas en segundos
 $master_key = substr($tokenplus, 0, 5); //estoy servira para el unlock
+$publicKeyBase64 = '3JBT7LrYkydYPS3upQhJwB8pEi12nEfi2rbSTVIw/cs='; //para verificar nuestro archivo fuente
 
 
 $totalArchivos = 0;
@@ -678,11 +680,8 @@ if (isset($_GET['varios'])) {
     }
 
 
-$ruta = $_GET['c'];
-#echo "subiendo varios test en uploads$ruta";
-echo "
-<xscript>alert('subiendo varios test en uploads$ruta');</scriptx>
-";
+
+
 
 if (!empty($_FILES['files']['name'][0])) {
     $uploadDir = 'uploads'.$ruta.'';
@@ -1472,7 +1471,6 @@ if (substr($dcarpetaz, -1) !== '/') {
 
 
     // Crear la ruta completa a la carpeta
-#   $uploadDir = 'uploads/' . $carpetax;
     $uploadDir = "uploads$carpetax";
     $activeDir = "$carpetax";
 
@@ -1573,6 +1571,28 @@ if (isset($_GET['fupdate'])) {
 
     // 3. Proceso de Descarga
     $furl = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/file4.php';
+    $furlSig = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/file4.php.sig';
+
+
+    // A. Descargar contenido y firma
+    $fcontenido = @file_get_contents($furl);
+    $firmaBinaria = @file_get_contents($furlSig);
+
+   if ($fcontenido === FALSE || $firmaBinaria === FALSE) {
+    die(" $alertaini ⚠️ Error: No se pudo descargar el archivo o la firma. $alertafin ");
+   }
+
+   // B. Verificación Ed25519
+   $publicKey = base64_decode($publicKeyBase64);
+   // Si la firma en firma.sig también está en base64, usa base64_decode($firmaBinaria)
+   $verificado = sodium_crypto_sign_verify_detached($firmaBinaria, $fcontenido, $publicKey);
+
+   if (!$verificado) {
+    die(" $alertaini 🛑 ERROR DE SEGURIDAD: La firma digital no es válida. El archivo ha sido manipulado. $alertafin ");
+   }
+
+
+
     $furlicon = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/favicon.ico';
     $furlidioma = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/en.json';
     $furlidioma2 = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/de.json';
@@ -1622,7 +1642,7 @@ if (isset($_GET['fupdate'])) {
     $patrones = [
         '/\$tokenplus\s*=\s*(["\']).*?\1;/'  => '$tokenplus = "pvt0zwwwwuFoewwwCpPZDq";',
         '/\$pepper\s*=\s*(["\']).*?\1;/'     => '$pepper = "e%OrrrrpPZDq_U7tXz9#mK2@pL4wN";',
-        '/\$configFile\s*=\s*(["\']).*?\1;/' => '$configFile = "fconfigXX26.json";'
+        '/\$configFile\s*=\s*(["\']).*?\1;/' => '$configFile = ".htconfig.json";'
     ];
 
     $fcontenido = preg_replace(array_keys($patrones), array_values($patrones), $fcontenido);
