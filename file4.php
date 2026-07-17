@@ -5,7 +5,7 @@
 #                           `----------' zIDRAvE[ ))"-,                   |
 #                     FILE MANAGER V4.4.6        ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
-# 2025 sander
+# 2025 sander sss
 # public_key_permanente: 3JBT7LrYkydYPS3upQhJwB8pEi12nEfi2rbSTVIw/cs=
 //////////////POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
 $tokenplus = "pvt0zwwwwuFoewwwCpPZDq"; // cambie este valor es para darle mas seguridad a su script, desde aqui obtenemos el $masterkey para
