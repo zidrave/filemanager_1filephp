@@ -1578,7 +1578,7 @@ $publicKeyBase64 = '3JBT7LrYkydYPS3upQhJwB8pEi12nEfi2rbSTVIw/cs=';
 
     // A. Verificar si la extensión necesaria está instalada
     if (!extension_loaded('sodium')) {
-        die("$seguridadcabeza <div class='mensajex' style='background:red;'>
+        die("$seguridadcabeza <div class='mensajex'>
             <h2>⚠️ Falta instalar la extensión 'sodium'</h2>
             <p>Para realizar actualizaciones seguras, este servidor requiere la extensión <b>PHP Sodium</b>.</p>
             <p>Por favor, actívala desde el panel de control de tu hosting (sección de Extensiones PHP) o contacta a tu soporte técnico.</p>
