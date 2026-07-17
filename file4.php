@@ -5,7 +5,7 @@
 #                           `----------' zIDRAvE[ ))"-,                   |
 #                     FILE MANAGER V4.4.6        ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
-# 2025 sander sss
+# 2025 sander
 # public_key_permanente: 3JBT7LrYkydYPS3upQhJwB8pEi12nEfi2rbSTVIw/cs=
 //////////////POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
 $tokenplus = "pvt0zwwwwuFoewwwCpPZDq"; // cambie este valor es para darle mas seguridad a su script, desde aqui obtenemos el $masterkey para
@@ -1584,8 +1584,11 @@ if (isset($_GET['fupdate'])) {
 
    // B. Verificación Ed25519
    $publicKey = base64_decode($publicKeyBase64);
+   $firmaBinariaDecodificada = base64_decode($firmaBinaria);
+
    // Si la firma en firma.sig también está en base64, usa base64_decode($firmaBinaria)
-   $verificado = sodium_crypto_sign_verify_detached($firmaBinaria, $fcontenido, $publicKey);
+   //$verificado = sodium_crypto_sign_verify_detached($firmaBinaria, $fcontenido, $publicKey);
+     $verificado = sodium_crypto_sign_verify_detached($firmaBinariaDecodificada, $fcontenido, $publicKey);
 
    if (!$verificado) {
     die(" $alertaini 🛑 ERROR DE SEGURIDAD: La firma digital no es válida. El archivo ha sido manipulado. $alertafin ");
@@ -1613,7 +1616,7 @@ if (isset($_GET['fupdate'])) {
 
     $rutaArchivoLocal = isset($_GET['updatefile']) ? $_GET['updatefile'] . ".php" : "$scriptfile.php";
 
-    $fcontenido = @file_get_contents($furl);
+    //$fcontenido = @file_get_contents($furl);
     $fcontenidoicon = @file_get_contents($furlicon);
     $fcontenidolang = @file_get_contents($furlidioma);
     $fcontenidolang2 = @file_get_contents($furlidioma2);
