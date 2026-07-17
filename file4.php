@@ -1569,6 +1569,9 @@ if (isset($_GET['fupdate'])) {
         die("$seguridadcabeza <div class='mensajex' style='background:red;'><h2>❌ Contraseña incorrecta. Operación cancelada por seguridad.</h2></div>");
     }
 
+$publicKeyBase64 = '3JBT7LrYkydYPS3upQhJwB8pEi12nEfi2rbSTVIw/cs=';  
+
+
     // 3. Proceso de Descarga
     $furl = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/file4.php';
     $furlSig = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/file4.php.sig';
@@ -1578,21 +1581,34 @@ if (isset($_GET['fupdate'])) {
     $fcontenido = @file_get_contents($furl);
     $firmaBinaria = @file_get_contents($furlSig);
 
-   if ($fcontenido === FALSE || $firmaBinaria === FALSE) {
-    die(" $alertaini ⚠️ Error: No se pudo descargar el archivo o la firma. $alertafin ");
-   }
 
-   // B. Verificación Ed25519
-   $publicKey = base64_decode($publicKeyBase64);
-   $firmaBinariaDecodificada = base64_decode($firmaBinaria);
 
-   // Si la firma en firma.sig también está en base64, usa base64_decode($firmaBinaria)
-   //$verificado = sodium_crypto_sign_verify_detached($firmaBinaria, $fcontenido, $publicKey);
-     $verificado = sodium_crypto_sign_verify_detached($firmaBinariaDecodificada, $fcontenido, $publicKey);
 
-   if (!$verificado) {
-    die(" $alertaini 🛑 ERROR DE SEGURIDAD: La firma digital no es válida. El archivo ha sido manipulado. $alertafin ");
-   }
+// B. Verificación Ed25519
+// 1. Decodificar la clave Base64 a binario (esto la convierte a los 32 bytes requeridos)
+$publicKeyBinaria = base64_decode($publicKeyBase64);
+
+// 2. Decodificar la firma descargada de Base64 a binario
+$firmaBinariaDecodificada = base64_decode($firmaBinaria);
+
+// Validación de seguridad para la firma
+if (strlen($firmaBinariaDecodificada) !== 64) {
+     die(" $alertaini 🛑 Error: La firma (.sig) debe ser de 64 bytes. Longitud recibida: " . strlen($firmaBinariaDecodificada) . " $alertafin ");
+}
+
+// 3. Verificación
+try {
+    // IMPORTANTE: Se usa $publicKeyBinaria (binario), no $publicKeyBase64 (texto)
+    $verificado = sodium_crypto_sign_verify_detached($firmaBinariaDecodificada, $fcontenido, $publicKeyBinaria);
+} catch (Exception $e) {
+    die(" $alertaini 🛑 Error en la verificación: " . $e->getMessage() . " $alertafin ");
+}
+
+if (!$verificado) {
+    die(" $alertaini 🛑 ERROR: Firma inválida. El archivo fue modificado o la firma no corresponde. $alertafin ");
+}
+
+
 
 
 
