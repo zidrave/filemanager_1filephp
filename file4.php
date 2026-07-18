@@ -3,7 +3,7 @@
 #   - - - |_________________,----------._ [____]  ""-,__  __....-----=====
 #                        (_(||||||||||||)___________/   ""                |
 #                           `----------' zIDRAvE[ ))"-,                   |
-#                     FILE MANAGER V4.4.6        ""    `,  _,--....___    |
+#                     FILE MANAGER V4.4.7.1       ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
 # 2025 sander
 # public_key_permanente: 3JBT7LrYkydYPS3upQhJwB8pEi12nEfi2rbSTVIw/cs=
@@ -16,11 +16,26 @@ $pepper = "e%OrrrrpPZDq_U7tXz9#mK2@pL4wN"; // cambie este valor es para darle ma
 $configFile = ".htconfig.json"; //obligatorio cambiar el archivo config pero siempre con .ht al inicio ejemplo: .htconfxx.json
 //////////////POR SEGURIDAD CAMBIE ESTOS VALORES ANTES DE GRABAR EL USUARIO///////////
 
+
+// SESSION PHP - PREPARACION TIEMPO EXTENDIDO
+//ob_start(); // 1. Siempre primero para evitar Error 500
+//if (session_status() === PHP_SESSION_NONE) { session_start(); }
 ob_start(); // 1. Siempre primero para evitar Error 500
+
+// Configuración de duración: 1 meses en segundos
+// $duracion = 6 * 30 * 24 * 60 * 60;  //6 meses
+$duracion = 30 * 24 * 60 * 60;  // 1 mes
+
+// 2. Forzamos al servidor a mantener la sesión por 6 meses
+ini_set('session.gc_maxlifetime', $duracion);
+ini_set('session.cookie_lifetime', $duracion);
+
+// 3. Iniciamos la sesión
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
 
-$fversion="4.4.6";
+
+$fversion="4.4.7.1";
 $nombreMaquina = gethostname();
 $hashCompleto = hash('sha256', $nombreMaquina);
 $tokenhost = substr($hashCompleto, 0, 10);
@@ -56,7 +71,13 @@ $totalPesoCarpeta = 0;
 
 
 
-
+// 1. Detectar y crear ruta basandonos en la url del scrip
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
+$host = $_SERVER['HTTP_HOST'];
+$script_url = $_SERVER['SCRIPT_NAME'];
+$url_limpia = $protocol . $host . $script_url;
+//echo $url_limpia;
+$hash_mini_id = substr(md5($url_limpia), 0, 5); //hash unico segun ruta del script
 
 
 
@@ -67,9 +88,7 @@ $totalPesoCarpeta = 0;
 ////Cookie Reforce
 $cookiePath = "/"; // Simplificado para evitar errores de parseo
 $cookieParams = "; SameSite=Lax"; // Lax es compatible con HTTPS y redirecciones
-//$cookiePath = "/; SameSite=Strict";
 $cookieDomain = ""; // Dejar vacío para el host actual
-//$isSecure = false;  // Cambiar a true si usas HTTPS (recomendado)
 $isSecure = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on');
 $isHttpOnly = true; // ACTIVADO: Protege contra robo por JavaScript
 ////
@@ -173,7 +192,6 @@ if (isset($_COOKIE['language'])) {
     $lang = 'es';
     
     // Crear la cookie 'language' con el valor por defecto
-    // setcookie('language', $lang, $expire_time, '/');
 $options_lang = [
     'expires' => $expire_time,
     'path' => '/',
@@ -181,6 +199,7 @@ $options_lang = [
     'httponly' => false, // False para que JS pueda leer el idioma si es necesario
     'samesite' => 'Lax'
 ];
+//si no existe idioma graba en la cookie el español
 setcookie('language', $lang, $options_lang);
 
 }
@@ -202,7 +221,6 @@ function loadTranslations($lang) {
 
 
 // Obtener el idioma desde la URL (por defecto español)
-//$lang = isset($_GET['lang']) ? $_GET['lang'] : 'es';
 if (isset($_GET['lang'])) {
 
 $options_lang = [
@@ -215,7 +233,7 @@ $options_lang = [
 
 $lang = $_GET['lang'];
 
-//setcookie('language', "$lang", $expire_time, '/');
+//esto graba el idioma elegido del menu idioma
 setcookie('language', $lang, $options_lang);
 
 
@@ -238,7 +256,7 @@ if ($lang !== 'es') {
 
 
 
-//////////////idioma////////////////////
+//////////////idioma-EOF////////////////////
 
 
 
@@ -278,7 +296,7 @@ $colorHex = '#' . substr($hash, 0, 6);
 
 
 
-#$stylealert = "
+
 $stylealert = <<<EOD
 <!-- codigo para crear un style de las alertas y seguridad -->
 <style>
@@ -450,11 +468,6 @@ if (isset($_GET['unlockmode'])) {
 
 //////// VERIFICAR SEGURIDAD (FLUJO UNIFICADO Y GLOBAL) /////////////////////////
 
-   // if (session_status() === PHP_SESSION_NONE) { session_start(); }
-
- 
-
-
 
 if (file_exists($configFile)) {
     $configData = json_decode(file_get_contents($configFile), true);
@@ -468,7 +481,6 @@ if (file_exists($configFile)) {
 
     // 1. AUTO-LOGIN (Sincronizar Cookie con Sesión)
     if (!isset($_SESSION['user_auth']) || $_SESSION['user_auth'] !== true) {
-      //if (isset($_COOKIE['Hash']) && $_COOKIE['Hash'] === $tokenhash_valid && $haship === $configData['fhash']) {
         if (isset($_COOKIE['Hash']) && hash_equals($tokenhash_valid, $_COOKIE['Hash']) && hash_equals($configData['fhash'], $haship)) {
             session_regenerate_id(true);
             $_SESSION['user_auth'] = true;
@@ -559,8 +571,6 @@ if (file_exists($configFile)) {
         exit;
     }
 
-
- 
 }
 
 
@@ -725,7 +735,6 @@ exit;
 //////////////////////////////////
 if (isset($_GET['guardax'])) {
      
-#echo "guardando en ajax";
     // PROTECCIÓN EXTRA: Si por alguna razón llegó aquí sin sesión, matamos el proceso.
     if (!$is_authenticated) { 
         header('HTTP/1.1 403 Forbidden');
@@ -777,8 +786,8 @@ if (isset($_GET['guardax'])) {
 
 /////// fexit (Cierre de Sesión Seguro) ////////////////////////
 if (isset($_GET['fexit'])) {
+
     // 1. Limpiar variables de sesión y destruirla
-   // if (session_status() === PHP_SESSION_NONE) { session_start(); }
     $_SESSION = array();
     session_destroy();
 
@@ -822,9 +831,8 @@ $options_editor = [
 
 if (isset($_GET['oneditor'])) {
  setcookie('editor', 'true', $options_editor);
-//setcookie('editor', 'true', $expire_time, '/'); 
 
-#usleep(500000);
+
 header("Location: $scriptfile.php?editFile=$cokifile&c=$cokiruta/");
 exit;
 }
@@ -832,9 +840,8 @@ exit;
 ///////EDITOR PLUS COOKIEr////////////////////////
 if (isset($_GET['offeditor'])) {
 
- //setcookie('editor', '', $expire_time, '/'); 
    setcookie('editor', '', $options_editor);
-#usleep(500000);
+
 header("Location: $scriptfile.php?editFile=$cokifile&c=$cokiruta/");
 exit;
 }
@@ -868,7 +875,7 @@ if (isset($_GET['fborrarconfiguracion'])) {
         if (password_verify($peppered_confirm, $configData['fpass'])) {
             
             // 1. DESTRUCCIÓN TOTAL DE SESIÓN
-          //  if (session_status() === PHP_SESSION_NONE) { session_start(); }
+
             $_SESSION = array(); // Limpiar variables
             
             // Destruir la cookie de sesión (PHPSESSID) en el navegador
@@ -972,7 +979,6 @@ EOT;
         }
 
         // 4. Actualizar Identificadores de IP (Huella Digital Secreta)
-        //$ihash_actual = hash('sha256', $_SERVER['REMOTE_ADDR'] . $pepper);
           $ihash_actual = $ihash;
 
         // 5. Crear el array final
@@ -1000,13 +1006,16 @@ if (!empty($themex)) {
 }
 
 $theme_options = [
-    'expires' => time() + (30 * 24 * 60 * 60),
+    'expires' => time() + (6 * 30 * 24 * 60 * 60), //6 meses
     'path' => '/',
     'secure' => $isSecure,  // ✅ Usar tu variable existente
     'httponly' => false,     // Puede ser false porque no es sensible
     'samesite' => 'Lax'
 ];
-setcookie('fm_theme', $themex, $theme_options);
+
+//echo "GUARDANDO THEME.... $hash_mini_id - $url_limpia";
+//setcookie('fm_theme', $themex, $theme_options);
+setcookie('fm_theme_'.$hash_mini_id.'', $themex, $theme_options);
  
 
 
@@ -1034,26 +1043,27 @@ setcookie('fm_theme', $themex, $theme_options);
 <head>
     <title>File Manager V4</title>
 	<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABICAMAAABiM0N1AAAAwFBMVEVMaXEhZZlLoeZUrO0obqRUrO0hZZkob69UrO5UrO4iZpkhZZlTq+1Vf6wiZJohZphUrO5UrO4hZZkhZZlUrO4hZZkiZJpVrO0hZplFldNUq+48icRFltRUrO1UrO5Uq+0hZZlVq+4eZJohZphUrO5Mn94iZplVrO4hZZlJm9tXruwiZphDlNFWrO1UrO1Vq+1VrO5Uq+0veK8mbKFOouM2gbpRp+hTqus6h8IzfbZEldNAkc0jaJwsc6lHmtgiZpkio2ylAAAAMHRSTlMA/A039JHTB96uLZYdAyiRcviI29XoTc2+zepM0VaewKZfIZh89l/z8+wp9O9HgmUP4OQcAAABgElEQVR4Ae3UBXbdQBBE0RYzmNkOg7HF5tn/qsLtz6IKJ3cBb0ZSHdF/fyo/sc/UNG3Lfrkd0UBOoKllNrYHdnbVKsGgSwVqtWdD3o+mWqxTb4lq9Yb6slWrM596eqfabb2gflSXjRgNibN138FC7Xk78dGQ0AIHDYldBw2J5HuFNB8NieR7hezvFTobGSqq27LmGfsnqT40VNw1vIxrDAvlNa+wZgwJ3WS8kusQ2BHPe4fyhtt4fUMPNbfaJLAjXAK/l9jpESryWxb93tH9p9lmPI41FcpLHi+dhKqMAUc0tTeEIaGiZkgooWuGrEUSKhni0rfQPWNOJPTAmGMJ3TDmUkLXjLmS0B1jLiT0yJhTCZWM0SXUMGSfvoUKxuxIKGeMJ6GKMZaE0BmlEkJndCQhdEaGhNAZhd9C9xn8WyP6HjNy6RMT/GgyIzp/KKqGMa/ok0OGZSF9cpAx6pjou1zJ1ekL/T3YCekbfS8D3o+n08TB3uuGR3i7aRn0B/vvI/0jAVz6iypMAAAAAElFTkSuQmCC">
+
 <?php
 // Definimos la ruta del archivo de estilo externo
-$themeActivo = $_COOKIE['fm_theme'] ?? '';
+//$themeActivo = $_COOKIE['fm_theme'] ?? ''; //
+$themeActivo = $_COOKIE['fm_theme_'.$hash_mini_id.''] ?? ''; //mod para usar el mismo script en diferentes carpetas con theme propio cada uno
 // Esto elimina puntos (.), barras (/) y caracteres especiales
-$themeActivo = preg_replace('/[^a-zA-Z0-9_-]/', '', $themeActivo);
+$themeActivo = preg_replace('/[^a-zA-Z0-9_-]/', '', $themeActivo); //security
 $externalStyle = 'fmstyle_'.$themeActivo.'.css';
 
 if (file_exists($externalStyle)) {
     // 1. Si el archivo existe, cargamos el link externo (Ignora el estilo interno)
-  //echo '<link rel="stylesheet" type="text/css" href="' . $externalStyle . '?v=' . filemtime($externalStyle) . '">';
     echo '<link rel="stylesheet" type="text/css" href="' . htmlspecialchars($externalStyle, ENT_QUOTES, 'UTF-8') . '?v=' . filemtime($externalStyle) . '">';
 } else {
-    // 2. Si NO existe, cargamos tu style predeterminado (Softpedia Style)
+
+    // 2. Si NO existe, cargamos tu style predeterminado (File4 Style)
 ?>
 
 <style>
         body {
 	    background-color: #f0f0f0; /* Fondo gris claro */
             font-family: Arial, sans-serif; /* Tipo de letra Arial */
-
         }
         a {
             text-decoration: none;
@@ -1077,17 +1087,7 @@ if (file_exists($externalStyle)) {
 
 
 
-
-
-
-
-
-
-
-
-
-
- .filasinfx {
+.filasinfx {
     display: table-row;
     border-bottom: 1px solid #ddd;
  }
@@ -1132,12 +1132,6 @@ if (file_exists($externalStyle)) {
 
 
 
-
-
-
-
-
-
         .celda {
             display: table-cell;
             padding: 3px;
@@ -1164,6 +1158,7 @@ if (file_exists($externalStyle)) {
         .fila:nth-child(even) {
             background-color: #f1f6f9; /* Color de fondo para filas pares */
         }
+
     /* Estilo para los botones de formulario */
     button, input[type="submit"] {
         background-color: #FFA500; /* Fondo naranja */
@@ -1294,8 +1289,6 @@ if (file_exists($externalStyle)) {
      margin: 3px;
      }
 
-   
-
         .mensaje {
             display: none;
             position: fixed;
@@ -1329,7 +1322,6 @@ if (file_exists($externalStyle)) {
             color: blue;
             text-decoration: underline;
         }
-
 
 
         .editor-wrapper {
@@ -1370,7 +1362,8 @@ if (file_exists($externalStyle)) {
 </style>
 
 <?php 
-} // Cierre del else style external
+} 
+// Cierre del else style external
 ?>
 
 
@@ -1381,53 +1374,38 @@ if (file_exists($externalStyle)) {
 
 
 <?php
-/////////verificar que exista algun usuario creado
+// Verificar session de usuario
 if (empty($master)) {
-    #echo "La variable \$master está vacía.";
 ?>
-
-
-
 <table style="width: 100%; background-color: red;">
     <tr>
         <td style="text-align: left; padding: 10px; color: white;">
-            <b> ⚠️ Modo Inseguro </b>: Por favor crea una Contraseña en: <b> ⚙️ <a href="?mod=config" class='snaranja' role='button'>Configurar</a></b>
+            <b> ⚠️ MODO INSEGURO </b>: Por favor crea una Contraseña en: <b> ⚙️ <a href="?mod=config" class='snaranja' role='button'>Configurar</a></b>
         </td>
     </tr>
 </table>
+
 <?php
-} /////////verificar que exista algun usuario creado
+} 
+//EOF - Verificar session de usuario
 ?>
 
 
 
 
 <?php
-#edicion privada del script mas puton y util para mi 
-#version 1.0beta index III
 $uploadDir = 'uploads/';
 $activeDir = 'uploads';
 
 
-
-
 // para la lista de carpetas con links
-#$getruta=$_GET['c'];
+
 $getruta = isset($_GET['c']) ? $_GET['c'] : '/';
 $rutax = "/$getruta";
 $partes = explode('/', trim($rutax, '/'));
 $acumulado = "/";
 
 
-
-
-
-
-
-
-#    $carpetap = $_POST['c'];
-
-#if (isset($_GET['c'])) {
 if (isset($getruta)) {
 
     $carpetax = $getruta;
@@ -1438,12 +1416,6 @@ if (isset($getruta)) {
 
 $carpetax = htmlspecialchars($carpetax, ENT_QUOTES, 'UTF-8');
 $carpetazSafe = htmlspecialchars($carpetaz, ENT_QUOTES, 'UTF-8');
-
-    // Sanitización básica (considera usar funciones más robustas)
-    // $carpetax = filter_var($carpetax, FILTER_SANITIZE_STRING);
-    // $carpetax = htmlspecialchars($carpetax, ENT_QUOTES, 'UTF-8');
-
-  
 
 
  $dcarpetaz = $carpetaz;
@@ -1488,7 +1460,6 @@ if (substr($dcarpetaz, -1) !== '/') {
 if ($uploadDir === "uploads") {
     $uploadDir .= "/";
 }
-#echo "test mensaje: el valor de c es [$uploadDir]";
 
 if (!is_dir($uploadDir)) {
     mkdir($uploadDir, 0755);
@@ -1509,37 +1480,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['fileToUpload'])) {
         echo " $alertaini ⚠️ No se permiten archivos PHP. $alertafin";
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1569,7 +1509,7 @@ if (isset($_GET['fupdate'])) {
         die("$seguridadcabeza <div class='mensajex' style='background:red;'><h2>❌ Contraseña incorrecta. Operación cancelada por seguridad.</h2></div>");
     }
 
-$publicKeyBase64 = '3JBT7LrYkydYPS3upQhJwB8pEi12nEfi2rbSTVIw/cs=';  
+  //publicKeyBase64 ya esta definido al inicio del script
 
 
     // 3. Proceso de Descarga
@@ -1641,7 +1581,7 @@ if (!$verificado) {
 
     $rutaArchivoLocal = isset($_GET['updatefile']) ? $_GET['updatefile'] . ".php" : "$scriptfile.php";
 
-    //$fcontenido = @file_get_contents($furl);
+    //$fcontenido = @file_get_contents($furl); //aun no escribire el script para otras verificaciones
     $fcontenidoicon = @file_get_contents($furlicon);
     $fcontenidolang = @file_get_contents($furlidioma);
     $fcontenidolang2 = @file_get_contents($furlidioma2);
@@ -1712,28 +1652,6 @@ if (!$verificado) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // Eliminar archivo (Versión con Protección de Configuración)
 if (isset($_GET['deleteFile'])) {
 
@@ -1781,6 +1699,9 @@ if (isset($_POST['createFolder'])) {
 
 // Eliminar carpeta /////////////////////////////////////////////////////////////////////////////////////////////////////BORRAR FOLDER
 if (isset($_POST['deleteFolder']) || isset($_GET['deleteFolder'])) {
+
+
+
     $elfolder = $_POST['deleteFolder'] ?? $_GET['deleteFolder'];
     $folderToDelete = $uploadDir . $elfolder;
     
@@ -1796,14 +1717,13 @@ if (isset($_POST['deleteFolder']) || isset($_GET['deleteFolder'])) {
 
 // Editar o crear archivo
 if (isset($_GET['editFile'])) {
-#    $fileToEdit = $uploadDir . $_GET['editFile']; //uploads$carpetaz/
-#    $fileToEdit = $_GET['editFile'];
+
     $fileToEdit = $_GET['editFile'] ?? '';
     $fileToEdit = "uploads$carpetaz/$fileToEdit";
     if (file_exists($fileToEdit)) {
         $fileContent = file_get_contents($fileToEdit);
     } else {
-#        echo $fileToEdit ." no encontrado.";
+
         // Si el archivo no existe, crearlo con contenido vacío
         file_put_contents($fileToEdit, '');
         $fileContent = '';
@@ -1812,7 +1732,7 @@ if (isset($_GET['editFile'])) {
 
 // Guardar archivo editado
 if (isset($_POST['saveFile'])) {
-#    $fileToSave = $uploadDir . $_POST['fileName'];
+
     $fileToSave = $_POST['fileName'];
     $fileToSave = "uploads$carpetaz/$fileToSave";
     $c = $_POST['c'];
@@ -2054,7 +1974,7 @@ foreach ($partes as $parte) {
 <?php
 ///////////////////////////// SUBIR ARCHIVOS AL SISTEMA 2 MODOS CLASICO Y MULTIPLE ////////////////////
 if (isset($_GET['uploadmultiple']) && $_GET['uploadmultiple'] === '1') {
-#echo "subir muchos files";
+
 ?>
 
 
@@ -2434,23 +2354,8 @@ if (isset($_COOKIE['editor']) && $_COOKIE['editor'] === 'true') {
 <?php
 
 ///////////////////////////////////////// CONFIGURAR SISTEMA /////////////////////////⚙️⚙️⚙️⚙️⚙️⚙️⚙️⚙️⚙️⚙️⚙️⚙️⚙️⚙️⚙️⚙️⚙️
-#$mod=$_GET['mod'];
 $mod = isset($_GET['mod']) ? $_GET['mod'] : '';
 ?>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 <?php if ($mod == "update"): ?>
@@ -2506,7 +2411,8 @@ $mod = isset($_GET['mod']) ? $_GET['mod'] : '';
 
 
 <?php
-$themeActivo = $_COOKIE['fm_theme'] ?? '';
+$themeActivo = $_COOKIE['fm_theme_'.$hash_mini_id.''] ?? '';
+//$themeActivo = $_COOKIE['fm_theme'] ?? '';
 
 // ========================
 // 1. Buscar themes reales
