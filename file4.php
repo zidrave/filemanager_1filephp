@@ -3,9 +3,9 @@
 #   - - - |_________________,----------._ [____]  ""-,__  __....-----=====
 #                        (_(||||||||||||)___________/   ""                |
 #                           `----------' zIDRAvE[ ))"-,                   |
-#                     FILE MANAGER V4.4.7.2       ""    `,  _,--....___    |
+#                     FILE MANAGER V4.4.7.3       ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
-# 2025 sander
+# 2026/20/07
 # public_key_permanente: 3JBT7LrYkydYPS3upQhJwB8pEi12nEfi2rbSTVIw/cs=
 //////////////POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
 $tokenplus = "pvt0zwwwwuFoewwwCpPZDq"; // cambie este valor es para darle mas seguridad a su script, desde aqui obtenemos el $masterkey para
@@ -13,18 +13,15 @@ $tokenplus = "pvt0zwwwwuFoewwwCpPZDq"; // cambie este valor es para darle mas se
 $pepper = "e%OrrrrpPZDq_U7tXz9#mK2@pL4wN"; // cambie este valor es para darle mas seguridad a su script
 ////// Cambiar estos valores TOKENPLUS y PEPPER antes de crear tu usuario administrador, si lo cambias despues de configurar tu cuenta
 ////// admin nunca logeara la unica solución es que borres manualmente el archivo .htfconfigxx.json 
-$configFile = ".htconfig.json"; //obligatorio cambiar el archivo config pero siempre con .ht al inicio ejemplo: .htconfxx.json
+$configFile = ".htconfig.php"; //obligatorio cambiar el archivo config pero siempre con .ht al inicio ejemplo: .htconfxx.php
 //////////////POR SEGURIDAD CAMBIE ESTOS VALORES ANTES DE GRABAR EL USUARIO///////////
 
 
 // SESSION PHP - PREPARACION TIEMPO EXTENDIDO
-//ob_start(); // 1. Siempre primero para evitar Error 500
-//if (session_status() === PHP_SESSION_NONE) { session_start(); }
+
 ob_start(); // 1. Siempre primero para evitar Error 500
 
 // Configuración de duración: 1 meses en segundos
-// $duracion = 6 * 30 * 24 * 60 * 60;  //6 meses
-// $duracion = 30 * 24 * 60 * 60;  // 1 mes
 $duracion = 10 * 60; // 10 minutos
 
 
@@ -34,7 +31,7 @@ $isSecure = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on');
 
 // 2. Forzamos al servidor a mantener la sesión por 6 meses
 ini_set('session.gc_maxlifetime', $duracion);
-//ini_set('session.cookie_lifetime', $duracion);
+
 // Cuánto tiempo dura la COOKIE en el navegador, + flags de seguridad
 session_set_cookie_params([
     'lifetime' => $duracion,
@@ -51,7 +48,7 @@ if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
 
 
-$fversion="4.4.7.2";
+$fversion="4.4.7.3";
 $nombreMaquina = gethostname();
 $hashCompleto = hash('sha256', $nombreMaquina);
 $tokenhost = substr($hashCompleto, 0, 10);
@@ -78,7 +75,7 @@ $acceso_emergencia = false; //aqui siempre false
 $archivo_registro_unlock = 'unlocks_hist.log'; // Registro de timestamps, no hace falta cambiar
 $limite_horas = 24 * 3600; // 24 horas en segundos
 $master_key = substr($tokenplus, 0, 5); //estoy servira para el unlock
-$publicKeyBase64 = '3JBT7LrYkydYPS3upQhJwB8pEi12nEfi2rbSTVIw/cs='; //para verificar nuestro archivo fuente
+$publicKeyBase64 = '3JBT7LrYkydYPS3upQhJwB8pEi12nEfi2rbSTVIw/cs='; //codigo inmutable
 
 
 $totalArchivos = 0;
@@ -234,6 +231,20 @@ function loadTranslations($lang) {
     return null;  // Si no existe el archivo, devolver null
 }
 
+//funciones nuevas para mejorar la seguridad del config file
+function cfg_load(string $file): array {
+    if (!file_exists($file)) return [];
+    $fm_cfg = [];
+    include $file;
+    return $fm_cfg;
+}
+
+function cfg_save(array $data, string $file): bool {
+    $export = var_export($data, true);
+    return file_put_contents($file, "<?php \$fm_cfg = $export; ?>", LOCK_EX) !== false;
+}
+
+
 
 
 
@@ -383,7 +394,9 @@ if (isset($_POST['unlock'])) {
     $mi_ip_actual_hash = hash('sha256', $mi_ip_actual . $pepper); // Usamos el Pepper para coincidir con 'ihash'
 
 
-    $configData = json_decode(file_get_contents($configFile), true);
+ // $configData = json_decode(file_get_contents($configFile), true);
+    $configData = cfg_load($configFile);
+
     $ip_confianza = isset($configData['ihash']) ? $configData['ihash'] : '';
 
     // ¿Es el dueño en su IP de siempre?
@@ -489,7 +502,7 @@ if (isset($_GET['unlockmode'])) {
 
 
 if (file_exists($configFile)) {
-    $configData = json_decode(file_get_contents($configFile), true);
+    $configData = cfg_load($configFile);
     $seguridadcabeza = "$stylealert <header> <h1> 🌀 File Manager </h1></header> <br>";
 
     // --- VARIABLES MAESTRAS ---
@@ -563,7 +576,8 @@ if (file_exists($configFile)) {
 
             $configData['fhash'] = $haship;
             $configData['ihash'] = $ihash;
-            file_put_contents($configFile, json_encode($configData, JSON_PRETTY_PRINT));
+
+            cfg_save($configData, $configFile);
             
             header("Location: $scriptfile.php");
             exit;
@@ -987,7 +1001,8 @@ EOT;
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // Cargamos la configuración actual para no perder lo que no se cambie
-        $configActual = json_decode(file_get_contents($configFile), true);
+     // $configActual = json_decode(file_get_contents($configFile), true);
+        $configActual = cfg_load($configFile);
 
         // 2. Recoger datos del formulario
         $fuser = $_POST['afuser'];
@@ -1047,7 +1062,7 @@ setcookie('fm_theme_'.$hash_mini_id.'', $themex, $theme_options);
 
 
         // 6. Guardado Atómico con Bloqueo
-        if (file_put_contents($configFile, json_encode($config, JSON_PRETTY_PRINT), LOCK_EX)) {
+        if (cfg_save($config, $configFile)) {
             echo "$seguridadcabeza $alertaini ✅ Configuración guardada correctamente. $alertafin";
         } else {
             echo "$seguridadcabeza $alertaini ❌ Error crítico: No se pudo escribir en el archivo JSON. $alertafin";
@@ -1642,6 +1657,14 @@ if (!$verificado) {
     ];
 
    $fcontenido = preg_replace(array_keys($patrones), array_values($patrones), $fcontenido);
+
+    // Verificación: confirma que el parcheo realmente aplicó tus valores actuales
+    if (strpos($fcontenido, addcslashes($tokenplus, "\\'")) === false
+        || strpos($fcontenido, addcslashes($pepper, "\\'")) === false
+        || strpos($fcontenido, addcslashes($configFile, "\\'")) === false) {
+        die("$alertaini ⚠️ El parcheo de configuración local falló (posible cambio de formato en el script fuente). Actualización cancelada por seguridad — tus credenciales NO se sobrescribieron. $alertafin");
+    }
+
 
     // 5. Reemplazo de Archivos en Disco
     if (file_put_contents($rutaArchivoLocal, $fcontenido) === FALSE) {
