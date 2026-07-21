@@ -3,24 +3,27 @@
 #   - - - |_________________,----------._ [____]  ""-,__  __....-----=====
 #                        (_(||||||||||||)___________/   ""                |
 #                           `----------' zIDRAvE[ ))"-,                   |
-#                     FILE MANAGER V4.4.7.4       ""    `,  _,--....___    |
+#                     FILE MANAGER V4.4.7.5       ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
 # 07/21/2026
 # public_key_inmutable: 3JBT7LrYkydYPS3upQhJwB8pEi12nEfi2rbSTVIw/cs=
 
 ////////////// POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
-////////////// ANTES DE GRABAR EL USUARIO ///////////////////
-$tokenplus = 'pvt0zwwwwuFoewwwCpPZDq'; // cambie este valor es para darle mas seguridad a su script, desde aqui obtenemos el $masterkey para
-                                       // acceder sin esperar  ejemplo: file4.php?unlock=pvt0z  para cambiarlo cambia el tokenplus las primeras 5 letras
-$pepper = 'e%OrrrrpPZDq_U7tXz9#mK2@pL4wN'; // cambie este valor es para darle mas seguridad a su script
+////////////// ANTES DE GUARDAR LA PRIMERA CONFIGURACION ///////////////////
+$tokenplus = 'pvt0zwwwwuFoewwwCpPZDq'; // Cambie este valor es para darle mas seguridad a su script, desde aqui obtenemos el masterkey 
+                                       // En caso de DDOS al login, acceder sin esperar: file4.php?bypass y la clave seria pvt0z,las primeras 5 letras del tokenplus
+$pepper = 'e%OrrrrpPZDq_U7tXz9#mK2@pL4wN'; // Cambie este valor es para darle mas seguridad a su script
+
+$configFile = '.htconfig.php'; //obligatorio cambiar el archivo config pero siempre con .ht al inicio ejemplo: .htconfx9x.php
+
 ////// Cambiar estos valores TOKENPLUS y PEPPER antes de crear tu usuario administrador, si lo cambias despues de configurar tu cuenta
-////// admin nunca logeara la unica solución es que borres manualmente el archivo .htfconfigxx.json 
-$configFile = '.htconfig.php'; //obligatorio cambiar el archivo config pero siempre con .ht al inicio ejemplo: .htconfxx.php
+////// admin nunca ingresara,la unica solución es que borres manualmente el archivo .htconfig.php (segun el nombre q le pusiste)
+
 ////////////// EOF - VALORES DE SEGURIDAD ///////////
 
 
 //-- LISTA DE VARIABLES GENERALES --
-$fversion="4.4.7.4";
+$fversion="4.4.7.5";
 $nombreMaquina = gethostname();
 $hashCompleto = hash('sha256', $nombreMaquina);
 $tokenhost = substr($hashCompleto, 0, 10);
@@ -413,9 +416,35 @@ $stylealert = <<<EOD
         border-radius: 4px; /* Bordes redondeados (opcional) */
     }
 </style>
-
-
 EOD;
+
+$newstylealert = <<<EOD
+<!-- new code-->
+<style>
+        body { background: #f0f0f0; font-family: Arial, sans-serif; height: 100vh; display: flex; justify-content: center; align-items: center; margin: 0; }
+        .auth-card { background: #fff; width: 380px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); overflow: hidden; }
+        .auth-header { background: linear-gradient(to bottom, #98a6b0, #c0cad1); padding: 15px 20px; font-size: 18px; font-weight: bold; color: #000; }
+        .auth-body { padding: 30px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #0c2b3d; font-size: 14px; }
+        .form-input { width: 100%; padding: 10px; border: 2px solid #dadce0; border-radius: 6px; font-size: 15px; box-sizing: border-box; }
+        .form-input:focus { outline: none; border-color: #436074; }
+        button, input[type="submit"] { width: 100%; background: #FFA500; border: none; color: #fff; padding: 10px; font-size: 16px; font-weight: bold; cursor: pointer; border-radius: 6px; }
+        button:hover, input[type="submit"]:hover { opacity: 0.9; }
+        .auth-footer { text-align: center; margin-top: 20px; font-size: 12px; color: #5f6368; }
+        a { text-decoration: none; color: #436074; }
+        a:hover { color: #FF0000; }
+     
+</style>
+EOD;
+
+
+
+
+
+
+
+
 
  
 
@@ -425,24 +454,22 @@ EOD;
 
 
 //     ACCESO DE EMERGENCIA
-// --- CONTROL DE ACCESO DE EMERGENCIA ANTI-INTELIGENCIA (filemanager V4.4.0) ---
+// --- CONTROL DE ACCESO DE EMERGENCIA ANTI-DDOS  ---
 if (isset($_POST['unlock'])) {
+
     $ahora = time();
     $registros = [];
     
 /////// Cargamos configuración para ver la IP de confianza /////////////////
 // 1. DECLARACIÓN FALTANTE: Obtener y hashear la IP actual del visitante
-    $mi_ip_actual = $_SERVER['REMOTE_ADDR'];
+    $mi_ip_actual = $miip;
     $mi_ip_actual_hash = hash('sha256', $mi_ip_actual . $pepper); // Usamos el Pepper para coincidir con 'ihash'
 
-
- // $configData = json_decode(file_get_contents($configFile), true);
     $configData = cfg_load($configFile);
-
     $ip_confianza = isset($configData['ihash']) ? $configData['ihash'] : '';
 
-    // ¿Es el dueño en su IP de siempre?
-    //$es_owner_reconocido = ($mi_ip_actual_hash === $ip_confianza);
+   // ¿Es el dueño en su IP de siempre?
+   // $es_owner_reconocido = ($mi_ip_actual_hash === $ip_confianza);
       $es_owner_reconocido = hash_equals($ip_confianza, $mi_ip_actual_hash);
 
 
@@ -476,7 +503,9 @@ if (isset($_POST['unlock'])) {
 
         // --- VALIDACIÓN LÓGICA PRIVADA ---
         // Solo si el token coincide exactamente con los primeros 5 caracteres de $tokenplus
+        // file4.php?unlockmode
         if ($_POST['unlock'] === $master_key) {
+
 
        // SOLUCIÓN CAMBIO GET A POST: Guardamos el bypass en la sesión para que dure en la siguiente recarga
             $_SESSION['bypass_active'] = true;
@@ -487,11 +516,12 @@ if (isset($_POST['unlock'])) {
         
     } else {
         // Bloqueo total si excedió los 10 registros en el log
-        die("$stylealert $seguridadcabeza <div class='mensajex' style='background:white;'>
+        echo "$seguridadcabeza <div class='mensajex' style='background:white;'>
             <h2>🚫 Límite de Emergencia Agotado</h2>
             <p>Se han detectado <b>$conteo_intentos intentos</b> de acceso en las últimas 24 horas.</p>
             <p>Por seguridad, esta función ha sido inhabilitada temporalmente.</p>
-            </div>");
+            </div> ";
+      exit;
     }
 }
 
@@ -512,9 +542,9 @@ if (isset($_SESSION['bypass_active']) && $_SESSION['bypass_active'] === true) {
 
 
 
-// 4. MOSTRAR FORMULARIO DE DESBLOQUEO UNLOCK (Micro-Diseño Zidrave V4.4.9)
-if (isset($_GET['unlockmode'])) {
-    echo "$seguridadcabeza";
+// 4. MOSTRAR FORMULARIO DE DESBLOQUEO UNLOCK o BYPASS
+if (isset($_GET['bypass'])) {
+   // echo "$newseguridadcabeza";
     echo "
     <div style='
         max-width: 320px; 
@@ -535,6 +565,7 @@ if (isset($_GET['unlockmode'])) {
                    style='padding: 6px 12px; background: #2c3e50; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 13px; font-weight: bold;'>
         </form>
     </div>";
+    exit;
 }
 
 
@@ -547,6 +578,7 @@ if (isset($_GET['unlockmode'])) {
 if (file_exists($configFile)) {
     $configData = cfg_load($configFile);
     $seguridadcabeza = "$stylealert <header> <h1> 🌀 File Manager </h1></header> <br>";
+    $newseguridadcabeza = "$newstylealert ";
 
     // --- VARIABLES MAESTRAS ---
     $master = $configData['fuser']; 
@@ -586,12 +618,31 @@ if (file_exists($configFile)) {
 
         if ($tiempo_transcurrido < $segundos_espera) {
             $restante = $segundos_espera - $tiempo_transcurrido;
-            die("$stylealert $seguridadcabeza <div class='mensajex' style='background:#ffffff;'>
-                <h2>⏳ Acceso Restringido</h2>
+
+
+
+            echo " $newseguridadcabeza 
+
+    <div class='auth-card'>
+        <div class='auth-header'>🌀 File4 Manager</div>
+        <div class='auth-body'>
+        <label><b>⏳ Acceso Controlado</b></label>
+
                 <p>Demasiados fallos detectados (Intento #$intentos).</p>
                 <p>Por seguridad, espere: <b style='color:red; font-size:1.5em;'>" . gmdate("H:i:s", $restante) . "</b></p>
                 <br> 
-                </div>");
+               
+             
+            <div class='auth-footer'>
+                <small>Seguridad File4 - V$fversion</small>
+            </div>
+        </div>
+    </div>
+
+ 
+            ";
+            //echo "intentadas fallidas area<br>";
+            exit;
         }
     }
 
@@ -640,18 +691,34 @@ if (file_exists($configFile)) {
 
  // 4. MOSTRAR FORMULARIO (Si no está autenticado)
     if (!$is_authenticated) {
-        echo "$seguridadcabeza";
-        echo '<form action="" method="post">';
-        echo ' <b>Usuario </b>: <input type="text" name="fuser" required> ';
-        echo ' <b>Contraseña </b>: <input type="password" name="fpass" required placeholder="Ingrese su contraseña"> ';
-        echo ' <input type="submit" value="Acceso"> ';
-        echo '
-    <div style="display:none;">
-        <input type="text" name="fhemail" value="">
+
+$loginzone = <<<EOD
+
+    <div class="auth-card">
+        <div class="auth-header">🌀 File4 Manager</div>
+        <div class="auth-body">
+            <form action="" method="post">
+                <div class="form-group">
+                    <label>Usuario</label>
+                    <input type="text" name="fuser" class="form-input" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" name="fpass" class="form-input" required placeholder="Ingrese su contraseña" autocomplete="current-password">
+                </div>
+                <input type="submit" value="Acceso">
+                <div style="display:none;"><input type="text" name="fhemail" value=""></div>
+            </form>
+            <div class="auth-footer">
+                <small>Seguridad File4 - V4.4.7.4</small>
+            </div>
+        </div>
     </div>
-        ';
-        echo '</form> <hr> <small>Seguridad '.$scriptfile.' - '.$fversion.' </small>';
-        
+
+EOD;
+echo "$newseguridadcabeza";
+echo "$loginzone";
+
         exit;
     }
 
