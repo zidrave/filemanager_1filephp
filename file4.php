@@ -3,52 +3,24 @@
 #   - - - |_________________,----------._ [____]  ""-,__  __....-----=====
 #                        (_(||||||||||||)___________/   ""                |
 #                           `----------' zIDRAvE[ ))"-,                   |
-#                     FILE MANAGER V4.4.7.3       ""    `,  _,--....___    |
+#                     FILE MANAGER V4.4.7.4       ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
-# 2026/20/07
-# public_key_permanente: 3JBT7LrYkydYPS3upQhJwB8pEi12nEfi2rbSTVIw/cs=
-//////////////POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
-$tokenplus = "pvt0zwwwwuFoewwwCpPZDq"; // cambie este valor es para darle mas seguridad a su script, desde aqui obtenemos el $masterkey para
+# 07/21/2026
+# public_key_inmutable: 3JBT7LrYkydYPS3upQhJwB8pEi12nEfi2rbSTVIw/cs=
+
+////////////// POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
+////////////// ANTES DE GRABAR EL USUARIO ///////////////////
+$tokenplus = 'pvt0zwwwwuFoewwwCpPZDq'; // cambie este valor es para darle mas seguridad a su script, desde aqui obtenemos el $masterkey para
                                        // acceder sin esperar  ejemplo: file4.php?unlock=pvt0z  para cambiarlo cambia el tokenplus las primeras 5 letras
-$pepper = "e%OrrrrpPZDq_U7tXz9#mK2@pL4wN"; // cambie este valor es para darle mas seguridad a su script
+$pepper = 'e%OrrrrpPZDq_U7tXz9#mK2@pL4wN'; // cambie este valor es para darle mas seguridad a su script
 ////// Cambiar estos valores TOKENPLUS y PEPPER antes de crear tu usuario administrador, si lo cambias despues de configurar tu cuenta
 ////// admin nunca logeara la unica solución es que borres manualmente el archivo .htfconfigxx.json 
-$configFile = ".htconfig.php"; //obligatorio cambiar el archivo config pero siempre con .ht al inicio ejemplo: .htconfxx.php
-//////////////POR SEGURIDAD CAMBIE ESTOS VALORES ANTES DE GRABAR EL USUARIO///////////
+$configFile = '.htconfig.php'; //obligatorio cambiar el archivo config pero siempre con .ht al inicio ejemplo: .htconfxx.php
+////////////// EOF - VALORES DE SEGURIDAD ///////////
 
 
-// SESSION PHP - PREPARACION TIEMPO EXTENDIDO
-
-ob_start(); // 1. Siempre primero para evitar Error 500
-
-// Configuración de duración: 1 meses en segundos
-$duracion = 10 * 60; // 10 minutos
-
-
-// $isSecure debe calcularse ANTES de este bloque (moverlo desde donde está más abajo)
-$isSecure = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on');
-
-
-// 2. Forzamos al servidor a mantener la sesión por 6 meses
-ini_set('session.gc_maxlifetime', $duracion);
-
-// Cuánto tiempo dura la COOKIE en el navegador, + flags de seguridad
-session_set_cookie_params([
-    'lifetime' => $duracion,
-    'path'     => '/',
-    'domain'   => '',
-    'secure'   => $isSecure,
-    'httponly' => true,
-    'samesite' => 'Lax',
-]);
-
-
-// 3. Iniciamos la sesión
-if (session_status() === PHP_SESSION_NONE) { session_start(); }
-
-
-
-$fversion="4.4.7.3";
+//-- LISTA DE VARIABLES GENERALES --
+$fversion="4.4.7.4";
 $nombreMaquina = gethostname();
 $hashCompleto = hash('sha256', $nombreMaquina);
 $tokenhost = substr($hashCompleto, 0, 10);
@@ -83,7 +55,9 @@ $totalCarpetas = 0;
 $totalPesoCarpeta = 0;
 
 
-
+$furlVersionCheck    = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/file4.php';
+$version_cache_file  = __DIR__ . '/.htversion_cache'; // prefijo .ht = bloqueado por Apache automáticamente
+$version_cache_segundos = 6 * 3600; // revisa como máximo cada 6 horas
 
 
 
@@ -92,12 +66,8 @@ $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https:
 $host = $_SERVER['HTTP_HOST'];
 $script_url = $_SERVER['SCRIPT_NAME'];
 $url_limpia = $protocol . $host . $script_url;
-//echo $url_limpia;
-$hash_mini_id = substr(md5($url_limpia), 0, 5); //hash unico segun ruta del script
-
-
-
-
+//convertir a hash corto
+$hash_mini_id = substr(md5($url_limpia), 0, 5); 
 
 
 
@@ -108,6 +78,33 @@ $cookieDomain = ""; // Dejar vacío para el host actual
 $isSecure = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on');
 $isHttpOnly = true; // ACTIVADO: Protege contra robo por JavaScript
 ////
+
+
+
+// SESSION PHP - PREPARACION TIEMPO EXTENDIDO
+ob_start(); // 1. Siempre primero para evitar Error 500
+// Configuración de duración: 1 meses en segundos
+$duracion = 10 * 60; // 10 minutos
+// $isSecure debe calcularse ANTES de este bloque (moverlo desde donde está más abajo)
+$isSecure = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on');
+
+// 2. Forzamos al servidor a mantener la sesión por 6 meses
+ini_set('session.gc_maxlifetime', $duracion);
+
+// Cuánto tiempo dura la COOKIE en el navegador, + flags de seguridad
+session_set_cookie_params([
+    'lifetime' => $duracion,
+    'path'     => '/',
+    'domain'   => '',
+    'secure'   => $isSecure,
+    'httponly' => true,
+    'samesite' => 'Lax',
+]);
+// 3. Iniciamos la sesión
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
+
+
+
 
 //////////////idioma predeterminado ES ////////////////////
 $tl = array(
@@ -220,6 +217,51 @@ setcookie('language', $lang, $options_lang);
 
 }
 
+///FUNCIONES //////
+
+function obtener_version_remota(string $url, string $cacheFile, int $cacheSegundos): ?string {
+    // 1. Si hay caché reciente, la usamos y no tocamos la red
+    if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < $cacheSegundos) {
+        $cached = trim(@file_get_contents($cacheFile));
+        return $cached !== '' ? $cached : null;
+    }
+
+    // 2. Descarga con timeout corto para no colgar la página si GitHub está lento/caído
+    $contexto = stream_context_create([
+        'http'  => ['timeout' => 3],
+        'https' => ['timeout' => 3],
+    ]);
+    $remoto = @file_get_contents($url, false, $contexto);
+
+    // 3. Si falla la descarga, reusa la última versión conocida en caché (si existe) en vez de fallar en seco
+    if ($remoto === false) {
+        if (file_exists($cacheFile)) {
+            $cached = trim(@file_get_contents($cacheFile));
+            return $cached !== '' ? $cached : null;
+        }
+        return null;
+    }
+
+    // 4. Extrae la versión del código fuente remoto, igual formato que $fversion="X.X.X";
+    if (!preg_match('/\$fversion\s*=\s*["\']([^"\']+)["\']/', $remoto, $m)) {
+        return null;
+    }
+
+    $versionRemota = $m[1];
+    @file_put_contents($cacheFile, $versionRemota, LOCK_EX);
+    return $versionRemota;
+}
+
+
+
+function hay_conexion_internet(string $host = 'raw.githubusercontent.com', int $puerto = 443, float $timeoutSegundos = 1.0): bool {
+    $conexion = @fsockopen($host, $puerto, $errno, $errstr, $timeoutSegundos);
+    if ($conexion) {
+        fclose($conexion);
+        return true;
+    }
+    return false;
+}
 
 // Función para cargar las traducciones desde el archivo JSON solo si se selecciona otro idioma
 function loadTranslations($lang) {
@@ -400,7 +442,8 @@ if (isset($_POST['unlock'])) {
     $ip_confianza = isset($configData['ihash']) ? $configData['ihash'] : '';
 
     // ¿Es el dueño en su IP de siempre?
-    $es_owner_reconocido = ($mi_ip_actual_hash === $ip_confianza);
+    //$es_owner_reconocido = ($mi_ip_actual_hash === $ip_confianza);
+      $es_owner_reconocido = hash_equals($ip_confianza, $mi_ip_actual_hash);
 
 
     // 1. Cargamos el historial existente
@@ -1430,6 +1473,20 @@ if (empty($master)) {
 <?php
 } 
 //EOF - Verificar session de usuario
+
+// ── AVISO DE NUEVA VERSIÓN DISPONIBLE ──
+if ($is_authenticated && hay_conexion_internet()) {
+    $version_remota = obtener_version_remota($furlVersionCheck, $version_cache_file, $version_cache_segundos);
+    if ($version_remota !== null && version_compare($version_remota, $fversion, '>')) {
+        echo "<table style='width:100%;background-color:#04ab8a;'>
+                <tr><td style='text-align:left;padding:10px;color:white;'>
+                    <b>🚀 Versión nueva $version_remota disponible</b> (tienes $fversion instalada) —
+                    <a href='?mod=update' style='color:#fff;text-decoration:underline;'>Actualizar ahora</a>
+                </td></tr>
+              </table>";
+    } 
+   
+}
 ?>
 
 
@@ -1802,14 +1859,17 @@ if (isset($_POST['saveFile'])) {
 if (isset($_POST['renameFile'])) {
     $oldName = $uploadDir . $_POST['oldName'];
     $newName = $uploadDir . $_POST['newName'];
+    $oldNameBase = basename($_POST['oldName']);
 
-    if (file_exists($oldName)) {
+    // --- PROTECCIÓN: no se puede renombrar el archivo de configuración ---
+    if ($oldNameBase === $configFile) {
+        echo "$alertaini ❌ No se puede tocar archivo de sistema. $alertafin";
+    }
+    elseif (file_exists($oldName)) {
         if (rename($oldName, $newName)) {
             echo "$alertaini ⚠️ Archivo renombrado. $alertafin ";
-    echo "<a href='?c=$carpetapSafe' class='naranja' role='button'><b>RECARGAR </b></a>";
-    exit;
-
-
+            echo "<a href='?c=$carpetapSafe' class='naranja' role='button'><b>RECARGAR </b></a>";
+            exit;
         } else {
             echo " $alertaini ⚠️ Error al renombrar el archivo. $alertafin ";
         }
@@ -2416,9 +2476,10 @@ $mod = isset($_GET['mod']) ? $_GET['mod'] : '';
 
    <h2> 🔄 <?php echo $tl['update'];?>: </h2>
 
-<br>
+ 
 <form action="?fupdate=ok&c=<?php echo "$carpetazSafe/";?>&updatefile=<?php echo "$scriptfile";?>" method="post">
-        <?php echo $tl['msgupdate'];?>. <br><br>
+        (Version Actual <b><?php echo $fversion;?>) </b><br>
+        <?php echo $tl['msgupdate'];?>.  <br><br>
         <input type="submit" value=" <?php echo $tl['update'];?> "> 
         <a href='?c=<?php echo "$carpetazSafe";?>/' class='azulin'> <?php echo $tl['cancel'];?></a><br>
 
