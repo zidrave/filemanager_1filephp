@@ -1641,9 +1641,7 @@ if (!$verificado) {
         '/\$configFile\s*=\s*(["\']).*?\1;/' => construir_reemplazo_php('configFile', $configFile),
     ];
 
-    $fcontenido = preg_replace(array_keys($patrones), array_values($patrones), $fcontenido);
-
-    $fcontenido = preg_replace(array_keys($patrones), array_values($patrones), $fcontenido);
+   $fcontenido = preg_replace(array_keys($patrones), array_values($patrones), $fcontenido);
 
     // 5. Reemplazo de Archivos en Disco
     if (file_put_contents($rutaArchivoLocal, $fcontenido) === FALSE) {
