@@ -1,9 +1,9 @@
-<?php 
+<?php
 #          ,______________________________________       
 #   - - - |_________________,----------._ [____]  ""-,__  __....-----=====
 #                        (_(||||||||||||)___________/   ""                |
 #                           `----------' zIDRAvE[ ))"-,                   |
-#                     FILE MANAGER V4.4.7.1       ""    `,  _,--....___    |
+#                     FILE MANAGER V4.4.7.2       ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
 # 2025 sander
 # public_key_permanente: 3JBT7LrYkydYPS3upQhJwB8pEi12nEfi2rbSTVIw/cs=
@@ -24,18 +24,34 @@ ob_start(); // 1. Siempre primero para evitar Error 500
 
 // Configuración de duración: 1 meses en segundos
 // $duracion = 6 * 30 * 24 * 60 * 60;  //6 meses
-$duracion = 30 * 24 * 60 * 60;  // 1 mes
+// $duracion = 30 * 24 * 60 * 60;  // 1 mes
+$duracion = 10 * 60; // 10 minutos
+
+
+// $isSecure debe calcularse ANTES de este bloque (moverlo desde donde está más abajo)
+$isSecure = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on');
+
 
 // 2. Forzamos al servidor a mantener la sesión por 6 meses
 ini_set('session.gc_maxlifetime', $duracion);
-ini_set('session.cookie_lifetime', $duracion);
+//ini_set('session.cookie_lifetime', $duracion);
+// Cuánto tiempo dura la COOKIE en el navegador, + flags de seguridad
+session_set_cookie_params([
+    'lifetime' => $duracion,
+    'path'     => '/',
+    'domain'   => '',
+    'secure'   => $isSecure,
+    'httponly' => true,
+    'samesite' => 'Lax',
+]);
+
 
 // 3. Iniciamos la sesión
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
 
 
-$fversion="4.4.7.1";
+$fversion="4.4.7.2";
 $nombreMaquina = gethostname();
 $hashCompleto = hash('sha256', $nombreMaquina);
 $tokenhost = substr($hashCompleto, 0, 10);
@@ -48,7 +64,10 @@ $scriptfm = strtoupper($scriptfm); #pasar a mayuscula
 $mod = isset($_GET['mod']) ? $_GET['mod'] : ''; // algunas cositas van con mod
 $expire_time = time() + 2592000; //valor puesto para 30 dias
 #$ippublic = file_get_contents('https://api.ipify.org/'); //solo con internet
-$miip = $_SERVER['REMOTE_ADDR'];
+//$miip = $_SERVER['REMOTE_ADDR'];
+//mod ip real
+$theip = $_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'];
+$miip = explode(',', $theip)[0];
 $haship = hash('sha256', $miip);
 $ihash = hash('sha256', $miip . $pepper); // Usamos el Pepper para mayor seguridad
 $archivo_bloqueo = 'bloqueo.lock';
@@ -481,6 +500,14 @@ if (file_exists($configFile)) {
 
     // 1. AUTO-LOGIN (Sincronizar Cookie con Sesión)
     if (!isset($_SESSION['user_auth']) || $_SESSION['user_auth'] !== true) {
+
+
+//------Debug zone-----// 
+// include "debug.php";
+
+
+
+
         if (isset($_COOKIE['Hash']) && hash_equals($tokenhash_valid, $_COOKIE['Hash']) && hash_equals($configData['fhash'], $haship)) {
             session_regenerate_id(true);
             $_SESSION['user_auth'] = true;
@@ -1041,8 +1068,8 @@ setcookie('fm_theme_'.$hash_mini_id.'', $themex, $theme_options);
 <!DOCTYPE html>
 <html>
 <head>
-    <title>File Manager V4</title>
-	<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABICAMAAABiM0N1AAAAwFBMVEVMaXEhZZlLoeZUrO0obqRUrO0hZZkob69UrO5UrO4iZpkhZZlTq+1Vf6wiZJohZphUrO5UrO4hZZkhZZlUrO4hZZkiZJpVrO0hZplFldNUq+48icRFltRUrO1UrO5Uq+0hZZlVq+4eZJohZphUrO5Mn94iZplVrO4hZZlJm9tXruwiZphDlNFWrO1UrO1Vq+1VrO5Uq+0veK8mbKFOouM2gbpRp+hTqus6h8IzfbZEldNAkc0jaJwsc6lHmtgiZpkio2ylAAAAMHRSTlMA/A039JHTB96uLZYdAyiRcviI29XoTc2+zepM0VaewKZfIZh89l/z8+wp9O9HgmUP4OQcAAABgElEQVR4Ae3UBXbdQBBE0RYzmNkOg7HF5tn/qsLtz6IKJ3cBb0ZSHdF/fyo/sc/UNG3Lfrkd0UBOoKllNrYHdnbVKsGgSwVqtWdD3o+mWqxTb4lq9Yb6slWrM596eqfabb2gflSXjRgNibN138FC7Xk78dGQ0AIHDYldBw2J5HuFNB8NieR7hezvFTobGSqq27LmGfsnqT40VNw1vIxrDAvlNa+wZgwJ3WS8kusQ2BHPe4fyhtt4fUMPNbfaJLAjXAK/l9jpESryWxb93tH9p9lmPI41FcpLHi+dhKqMAUc0tTeEIaGiZkgooWuGrEUSKhni0rfQPWNOJPTAmGMJ3TDmUkLXjLmS0B1jLiT0yJhTCZWM0SXUMGSfvoUKxuxIKGeMJ6GKMZaE0BmlEkJndCQhdEaGhNAZhd9C9xn8WyP6HjNy6RMT/GgyIzp/KKqGMa/ok0OGZSF9cpAx6pjou1zJ1ekL/T3YCekbfS8D3o+n08TB3uuGR3i7aRn0B/vvI/0jAVz6iypMAAAAAElFTkSuQmCC">
+    <title> File Manager V4 </title>
+    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAaCAYAAACgoey0AAAACXBIWXMAAC4jAAAuIwF4pT92AAAC7ElEQVRIS8VWO28TQRCe3b2H3yaRg8Vbsng0EJDgD+QnpEMUkIKKipKONiWioCYCodRI1GlwBQgKkEAoRQxVEAGDKPy4W77Zuz07xvbZsi1OGu+db2a+bx47e0T/6RJXb927BuyHkDMDHML4WcfrAdYHb7Y2H8+DqwMnlyGrkEyKwyreb4Bo/dvOs8+jdBuNxkS8JLQ8iJpAWO8K5ObK2g22m+liB5xKm840ZyUorEPW0hTT3nOq+RJpin16F3D/CFHvDbHTK/8Gwb6/Qp6gRDu2FBZ4QlyjxjbnIGenMPoF3T2QrTe2NtvWyRT2iSpHMWmWLM6hIMdGHE7leyx/7qEOeZ3AajHwUOZzBI2wNGXUb3/p4vX77fXaB2mBE3ALKEJBQmOGjEuoxKbIL5Oo1OjUyRPQxa4MuwCBnUaQvEaoBamDuyrobmitg/1u5dPQVIsONrbk7AB13EYTLim/SDJXJtfLQp1Z+sNyzi+gQFnT4k39/HCq3SypbImEmyPJjMN4i/O9IW6fEUmAyByPRH6JRAKa3qcdmDadY0+TiLVUJEtHyamep9NV7EbDfv5XO2qv3d7oc3zSmTIdXy6SlosBZcS2ySIdJMACaZNImVIKTTX/SK3HVkCNl3dWuxGwkILrpBC1EDPP/5Gsu1Hb1Fkhai7paO3mSaBDWyEixp8Mz2U2IyrO/KwFiOv7zgDDqQilQqYRraPoRzvKswU0JPDDEt2DZ/yckLMEY8N+gv33rcD4fm2ANXYsuRkKPZx4qHMA90mNh9ZaRzMlBrMkzTr430CmGLfsifcGOBRSSpXB1sUgkO5EJ7Phw4NpsJrpTfnzxe1L+2wmtXIc8gpc55FNMccXpr4GWPi5nCwcQVfjk2tBQ6OPeA9YyYzvOh7yjTQv/nqVRIzhvosTA18IdiAvFP2t9e5Ix9sO/nz/EoTtGursY4dzi5idgtT3vjS05mece7YeOtKJ+js5xmSx0hDZUjMGsPZ2/WiB/wJcVLk32a477wAAAABJRU5ErkJggg==">
 
 <?php
 // Definimos la ruta del archivo de estilo externo
@@ -1468,16 +1495,11 @@ if (!is_dir($uploadDir)) {
 /////////// Subir archivo basico ////////////////////////////////////////
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['fileToUpload'])) {
     $targetFile = $uploadDir . basename($_FILES['fileToUpload']['name']);
-    $fileType = pathinfo($targetFile, PATHINFO_EXTENSION);
 
-    if ($fileType != 'php' || (isset($_POST['allowPhpUpload']) && $_POST['allowPhpUpload'] == 'yes')) {
-        if (move_uploaded_file($_FILES['fileToUpload']['tmp_name'], $targetFile)) {
-            echo " $alertaini ⚠️ El archivo  <span style='color:yellow;'>". htmlspecialchars(basename($_FILES['fileToUpload']['name'])). " </span> ha sido subido exitosamente. $alertafin ";
-        } else {
-            echo " $alertaini⚠️Error al subir el archivo. $alertafin";
-        }
+    if (move_uploaded_file($_FILES['fileToUpload']['tmp_name'], $targetFile)) {
+        echo " $alertaini ⚠️ El archivo  <span style='color:yellow;'>". htmlspecialchars(basename($_FILES['fileToUpload']['name'])). " </span> ha sido subido exitosamente. $alertafin ";
     } else {
-        echo " $alertaini ⚠️ No se permiten archivos PHP. $alertafin";
+        echo " $alertaini⚠️Error al subir el archivo. $alertafin";
     }
 }
 
@@ -1604,14 +1626,22 @@ if (!$verificado) {
         die(" $alertaini ⚠️ No se pudo descargar el archivo desde GitHub. Revisa la conexión del servidor. $alertafin ");
     }
 
-    // --- 4. EL TRUCO MÁGICO: Parcheo Dinámico con Regex Robusta ---
-    // Esta regex busca $variable = "..." o '...' sin importar los espacios y mantiene tus valores actuales.
-    
+     // --- 4. PARCHEO DINÁMICO: conserva TUS valores actuales, no el placeholder del repo ---
+    // Escapa un valor para insertarlo de forma segura como literal PHP,
+    // y además escapa $ y \ para que preg_replace no los interprete como backreferences.
+    function construir_reemplazo_php(string $nombreVar, string $valorActual): string {
+        $valorEscapadoPhp = addcslashes($valorActual, "\\'");
+        $lineaPhp = '$' . $nombreVar . " = '" . $valorEscapadoPhp . "';";
+        return str_replace(['\\', '$'], ['\\\\', '\$'], $lineaPhp);
+    }
+
     $patrones = [
-        '/\$tokenplus\s*=\s*(["\']).*?\1;/'  => '$tokenplus = "pvt0zwwwwuFoewwwCpPZDq";',
-        '/\$pepper\s*=\s*(["\']).*?\1;/'     => '$pepper = "e%OrrrrpPZDq_U7tXz9#mK2@pL4wN";',
-        '/\$configFile\s*=\s*(["\']).*?\1;/' => '$configFile = ".htconfig.json";'
+        '/\$tokenplus\s*=\s*(["\']).*?\1;/'  => construir_reemplazo_php('tokenplus', $tokenplus),
+        '/\$pepper\s*=\s*(["\']).*?\1;/'     => construir_reemplazo_php('pepper', $pepper),
+        '/\$configFile\s*=\s*(["\']).*?\1;/' => construir_reemplazo_php('configFile', $configFile),
     ];
+
+    $fcontenido = preg_replace(array_keys($patrones), array_values($patrones), $fcontenido);
 
     $fcontenido = preg_replace(array_keys($patrones), array_values($patrones), $fcontenido);
 
@@ -2117,9 +2147,7 @@ if (isset($_GET['uploadmultiple']) && $_GET['uploadmultiple'] === '1') {
 <div class="file-input-wrapper">
         <input type="file" name="fileToUpload" id="fileToUpload"  >
 </div>
-        <label>
-            <input type="checkbox" name="allowPhpUpload" value="yes"> <?php echo $tl['allowphpfile'];?>
-        </label>
+
 
         <input type="submit" value=" ⬆️ <?php echo $tl['uploadfile'];?>" name="submit" class="btn btn-primary">
       <a href="?c=<?php echo "$carpetazSafe/";?>&uploadmultiple=1" class="btn btn-warning"> <?php echo $tl['uploadmultiplefiles'];?> </a>
@@ -3387,7 +3415,7 @@ echo " <hr>\n";
 
 
 <div class="upload-section"> 
- 🗂️ FILE MANAGER | Full Version <b><?php echo "$fversion";?> </b> <?php echo $tl['createdby'];?> <a href='https://zidrave.net/' target='_black'>http://zidrave.net</a><br>
+ 🗂️ FILE MANAGER | Full Version <b><?php echo "$fversion";?> </b> <?php echo $tl['createdby'];?> <a href='https://zidrave.net/' target='_black'>http://zidrave.net</a> - Email: <b>developer@zidrave.net</b><br>
 </div>
 
 <hr>
