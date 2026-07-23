@@ -3,9 +3,9 @@
 #   - - - |_________________,----------._ [____]  ""-,__  __....-----=====
 #                        (_(||||||||||||)___________/   ""                |
 #                           `----------' zIDRAvE[ ))"-,                   |
-#                     FILE MANAGER V4.4.7.5       ""    `,  _,--....___    |
+#                     FILE MANAGER V4.4.7.6       ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
-# 07/21/2026
+# 21/07/2026
 # public_key_inmutable: 3JBT7LrYkydYPS3upQhJwB8pEi12nEfi2rbSTVIw/cs=
 
 ////////////// POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
@@ -23,7 +23,7 @@ $configFile = '.htconfig.php'; //obligatorio cambiar el archivo config pero siem
 
 
 //-- LISTA DE VARIABLES GENERALES --
-$fversion="4.4.7.5";
+$fversion="4.4.7.6";
 $nombreMaquina = gethostname();
 $hashCompleto = hash('sha256', $nombreMaquina);
 $tokenhost = substr($hashCompleto, 0, 10);
@@ -71,6 +71,7 @@ $script_url = $_SERVER['SCRIPT_NAME'];
 $url_limpia = $protocol . $host . $script_url;
 //convertir a hash corto
 $hash_mini_id = substr(md5($url_limpia), 0, 5); 
+$hash_mini_id2 = substr(md5($tokenplus), 0, 10); 
 
 
 
@@ -87,7 +88,7 @@ $isHttpOnly = true; // ACTIVADO: Protege contra robo por JavaScript
 // SESSION PHP - PREPARACION TIEMPO EXTENDIDO
 ob_start(); // 1. Siempre primero para evitar Error 500
 // Configuración de duración: 1 meses en segundos
-$duracion = 10 * 60; // 10 minutos
+$duracion = 5 * 60; // 5 minutos -- session PHPSESSION SERVER 
 // $isSecure debe calcularse ANTES de este bloque (moverlo desde donde está más abajo)
 $isSecure = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on');
 
@@ -290,6 +291,35 @@ function cfg_save(array $data, string $file): bool {
 }
 
 
+// Agregar funcion de auditoria
+function audit($action, $target = '') {
+    global $hash_mini_id2, $miip; // <-- Esto le dice a PHP que busque la variable afuera
+    
+    $raw_user = $_SESSION['user_name'] ?? 'unknown';
+    
+    // Ocultar el nombre: muestra las primeras 2 letras y rellena el resto con *****
+    if ($raw_user !== 'unknown' && strlen($raw_user) > 2) {
+        $user = substr($raw_user, 0, 2) . '*****';
+    } elseif ($raw_user !== 'unknown' && strlen($raw_user) <= 2) {
+        $user = $raw_user . '*****';
+    } else {
+        $user = 'unknown';
+    }
+
+    $ip = $miip ?? '0.0.0.0';
+    
+    // Configuramos la zona horaria a GMT-5 temporalmente para este cálculo
+    $fecha_gmt5 = new DateTime('now', new DateTimeZone('Etc/GMT+5'));
+    $hora_actual = $fecha_gmt5->format('Y-m-d H:i:s');
+    
+    @file_put_contents('.audit-' . ($hash_mini_id2 ?? 'unknown') . '.log',  
+        $hora_actual . " | $user | $ip | $action | $target\n",  
+        FILE_APPEND | LOCK_EX
+    );
+}
+
+////////////////EOF-FUNCIONES///////////////
+
 
 
 
@@ -332,11 +362,6 @@ if ($lang !== 'es') {
 
 
 //////////////idioma-EOF////////////////////
-
-
-
-
-
 
 
 
@@ -655,6 +680,7 @@ if (file_exists($configFile)) {
 
         if ($_POST['fuser'] === $master && password_verify($peppered_input, $configData['fpass'])) {
             // LOGIN EXITOSO
+audit('LOGIN_SUCCESS', 'owner en casa');
             session_regenerate_id(true);
             $_SESSION['user_auth'] = true;
             $_SESSION['user_name'] = $master;
@@ -677,6 +703,7 @@ if (file_exists($configFile)) {
             exit;
         } else {
             // LOGIN FALLIDO
+            audit('LOGIN_FAILED', $_POST['fuser'] ?? '');
             $intentos = 1;
             if (file_exists($archivo_bloqueo)) {
                 $contenido = trim(file_get_contents($archivo_bloqueo));
@@ -710,7 +737,7 @@ $loginzone = <<<EOD
                 <div style="display:none;"><input type="text" name="fhemail" value=""></div>
             </form>
             <div class="auth-footer">
-                <small>Seguridad File4 - V4.4.7.4</small>
+                <small>Seguridad File4 - V$fversion</small>
             </div>
         </div>
     </div>
@@ -806,6 +833,7 @@ if (file_exists($rutaOrigen) && is_file($rutaOrigen)) {
         
         // Eliminamos la copia temporal
         unlink($rutaTemporal);
+        audit('DOWNLOAD_FILE', $_GET['dfile']);
         exit;
         
     } else {
@@ -1022,7 +1050,7 @@ if (isset($_GET['fborrarconfiguracion'])) {
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_pass'])) {
         $peppered_confirm = hash_hmac("sha512", $_POST['confirm_pass'], $pepper);
         
-        // Verificamos contra la clave actual en el JSON
+        // Verificamos contra la clave actual en el Config
         if (password_verify($peppered_confirm, $configData['fpass'])) {
             
             // 1. DESTRUCCIÓN TOTAL DE SESIÓN
@@ -1817,6 +1845,7 @@ if (!$verificado) {
 
     echo " $alertaini ⚠️ " . $tl['okupdate'] . " $alertafin";
     echo "<a href='?c=$carpetazSafe/' class='naranja' role='button'> <b> " . $tl['reload'] . " </b></a>";
+audit('SYSTEM_UPDATE', 'Version: ' . $fversion);
     exit;
 }
 
@@ -1834,6 +1863,8 @@ if (isset($_GET['deleteFile'])) {
         header('HTTP/1.1 403 Forbidden');
         exit("Error: Acceso no autorizado.");
     }
+audit('DELETE_FILE', $_GET['deleteFile'] ?? ''); //registrar acciones
+
 
     $fileToDelete = $_GET['deleteFile'];
     $archivoname = basename($fileToDelete);
@@ -1886,6 +1917,7 @@ if (isset($_POST['deleteFolder']) || isset($_GET['deleteFolder'])) {
     } else {
         echo "$alertaini ⚠️ Carpeta no encontrada. $alertafin";
     }
+audit('DELETE_FOLDER', $_POST['deleteFolder'] ?? $_GET['deleteFolder'] ?? '');
 }
 
 
@@ -1903,6 +1935,7 @@ if (isset($_GET['editFile'])) {
         file_put_contents($fileToEdit, '');
         $fileContent = '';
     }
+audit('EDIT_FILE', $_GET['editFile'] ?? '');
 }
 
 // Guardar archivo editado
@@ -1924,6 +1957,7 @@ if (isset($_POST['saveFile'])) {
 
 // Renombrar archivo
 if (isset($_POST['renameFile'])) {
+    audit('RENAME_FILE', $_POST['oldName'] . ' -> ' . $_POST['newName']);
     $oldName = $uploadDir . $_POST['oldName'];
     $newName = $uploadDir . $_POST['newName'];
     $oldNameBase = basename($_POST['oldName']);
@@ -1950,7 +1984,7 @@ if (isset($_POST['renameFile'])) {
 if (isset($_POST['copyFile'])) {
     $oldName = $uploadDir . $_POST['oldName'];
     $newName = $uploadDir . $_POST['newName'];
-
+    audit('COPY_FILE', $_POST['oldName'] . ' -> ' . $_POST['newName']);
     if (file_exists($oldName)) {
         if (copy($oldName, $newName)) {
             echo "$alertaini ⚠️ Archivo Copiado. $alertafin ";
@@ -2052,6 +2086,7 @@ if (isset($_POST['compressFile'])) {
             }
             $zip->close();
             echo "$alertaini ⚠️El archivo <b>$namefilecSafe.zip</b> se ha creado correctamente. $alertafin";
+       audit('COMPRESS_FILE', $namefilecSafe . '.zip');
         } elseif (is_dir($ruta)) {
             // Añadir una carpeta completa
             comprimirCarpetaConContrasena($ruta, $nombreZip, [], $namefilepass);
