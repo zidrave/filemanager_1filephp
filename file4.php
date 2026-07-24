@@ -3,7 +3,7 @@
 #   - - - |_________________,----------._ [____]  ""-,__  __....-----=====
 #                        (_(||||||||||||)___________/   ""                |
 #                           `----------' zIDRAvE[ ))"-,                   |
-#                     FILE MANAGER V4.4.7.6       ""    `,  _,--....___    |
+#                     FILE MANAGER V4.4.7.7       ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
 # 21/07/2026
 # public_key_inmutable: 3JBT7LrYkydYPS3upQhJwB8pEi12nEfi2rbSTVIw/cs=
@@ -23,7 +23,7 @@ $configFile = '.htconfig.php'; //obligatorio cambiar el archivo config pero siem
 
 
 //-- LISTA DE VARIABLES GENERALES --
-$fversion="4.4.7.6";
+$fversion="4.4.7.7";
 $nombreMaquina = gethostname();
 $hashCompleto = hash('sha256', $nombreMaquina);
 $tokenhost = substr($hashCompleto, 0, 10);
@@ -222,6 +222,13 @@ setcookie('language', $lang, $options_lang);
 }
 
 ///FUNCIONES //////
+
+function xformatSize2($bytes) {
+    $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    $power = $bytes > 0 ? floor(log($bytes, 1024)) : 0;
+    return number_format($bytes / pow(1024, $power), 2, '.', ',') . ' ' . $units[$power];
+}
+
 
 function obtener_version_remota(string $url, string $cacheFile, int $cacheSegundos): ?string {
     // 1. Si hay caché reciente, la usamos y no tocamos la red
@@ -1874,21 +1881,37 @@ audit('DELETE_FILE', $_GET['deleteFile'] ?? ''); //registrar acciones
     // 1. No se puede borrar el archivo definido en $configFile
     // 2. No se puede borrar el propio script ejecutable (file4.php)
     if ($archivoname === $configFile || $archivoname === "$scriptfile.php") {
-        echo "$alertaini ❌ ERROR: El archivo <span style='color:yellow;'>$archivonameSafe</span> es un archivo de sistema y NO puede ser eliminado. $alertafin";
+    $mensajeAlerta = "❌ ERROR: El archivo <b> <span style='color:yellow;'> " . htmlspecialchars($archivonameSafe) . " </span> </b> es un archivo de sistema.";
+    $colorFondo = '#000000';
     } 
     else {
         // Proceder con el borrado si no es un archivo protegido
-        if (file_exists($fileToDelete)) {
-            if (unlink($fileToDelete)) {
-                echo "$alertaini ⚠️ El archivo <span style='color:red;'>$archivonameSafe</span> ha sido eliminado... $alertafin";
-            } else {
-                echo "$alertaini ❌ Error al intentar eliminar el archivo. $alertafin";
-            }
-        } else {
-            echo "$alertaini ⚠️ El archivo <span style='color:red;'>$archivonameSafe</span> no fue encontrado. $alertafin";
-        }
+
+
+
+// Variables para controlar el mensaje y el color de fondo de la alerta
+$mensajeAlerta = '';
+$colorFondo = '#ff4d4d'; // Rojo por defecto para errores o avisos
+
+if (file_exists($fileToDelete)) {
+    if (unlink($fileToDelete)) {
+        // Éxito al eliminar
+        $mensajeAlerta = "⚠️ ¡Archivo <b> <span style='color:yellow;'> " . htmlspecialchars($archivonameSafe) . " </span> </b>  Eliminado!";
+        //$colorFondo = '#28a745'; // Verde para éxito (opcional) o déjalo en #ff4d4d si prefieres rojo
+    } else {
+        // Error al intentar eliminar
+        $mensajeAlerta = "❌ Error al intentar eliminar el archivo.";
+    }
+} else {
+    // Archivo no encontrado
+    $mensajeAlerta = "⚠️ El archivo <b> <span style='color:yellow;'> " . htmlspecialchars($archivonameSafe) . " </span> </b> no fue encontrado.";
+    $colorFondo = '#000000';
+}
+
     }
 }
+ 
+
 
 
 
@@ -1964,19 +1987,34 @@ if (isset($_POST['renameFile'])) {
 
     // --- PROTECCIÓN: no se puede renombrar el archivo de configuración ---
     if ($oldNameBase === $configFile) {
-        echo "$alertaini ❌ No se puede tocar archivo de sistema. $alertafin";
+
+    $mensajeAlerta = "❌ No se puede tocar archivo de sistema.";
+    $colorFondo = '#000000';
+
     }
     elseif (file_exists($oldName)) {
         if (rename($oldName, $newName)) {
-            echo "$alertaini ⚠️ Archivo renombrado. $alertafin ";
-            echo "<a href='?c=$carpetapSafe' class='naranja' role='button'><b>RECARGAR </b></a>";
-            exit;
+        $nombreLimpio = basename($newName);
+
+
+
+     $mensajeAlerta = "⚠️ Archivo renombrado a <b> <span style='color:yellow;'> " . htmlspecialchars($nombreLimpio) . " </span> </b> ";
+     $colorFondo = '#000000';
+
         } else {
-            echo " $alertaini ⚠️ Error al renombrar el archivo. $alertafin ";
+
+    $mensajeAlerta = "⚠️ Error al renombrar el archivo.";
+    $colorFondo = '#000000';
+
         }
     } else {
-        echo " $alertaini ⚠️ Archivo no encontrado. $alertafin  ";
+
+    $mensajeAlerta = "⚠️ Archivo no encontrado.";
+    $colorFondo = '#000000';
+
     }
+
+
 }
 
 
@@ -1987,16 +2025,21 @@ if (isset($_POST['copyFile'])) {
     audit('COPY_FILE', $_POST['oldName'] . ' -> ' . $_POST['newName']);
     if (file_exists($oldName)) {
         if (copy($oldName, $newName)) {
-            echo "$alertaini ⚠️ Archivo Copiado. $alertafin ";
-    echo "<a href='?c=$carpetapSafe' class='naranja' role='button'><b>RECARGAR </b></a>";
-    exit;
+
+     $nombreLimpio = basename($newName);
+     $mensajeAlerta = "⚠️ Archivo Copiado  <b> <span style='color:yellow;'> " . htmlspecialchars($nombreLimpio) . " </span> </b> ";
+     $colorFondo = '#000000';
 
 
         } else {
-            echo " $alertaini ⚠️ Error al copiar el archivo. $alertafin ";
+
+    $mensajeAlerta = "⚠️ Error al copiar el archivo.";
+    $colorFondo = '#000000';
         }
     } else {
-        echo " $alertaini ⚠️ Archivo no encontrado. $alertafin  ";
+
+    $mensajeAlerta = "⚠️ Archivo no encontrado.";
+    $colorFondo = '#000000';
     }
 }
 
@@ -2068,7 +2111,9 @@ if (isset($_POST['compressFile'])) {
         $zip->close();
 
         if (!file_exists($destino)) {
-            echo "$alertaini ⚠️Error al comprimir la carpeta con contraseña.\n $alertafin";
+          //  echo "$alertaini ⚠️Error al comprimir la carpeta con contraseña.\n $alertafin";
+     $mensajeAlerta = " ⚠️ ⚠️Error al comprimir la carpeta con contraseña. ";
+     $colorFondo = '#000000';
         } else {
             #echo "$alertaini ⚠️ Carpeta comprimida y con Password en:\n $destino\n $alertafin ";
         }
@@ -2085,20 +2130,30 @@ if (isset($_POST['compressFile'])) {
                 $zip->setEncryptionName(basename($ruta), ZipArchive::EM_AES_256, $namefilepass);
             }
             $zip->close();
-            echo "$alertaini ⚠️El archivo <b>$namefilecSafe.zip</b> se ha creado correctamente. $alertafin";
+
+     $mensajeAlerta = "⚠️ Archivo Comprimido a <b> <span style='color:yellow;'> $namefilecSafe.zip </span> </b> ";
+     $colorFondo = '#000000';
        audit('COMPRESS_FILE', $namefilecSafe . '.zip');
+
         } elseif (is_dir($ruta)) {
             // Añadir una carpeta completa
             comprimirCarpetaConContrasena($ruta, $nombreZip, [], $namefilepass);
-            echo "$alertaini ⚠️ La carpeta <b>$namefilecSafe.zip</b> se ha creado correctamente. $alertafin";
+           // echo "$alertaini ⚠️ La carpeta <b>$namefilecSafe.zip</b>  se ha creado correctamente. $alertafin";
+     $mensajeAlerta = "⚠️ La carpeta se comprimio en: <b> <span style='color:yellow;'>  $namefilecSafe.zip </span> </b>  se ha creado correctamente.  ";
+     $colorFondo = '#000000';
+
         } else {
             $rutaSafe = htmlspecialchars($ruta, ENT_QUOTES, 'UTF-8');
-            echo " $alertaini ⚠️ La ruta especificada no es válida $rutaSafe . $alertafin ";
-            exit;
+            //echo " $alertaini ⚠️ La ruta especificada no es válida $rutaSafe . $alertafin ";
+            //exit;
+     $mensajeAlerta = " ⚠️ La ruta especificada no es válida $rutaSafe . ";
+     $colorFondo = '#000000';
         }
     } else {
-        echo "No se especificó ningún archivo o carpeta.";
-        exit;
+        //echo "No se especificó ningún archivo o carpeta.";
+        //exit;
+     $mensajeAlerta = " ⚠️ No se especificó ningún archivo o carpeta. ";
+     $colorFondo = '#000000';
     }
 
     // Agregar un comentario al archivo ZIP
@@ -2112,8 +2167,8 @@ if (isset($_POST['compressFile'])) {
         }
     }
 
-    echo "<a href='?c=$carpetapSafe' class='naranja' role='button'><b>RECARGAR </b></a>";
-    exit;
+   // echo "<a href='?c=$carpetapSafe' class='naranja' role='button'><b>RECARGAR </b></a>";
+   // exit;
 }
 ////////////////// Comprimir archivo o carpeta 🚀 🚀🚀🚀🚀🚀🚀🚀
 
@@ -2804,7 +2859,7 @@ $comprimirSafe = htmlspecialchars($comprimir, ENT_QUOTES, 'UTF-8');
 		<div class="filasinfx">
 			<div class="celda"> 
     <h2> 📚 <?php echo $tl['compress'];?> ZIP (<?php echo "$comprimirSafe";?>)</h2>
-    <form action="" method="post">
+    <form action="?c=<?php echo "$carpetapSafe";?>" method="post">
        <?php echo $tl['msgcompress'];?>:<br>
         <input type="hidden" name="archivoacomprimir" value="<?php echo "$comprimirSafe";?>" required class="formtext" readonly>
         <?php echo $tl['password'];?>:
@@ -2850,26 +2905,10 @@ $archivoacambiarnombreSafe = htmlspecialchars($archivoacambiarnombre ?? '', ENT_
 $archivoacambiarnombre2 = "uploads$carpetap$archivoacambiarnombre";
  if (isset($archivoacambiarnombre)):
 
-function xformatSize2($bytes) {
-    $units = ['B', 'KB', 'MB', 'GB', 'TB'];
-    $power = $bytes > 0 ? floor(log($bytes, 1024)) : 0;
-    return number_format($bytes / pow(1024, $power), 2, '.', ',') . ' ' . $units[$power];
-}
-
- ?>
+ 
 
 
-
-
-
-
-
-
-
-<?php
-
-
-#///agregando iconos personalzados para info archivos////
+///agregando iconos personalzados para info archivos////
         if (is_dir($archivoacambiarnombre2)) {
             $fileType = 'folder';
             $icon = '📂';
@@ -2930,7 +2969,7 @@ function xformatSize2($bytes) {
             }
         }
 
-#///agregando iconos personalzados ////
+///agregando iconos personalzados ////
 
 
 
@@ -3016,7 +3055,7 @@ $fileinfoSafe = htmlspecialchars($fileinfo, ENT_QUOTES, 'UTF-8');
     <div class="column">
 
     <h3> 🖊️  <?php echo $tl['renamemove'];?></h3>
-    <form action="" method="post">
+    <form action="?c=<?php echo "$carpetapSafe";?>" method="post">
         
         <input type="hidden" name="oldName" value="<?php echo "$archivoacambiarnombreSafe";?>"  readonly required class="formtext">
          
@@ -3026,7 +3065,7 @@ $fileinfoSafe = htmlspecialchars($fileinfo, ENT_QUOTES, 'UTF-8');
     </form>
 <hr>
     <h3> 🖊️ <?php echo $tl['copyfile'];?>  </h3>
-    <form action="" method="post">
+    <form action="?c=<?php echo "$carpetapSafe";?>" method="post">
         <input type="hidden" name="oldName" value="<?php echo "$archivoacambiarnombreSafe";?>"  readonly required class="formtext">
         
         <input type="text" name="newName" value="<?php echo "$archivoacambiarnombreSafe";?>" required class="formtext" style='width: 250px;'>
@@ -3627,6 +3666,48 @@ echo "<a href='?editFile=/../$scriptfile.php'  class='naranja' role='button'><b>
 
 
     <div id="image-modal"></div>
+
+
+
+<style>
+    /* Estilos unificados para el mensaje flotante */
+    #alerta-mensaje {
+        display: none;
+        position: fixed;
+        top: 135px;
+        left: 90px;
+        background-color: <?php echo $colorFondo; ?>;
+        color: white;
+        padding: 20px 40px;
+        font-size: 24px;
+        font-weight: bold;
+        border-radius: 8px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+    }
+</style>
+
+<!-- Mensaje dinámico oculto al inicio -->
+<div id="alerta-mensaje"><?php echo $mensajeAlerta; ?></div>
+
+<script>
+    // Función para mostrar el mensaje flotante si se generó uno
+    window.onload = function() {
+        <?php if (!empty($mensajeAlerta)): ?>
+            const mensaje = document.getElementById('alerta-mensaje');
+            
+            // Mostrar el mensaje
+            mensaje.style.display = 'block';
+            
+            // Ocultar el mensaje automáticamente después de 3 segundos
+            setTimeout(function() {
+                mensaje.style.display = 'none';
+            }, 4000);
+        <?php endif; ?>
+    };
+</script>
+
+
 
 <script>
     const modal = document.getElementById('image-modal');
