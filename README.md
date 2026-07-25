@@ -2,8 +2,13 @@
 ![image](https://filewebmanager2.pages.dev/pantallaprincipal.png)
 ![image](https://filewebmanager2.pages.dev/propiedades.png)
 ![image](https://filewebmanager2.pages.dev/login.png)
-Algunos themes
+
+# Algunos themes
+
 ![image](https://filewebmanager2.pages.dev/theme1.png)
+![image](https://filewebmanager2.pages.dev/theme2.png)
+![image](https://filewebmanager2.pages.dev/theme3.png)
+
 
 
 [![Miniatura de mi video](https://i.ytimg.com/vi/wvbwX_QGi48/hqdefault.jpg)](https://www.youtube.com/watch?v=wvbwX_QGi48)
