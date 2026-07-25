@@ -1,6 +1,7 @@
 ![image](https://github.com/user-attachments/assets/1e43e024-08a2-4cff-900c-75ebcb50e2cf)
-![image](https://github.com/user-attachments/assets/8ed71c49-a816-4fde-89dd-2350833e270f)
-![image](https://github.com/user-attachments/assets/70c94efe-c31d-4968-b0a1-0b7108a4fa12)
+![image](https://filewebmanager2.pages.dev/pantallaprincipal.png)
+![image](https://filewebmanager2.pages.dev/propiedades.png)
+![image](https://filewebmanager2.pages.dev/login.png)
 
 [![Miniatura de mi video](https://i.ytimg.com/vi/wvbwX_QGi48/hqdefault.jpg)](https://www.youtube.com/watch?v=wvbwX_QGi48)
 
