@@ -3,7 +3,7 @@
 #   - - - |_________________,----------._ [____]  ""-,__  __....-----=====
 #                        (_(||||||||||||)___________/   ""                |
 #                           `----------' zIDRAvE[ ))"-,                   |
-#                     FILE MANAGER V4.4.7.7       ""    `,  _,--....___    |
+#                     FILE MANAGER V4.4.7.8       ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
 # 21/07/2026
 # public_key_inmutable: 3JBT7LrYkydYPS3upQhJwB8pEi12nEfi2rbSTVIw/cs=
@@ -23,7 +23,7 @@ $configFile = '.htconfig.php'; //obligatorio cambiar el archivo config pero siem
 
 
 //-- LISTA DE VARIABLES GENERALES --
-$fversion="4.4.7.7";
+$fversion="4.4.7.8";
 $nombreMaquina = gethostname();
 $hashCompleto = hash('sha256', $nombreMaquina);
 $tokenhost = substr($hashCompleto, 0, 10);
@@ -319,7 +319,7 @@ function audit($action, $target = '') {
     $fecha_gmt5 = new DateTime('now', new DateTimeZone('Etc/GMT+5'));
     $hora_actual = $fecha_gmt5->format('Y-m-d H:i:s');
     
-    @file_put_contents('.audit-' . ($hash_mini_id2 ?? 'unknown') . '.log',  
+    @file_put_contents('.htaudit-' . ($hash_mini_id2 ?? 'unknown') . '.log',  
         $hora_actual . " | $user | $ip | $action | $target\n",  
         FILE_APPEND | LOCK_EX
     );
@@ -328,8 +328,15 @@ function audit($action, $target = '') {
 ////////////////EOF-FUNCIONES///////////////
 
 
-
-
+// mensajes alerta externo
+if (isset($_GET['msge'])) {
+    $msgext = trim($_GET['msge']);
+    // Limitar longitud para evitar abusos
+    $msgext = mb_substr($msgext, 0, 50);
+    // Escapar HTML para prevenir XSS
+    $mensajeAlerta = htmlspecialchars($msgext, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $colorFondo = '#008000'; // Verde
+}
 
 
 // Obtener el idioma desde la URL (por defecto español)
@@ -1208,13 +1215,15 @@ setcookie('fm_theme_'.$hash_mini_id.'', $themex, $theme_options);
 
         // 6. Guardado Atómico con Bloqueo
         if (cfg_save($config, $configFile)) {
-            echo "$seguridadcabeza $alertaini ✅ Configuración guardada correctamente. $alertafin";
+            //echo "$seguridadcabeza $alertaini ✅ Configuración guardada correctamente. $alertafin";
+    //$mensajeAlerta = "✅ Configuración guardada exitosamente.";
+    //$colorFondo = '#008000'; //verde 
         } else {
             echo "$seguridadcabeza $alertaini ❌ Error crítico: No se pudo escribir en el archivo JSON. $alertafin";
         }
 
-        echo "<br><a href='$scriptfile.php?mod=config' class='naranja'> <b>VOLVER AL INICIO</b></a>";
-        exit;
+            header("Location: $scriptfile.php?mod=config&msge=Guardado Exitosamente");
+            exit;
     }
 }
 
@@ -1518,19 +1527,22 @@ if (file_exists($externalStyle)) {
             height: 450px; /* Altura ajustada */
             width: 1200px; /* Anchura ajustada */
         }
-        .line-numbers {
-            background-color: #5e737d;
-            font-family: Fira Code, Consolas, Courier New, monospace;
-            padding: 8px 10px;
-            line-height: 1.25;
-            text-align: right;
-            user-select: none;
-            overflow: hidden;
-            color: #ffffff;
-        }
+.line-numbers {
+    background-color: #5e737d;
+    font-family: Fira Code, Consolas, Courier New, monospace;
+    padding: 8px 10px;
+    line-height: 1.25;
+    text-align: right;
+    user-select: none;
+    overflow: hidden;
+    color: #ffffff;
+    min-width: 44px;    /* ← nuevo: ancho mínimo garantizado */
+    flex-shrink: 0;     /* ← nuevo: nunca se encoge, pase lo que pase */
+}
         .code-editor {
            font-family: Fira Code, Consolas, Courier New, monospace;
-            width: 100%;
+            
+            flex: 1;            /* ← cambia width:100% por esto */
             border: none;
             outline: none;
             padding: 8px;
@@ -1671,9 +1683,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['fileToUpload'])) {
     $targetFile = $uploadDir . basename($_FILES['fileToUpload']['name']);
 
     if (move_uploaded_file($_FILES['fileToUpload']['tmp_name'], $targetFile)) {
-        echo " $alertaini ⚠️ El archivo  <span style='color:yellow;'>". htmlspecialchars(basename($_FILES['fileToUpload']['name'])). " </span> ha sido subido exitosamente. $alertafin ";
+
+    $mensajeAlerta = "⚠️ El archivo <b> <span style='color:yellow;'>". htmlspecialchars(basename($_FILES['fileToUpload']['name'])). " </span> ha sido subido exitosamente.";
+    $colorFondo = '#008000'; //verde 
+
     } else {
-        echo " $alertaini⚠️Error al subir el archivo. $alertafin";
+
+    $mensajeAlerta = "⚠️ Error al subir el archivo. .";
+    $colorFondo = '#CC0000'; //rojo oscuro
+
     }
 }
 
@@ -1920,9 +1938,15 @@ if (isset($_POST['createFolder'])) {
     $newFolder = $uploadDir . $_POST['createFolder'];
     if (!is_dir($newFolder)) {
         mkdir($newFolder, 0755);
-        echo " $alertaini ⚠️ Carpeta creada. $alertafin ";
+       // echo " $alertaini ⚠️ Carpeta creada. $alertafin ";
+    $mensajeAlerta = "⚠️ Carpeta creada.  ";
+    $colorFondo = '#000000';
+
     } else {
-        echo " $alertaini ⚠️ La carpeta no se creo, por que ya existe. $alertafin ";
+       // echo " $alertaini ⚠️ La carpeta no se creo, por que ya existe. $alertafin ";
+    $mensajeAlerta = "⚠️ La carpeta no se creo, por que ya existe.  ";
+    $colorFondo = '#000000';
+
     }
 }
 
@@ -1936,9 +1960,14 @@ if (isset($_POST['deleteFolder']) || isset($_GET['deleteFolder'])) {
     
     if (is_dir($folderToDelete)) {
         rmdir($folderToDelete);
-        echo "$alertaini ⚠️Carpeta eliminada solo si estaba vacia. $alertafin";
+        //echo "$alertaini ⚠️Carpeta eliminada solo si estaba vacia. $alertafin";
+    $mensajeAlerta = "⚠️Carpeta eliminada solo si estaba vacia. ";
+    $colorFondo = '#000000';
     } else {
-        echo "$alertaini ⚠️ Carpeta no encontrada. $alertafin";
+        //echo "$alertaini ⚠️ Carpeta no encontrada. $alertafin";
+    $mensajeAlerta = "⚠️ Carpeta no encontrada. ";
+    $colorFondo = '#000000';
+
     }
 audit('DELETE_FOLDER', $_POST['deleteFolder'] ?? $_GET['deleteFolder'] ?? '');
 }
@@ -2131,7 +2160,7 @@ if (isset($_POST['compressFile'])) {
             }
             $zip->close();
 
-     $mensajeAlerta = "⚠️ Archivo Comprimido a <b> <span style='color:yellow;'> $namefilecSafe.zip </span> </b> ";
+     $mensajeAlerta = "📚 Archivo Comprimido  <b> <span style='color:yellow;'> $namefilecSafe.zip </span> </b> ";
      $colorFondo = '#000000';
        audit('COMPRESS_FILE', $namefilecSafe . '.zip');
 
@@ -2197,14 +2226,26 @@ $items = scandir($uploadDir);
 
 
 
-
+<style>
+.version {
+    display: block;
+    font-size: 0.65em;
+    color: #999;
+    letter-spacing: 1px;
+    position: relative;
+    top: -25px;     /* Sube 18 píxeles */
+    left: 50px;     /* Mueve 20 píxeles a la derecha */
+    margin-bottom: -14px;
+}
+</style>
 
     <header>
         <h1> 🌀 File Manager   -  <?php echo "$scriptfm";?>   
-
+ 
 
 
  <a href='?'>🏠</a>   <a href='?c=<?php echo "$carpetazSafe";?>/../'>↩️</a>   <a href='?mod=creartexto&c=<?php echo "$carpetazSafe";?>/'>📝</a> <a href='?mod=crearcarpeta&c=<?php echo "$carpetazSafe";?>/'> 🗂️ </a>  <a href='?mod=eliminarcarpeta&c=<?php echo "$carpetazSafe";?>/'>❌</a> <a href='?mod=config&c=<?php echo "$carpetazSafe";?>/'>⚙️ </a> <a href='?mod=update&c=<?php echo "$carpetazSafe";?>/'> 🔄 </a></h1>
+<small class="version">V:<?= $fversion ?></small>
     </header>
 
 
@@ -2525,7 +2566,8 @@ if (isset($_COOKIE['editor']) && $_COOKIE['editor'] === 'true') {
     }
 
     // Inicializar line numbers en el caso de que textarea tenga contenido precargado
-    window.onload = updateLineNumbers;
+   
+    window.addEventListener('load', updateLineNumbers);
 </script>
 
 
@@ -2669,7 +2711,8 @@ $mod = isset($_GET['mod']) ? $_GET['mod'] : '';
 			<div class="celda"> 
 
    <h2> ⚙️ <?php echo $tl['configuration'];?> </h2>
-    <form action="?fconfiguracion=ok" method="POST">
+     <form action="?fconfiguracion=ok" method="POST"> 
+
         <?php echo $tl['msgconfiguration'];?>. <br><br>
         <input type="text" name="afuser" required class="formtext" value="<?php echo "$master";?>"> <?php echo $tl['user'];?> <br>
         <input type="text" name="afpass"  class="formtext"> <?php echo $tl['password'];?> <br>
