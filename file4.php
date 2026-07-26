@@ -1542,7 +1542,8 @@ if (file_exists($externalStyle)) {
         .code-editor {
            font-family: Fira Code, Consolas, Courier New, monospace;
             
-            flex: 1;            /* ← cambia width:100% por esto */
+            width:100%;
+            /*flex: 1;            /* ← cambia width:100% por esto */
             border: none;
             outline: none;
             padding: 8px;
@@ -2232,10 +2233,11 @@ $items = scandir($uploadDir);
     font-size: 0.65em;
     color: #999;
     letter-spacing: 1px;
+
     position: relative;
-    top: -25px;     /* Sube 18 píxeles */
-    left: 50px;     /* Mueve 20 píxeles a la derecha */
-    margin-bottom: -14px;
+    top: -25px;
+    margin-left: 50px;
+    margin-bottom: -25px;
 }
 </style>
 
