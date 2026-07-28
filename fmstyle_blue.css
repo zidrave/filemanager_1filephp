@@ -11,7 +11,7 @@
     --success: #008144; /* Verde informativo */
     --danger: #be0000; /* Rojo DW */
     --warning: #ffcc00; /* Amarillo DW */
-    --bg-main: #ffffff; /* Blanco de fondo principal */
+    --bg-main: #d7dbe0; /* Blanco de fondo principal */
     --bg-secondary: #f4f4f4; /* Gris muy claro para bloques */
     --bg-secondary2: #eceef0;
     --bg-card: #ffffff;
@@ -29,6 +29,8 @@ body {
     margin: 0;
     padding: 0;
 }
+
+.infotitle{padding:5px 5px;vertical-align:middle; color: #5e86a1;}
 
 a {
     text-decoration: none;
@@ -56,11 +58,11 @@ hr {
     border-spacing: 0;
     background-color: #ffffff;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); /* Sombra más sutil */
-    border: 1px solid var(--secondary);
+    
     margin: 10px 0;
     border-radius: 7px;
     overflow: hidden;
-border-left:8px solid #e4e7ec;
+   border-left:8px solid #8c94a1;
 }
 
 .filasinfx {
@@ -86,7 +88,7 @@ border-left:8px solid #e4e7ec;
     left: -100%;
     height: 100%;
     width: 100%;
-    background-color: #f0f4f8; /* Gris azulado muy tenue */
+    background-color: #e3e6e8; /* Gris azulado muy tenue */
     z-index: 0;
 }
 
@@ -95,7 +97,7 @@ border-left:8px solid #e4e7ec;
 }
 
 .fila:nth-child(even):hover::before {
-    background-color: #f0f4f8 !important;
+    background-color: #e3e6e8 !important;
 }
 
 .fila * {
@@ -106,7 +108,7 @@ border-left:8px solid #e4e7ec;
 .celda, .celda2, .celda3, .celda4 {
     display: table-cell;
     padding: 5px 5px; /* Un poco más de aire para el estilo DW */
-    border: 1px solid var(--secondary);
+    
     vertical-align: middle;
 }
 
@@ -114,13 +116,26 @@ border-left:8px solid #e4e7ec;
 .celda3 { width: 90px; }
 .celda4 { width: 395px; }
 
+.celdab, .celda2b, .celda3b, .celda4b {
+    display: table-cell;
+    background-color: var(--primary);
+    color: var(--secondary);
+    padding: 5px 5px; 
+    border: 1px solid var(--secondary);
+    vertical-align: middle;
+}
+
+.celda2b { width: 170px; }
+.celda3b { width: 90px; }
+.celda4b { width: 395px; }
+
 .fila:nth-child(even) {
     background-color: #fafafa;
 }
 
 /* Botones Estilo DW (Colores Sólidos) */
 button, input[type="submit"] {
-    background: var(--primary);
+    background: #1b5fa7;
     border: none;
     color: #fff;
     padding: 6px 14px;
@@ -186,7 +201,14 @@ footer {
 .verde { background-color: var(--success); color: #fff; padding: 8px 16px; text-decoration: none; border-radius: 3px; display: inline-block; }
 .naranja { background-color: #e67e22; color: #fff; padding: 8px 16px; text-decoration: none; border-radius: 3px; display: inline-block; }
 .snaranja { background-color: #e67e22; color: #fff; padding: 5px 10px; text-decoration: none; border-radius: 3px; display: inline-block; }
-.azulin, .azulin2, .enlacez { background-color: var(--primary); color: #fff; padding: 8px 16px; text-decoration: none; border-radius: 3px; display: inline-block; transition: background 0.3s; }
+.azulin, .azulin2, .enlacez { background-color:#1b5fa7; color: #fff; padding: 5px 12px; text-decoration: none; border-radius: 3px; display: inline-block; transition: background 0.3s; }
+
+.azulin:hover,
+.azulin2:hover,
+.enlacez:hover{
+    background-color:var(--hover);
+    color: #ffffff;
+}
 
 .enlacez:hover {
     background-color: var(--primary-dark);
@@ -309,7 +331,7 @@ input[type="file"] {
 
 .fileperms{
 
-    color: #3c5786;
+    color: #506977;
 }
 .fileperms2{
 

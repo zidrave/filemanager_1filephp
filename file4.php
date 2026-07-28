@@ -3,7 +3,7 @@
 #   - - - |_________________,----------._ [____]  ""-,__  __....-----=====
 #                        (_(||||||||||||)___________/   ""                |
 #                           `----------' zIDRAvE[ ))"-,                   |
-#                     FILE MANAGER V4.4.7.8       ""    `,  _,--....___    |
+#                     FILE MANAGER V4.4.7.9       ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
 # 21/07/2026
 # public_key_inmutable: 3JBT7LrYkydYPS3upQhJwB8pEi12nEfi2rbSTVIw/cs=
@@ -23,7 +23,7 @@ $configFile = '.htconfig.php'; //obligatorio cambiar el archivo config pero siem
 
 
 //-- LISTA DE VARIABLES GENERALES --
-$fversion="4.4.7.8";
+$fversion="4.4.7.9";
 $nombreMaquina = gethostname();
 $hashCompleto = hash('sha256', $nombreMaquina);
 $tokenhost = substr($hashCompleto, 0, 10);
@@ -2281,7 +2281,7 @@ foreach ($partes as $parte) {
 //echo "$rutarealserver ";
 ?>
 <hr>
-
+<div style="margin:0 10px;">
 <?php
 ///////////////////////////// SUBIR ARCHIVOS AL SISTEMA 2 MODOS CLASICO Y MULTIPLE ////////////////////
 if (isset($_GET['uploadmultiple']) && $_GET['uploadmultiple'] === '1') {
@@ -2506,7 +2506,7 @@ if (isset($_COOKIE['editor']) && $_COOKIE['editor'] === 'true') {
 #echo "opcion textarea1";
 ?>
 <br>
-<h2> 📝 <?php echo $tl['editing'];?>: <?php echo htmlspecialchars($_GET['editFile']); ?> [Editor Plus]</h2>
+<h2> 📝 <?php echo $tl['editing'];?>:  <span style="color: var(--table-header-text);"> <?php echo htmlspecialchars($_GET['editFile']); ?>   </span></h2>
 
     <style>
 
@@ -2580,9 +2580,17 @@ if (isset($_COOKIE['editor']) && $_COOKIE['editor'] === 'true') {
 #echo "opcion textarea2";
 ?>
 
-        <h2> 📝 <?php echo $tl['editing'];?>: <?php echo htmlspecialchars($_GET['editFile']); ?> [Editor Simple]</h2>
+
+        <h2> 📝 <?php echo $tl['editing'];?>: <span style="color: var(--table-header-text);"> <?php echo htmlspecialchars($_GET['editFile']); ?> </span> </h2>
         <form action="" method="post">
-            <textarea name="fileContent" rows="30" cols="165"  class="formtext" ><?php echo htmlspecialchars($fileContent); ?></textarea><br>
+
+<div class="editor-wrapper">
+    <div class="editor-container">
+
+            <textarea name="fileContent" rows="25" cols="107"  class="code-editor"><?php echo htmlspecialchars($fileContent); ?></textarea><br>
+
+    </div>
+</div>
             <input type="hiddenx" name="fileName" value="<?php echo htmlspecialchars($_GET['editFile']); ?>" class="formtext">
             <input type="hidden" name="c" value='<?php echo "$carpetazSafe";?>' >
             <input type="submit" name="saveFile" value="<?php echo $tl['savefile'];?>"> <a href="?mod=oneditor&editFile=<?php echo htmlspecialchars($_GET['editFile']); ?>&c=<?php echo "$carpetazSafe";?>/" class="azulin2"><?php echo $tl['discardchanges'];?> </a>  <a href="?c=<?php echo "$carpetazSafe";?>/" class="azulin2"> <?php echo $tl['close'];?> </a>
@@ -2708,11 +2716,13 @@ $mod = isset($_GET['mod']) ? $_GET['mod'] : '';
 <?php if ($mod == "config"): ?>
 
        <br>
-	<div class="tabla">
-		<div class="filasinfx">
-			<div class="celda"> 
+	<div class="tabla"> 
 
-   <h2> ⚙️ <?php echo $tl['configuration'];?> </h2>
+		<div class="filasinfx">
+<div style='margin:0 10px;'> 
+			<div > 
+
+   <div class="infotitle"><h2> ⚙️ <?php echo $tl['configuration'];?> </h2></div>
      <form action="?fconfiguracion=ok" method="POST"> 
 
         <?php echo $tl['msgconfiguration'];?>. <br><br>
@@ -2776,9 +2786,9 @@ sort($skinpalabras);
      <br>
 			</div>
 		</div>
-	</div> <br>
+	</div> 
 
-
+</div><br>
 <?php endif; ?>
 
 
@@ -3277,12 +3287,12 @@ $totalPartes = count($arrExplo);
    <div class="tabla">
   
     <div class="fila">
-        <div class="celda4"><b><?php echo $tl['name'];?></b></div>
-        <div class="celda3"><b><?php echo $tl['size'];?></b></div>
-        <div class="celda2"><b><?php echo $tl['modified'];?></b></div>
-        <div class="celda3"><b><?php echo $tl['permissions'];?></b></div>
-        <div class="celda3"><b><?php echo $tl['owner'];?></b></div>
-	<div class="celda"> _ </div>
+        <div class="celda4b"><b><?php echo $tl['name'];?></b></div>
+        <div class="celda3b"><b><?php echo $tl['size'];?></b></div>
+        <div class="celda2b"><b><?php echo $tl['modified'];?></b></div>
+        <div class="celda3b"><b><?php echo $tl['permissions'];?></b></div>
+        <div class="celda3b"><b><?php echo $tl['owner'];?></b></div>
+	<div class="celdab"> _ </div>
          
     </div>
 
@@ -3453,11 +3463,11 @@ $totalPesoCarpeta += filesize($uploadDir . '/' . $item); //solo mediremos el pes
 // estos son carpetas
 echo " 
     <div class='fila'>
-        <div class='celda'> ◽ $icon <a href='?c=$carpetazSafe/$itemSafe/'><b>$itemSafe </b>  </a> </div>
-        <div class='celda'>   ".$tl['folder']."  </div>
-        <div class='celda'>  $fileModTime </div>
-        <div class='celda'> <div class='fileperms'> <b>$filePerms </b></div> </div> 
-        <div class='celda'>  $fileOwner </div>
+        <div class='celda'> <div class='fileperms'> ◽ $icon <a href='?c=$carpetazSafe/$itemSafe/'><b>$itemSafe </b>  </a> </div> </div>
+        <div class='celda'> <div class='fileperms'>   ".$tl['folder']."  </div></div>
+        <div class='celda'> <div class='fileperms'>  $fileModTime </div></div>
+        <div class='celda'> <div class='fileperms'><b>$filePerms </b></div> </div> 
+        <div class='celda'>  <div class='fileperms'>  $fileOwner </div></div>
 	<div class='celda'>  <a href='?archivoacambiarnombre=$itemSafe&c=$carpetazSafe/'>🖊️</a> <a href='?deleteFolder=$itemSafe&c=$carpetazSafe/'>❌</a> <a href='?comprimir=$itemSafe&c=$carpetazSafe/'>📚</a>
      </div>
     </div>
@@ -3488,10 +3498,10 @@ echo "  <div class='celda'> ◽ $icon <a href='#' class='file-link image-link' d
 echo "  <div class='celda'> ◽ $icon <a href='$uploadDir$itemSafe' target='_black'>$itemr  </a> </div> ";
 }
 
-echo "  <div class='celda'> " . formatSize($fileSize) . " </div>
-        <div class='celda'>  $fileModTime </div>
-        <div class='celda'>  <div class='fileperms2'> $filePerms </div></div> 
-        <div class='celda'>  $fileOwner </div>
+echo "  <div class='celda'> <div class='fileperms'> " . formatSize($fileSize) . " </div> </div>
+        <div class='celda'>  <div class='fileperms'>  $fileModTime </div></div>
+        <div class='celda'>  <div class='fileperms'> $filePerms </div></div> 
+        <div class='celda'>  <div class='fileperms'>  $fileOwner </div> </div>
 	<div class='celda'>  <a href='?editFile=$itemSafe&c=$carpetazSafe/'>✏️</a> <a href='?archivoacambiarnombre=$itemSafe&c=$carpetazSafe/'>🖊️</a> <a href='#eliminar_$itemSafe'>❌</a> <a href='?comprimir=$itemSafe&c=$carpetazSafe/'>📚</a> <a href='?dfile=$dcarpetazSafe$itemSafe'>💾</a> </div>
     </div>
  ";
@@ -3521,10 +3531,10 @@ echo "  <div class='celda'> " . formatSize($fileSize) . " </div>
 echo " 
     <div class='fila'>
         <div class='celda'> ◽  <a href='?c=$carpetazSafe/../'>📁 <b>.. </b></a> </div>
-        <div class='celda'> ".$tl['folder']." </div>
-        <div class='celda'>  Null </div>
-        <div class='celda'>  <div class='fileperms2'> Null </div> </div>
-        <div class='celda'>  ".$tl['system']." </div>
+        <div class='celda'> <div class='fileperms'> ".$tl['folder']." </div> </div>
+        <div class='celda'> <div class='fileperms'>  Null </div></div>
+        <div class='celda'>  <div class='fileperms'> Null </div> </div>
+        <div class='celda'>  <div class='fileperms'> ".$tl['system']." </div></div>
 	<div class='celda'>   </div>
     </div>
    
@@ -3653,12 +3663,12 @@ $os = php_uname('s') . ' ' . php_uname('r');
         
 	<div class="tabla">
 		<div class="filasinfx">
-			<div class="celda"> 
+			 
 
 <?php
 // Mostrar información  
 
-echo "  <h2> 🖥️ ".$tl['systeminformation']." </h2>\n";
+echo " <div style='margin:0 10px;'>  <div  class='infotitle'> <h2> 🖥️ ".$tl['systeminformation']." </h2> </div> \n";
 echo " \n";
 echo " ✅ ".$tl['usedspace'].": " . formatSize($diskUsed) . "<br>\n";
 echo " ✅ ".$tl['availablespace'].": " . formatSize($diskFree) . "<br>\n";
@@ -3671,19 +3681,19 @@ echo " ✅ ".$tl['coretemperature'].": <b> " . $coreTemp . "  </b><br>\n";
 //echo " ⏱️ ".$tl['uptime'].": <b>" . getUptime() . "</b><br>\n";
 echo " ⏱️ Online: <b>" . getUptime() . "</b><br>\n";
 echo " ✴️ ".$tl['operatingsystem'].": " . $os . "</li>\n";
-echo " <hr>\n";
+echo " <hr> </div>\n";
 
 ?>
 
 
 
-			</div>
+			 
 		</div>
 	</div> <br>
 
 
 <div class="upload-section"> 
- 🗂️ FILE MANAGER | Full Version <b><?php echo "$fversion";?> </b> <?php echo $tl['createdby'];?> <a href='https://zidrave.net/' target='_black'>http://zidrave.net</a> - Email: <b>developer@zidrave.net</b><br>
+ 🗂️ FILE MANAGER | Full Version <b> <span style="color: var(--table-header-text);"> <?php echo "$fversion";?> </span> </b> <?php echo $tl['createdby'];?> <a href='https://zidrave.net/' target='_black'>http://zidrave.net</a> - Email: <b>developer@zidrave.net</b><br>
 </div>
 
 <hr>
@@ -3815,6 +3825,6 @@ echo "<a href='?editFile=/../$scriptfile.php'  class='naranja' role='button'><b>
         modal.innerHTML = ''; 
     });
 </script>
-
+</div>
 </body>
 </html>

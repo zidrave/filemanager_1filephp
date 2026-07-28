@@ -20,6 +20,8 @@
             --border: #313145;
             --hover: #2d2d44;
             --navigation: #6366f1;
+            --table-header-text:#b30953;
+            --header-text:#b30953;
         }
 
         body {
@@ -33,12 +35,12 @@
 
         a {
             text-decoration: none;
-            color: var(--primary);
+            color: #7773c4;
             transition: all 0.2s ease;
         }
 
         a:hover {
-            color: #ffffff;
+            color: #b418c9;
             text-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
         }
 
@@ -116,6 +118,21 @@
         .celda2 { width: 190px; }
         .celda3 { width: 85px; }
         .celda4 { width: 390px; }
+
+        .celdab, .celda2b, .celda3b, .celda4b {
+            display: table-cell;
+            background-color:#1b193e;
+            color:var(--primary);
+            padding: 5px 3px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        .celda2b { width: 190px; }
+        .celda3b { width: 85px; }
+        .celda4b { width: 390px; }
+
+       .infotitle{padding:5px 5px;vertical-align:middle; color: #a3a0e4;}
 
         .fila:nth-child(even) {
             background-color: rgba(255, 255, 255, 0.02);

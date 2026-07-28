@@ -116,6 +116,21 @@ hr {
 .celda3 { width: 85px; }
 .celda4 { width: 390px; }
 
+.celdab, .celda2b, .celda3b, .celda4b {
+    display: table-cell;
+    background-color: #006699;
+    color: #62cff3;
+    padding: 2px 2px; 
+    border: 1px solid #dbe4ed;
+    vertical-align: middle;
+}
+
+.celda2b { width: 190px; }
+.celda3b { width: 85px; }
+.celda4b { width: 390px; }
+
+.infotitle{padding:5px 5px;vertical-align:middle; color: #12eff3;}
+
 .fila:nth-child(even) {
     background-color: #f7f9fb;
 }

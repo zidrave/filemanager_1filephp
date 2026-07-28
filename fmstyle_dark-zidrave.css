@@ -20,6 +20,8 @@
             --border: #475569;
             --hover: #3b82f6;
             --navigation: #e1c45b;
+            --table-header-text:#ff8800;
+            --header-text:#ff8800;
         }
 
 body {
@@ -31,6 +33,11 @@ body {
     text-align: left;
 }
 
+/* Firefox */
+textarea{
+    scrollbar-width:thin;
+    scrollbar-color:#484847 #161a1d;
+}
 
 a {
     text-decoration: none;
@@ -77,26 +84,22 @@ a:hover {
 }
 
 /* Hover GitHub-style */
-.fila::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    height: 100%;
-    width: 100%;
-    background-color: #2e425c;
-    //transition: left 0.12s ease-in-out;
-
-    z-index: 0;
+.fila::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:#2e425c;
+    opacity:0;
+    z-index:0;
 }
 
-.fila:hover::before {
-    left: 0;
+.fila:hover::before{
+    opacity:1;
 }
 
 .fila:nth-child(even):hover::before {
     background-color: #2e425c !important;
-    transform: scale(1.01);
+    
 }
 
 .fila * {
@@ -106,6 +109,7 @@ a:hover {
 
 .celda, .celda2, .celda3, .celda4 {
     display: table-cell;
+
     padding: 4px 4px;
     border: 1px solid #21262d;
     vertical-align: middle;
@@ -114,6 +118,20 @@ a:hover {
 .celda2 { width: 190px; }
 .celda3 { width: 85px; }
 .celda4 { width: 390px; }
+
+.celdab, .celda2b, .celda3b, .celda4b {
+    display: table-cell;
+    background-color: #010b13;
+    padding: 4px 4px;
+    border: 1px solid #21262d;
+    vertical-align: middle;
+}
+
+.celda2b { width: 190px; }
+.celda3b { width: 85px; }
+.celda4b { width: 390px; }
+
+.infotitle{padding:5px 5px;vertical-align:middle; color: #3077b0;}
 
 .fila:nth-child(even) {
     background-color: #0d1117;
@@ -279,7 +297,7 @@ footer {
 
 .fileperms{
     //background-color: #bb8009;
-    color: #dc9c2e;
+    color: #d5dde2;
     //padding: 4px 10px;
    // border-radius: 6px;
    // display: inline-block;
@@ -297,7 +315,7 @@ footer {
 
         .editor-wrapper {
             display: flex;
-            border: 1px solid #ccc;
+            border: 1px solid #517781;
             overflow: hidden;
             height: 450px; /* Altura ajustada */
             width: 1000px; /* Anchura ajustada */
