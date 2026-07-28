@@ -3,9 +3,9 @@
 #   - - - |_________________,----------._ [____]  ""-,__  __....-----=====
 #                        (_(||||||||||||)___________/   ""                |
 #                           `----------' zIDRAvE[ ))"-,                   |
-#                     FILE MANAGER V4.4.7.9       ""    `,  _,--....___    |
+#                     FILE MANAGER V4.4.8.0       ""    `,  _,--....___    |
 #                     https://github.com/zidrave/        `/           """"
-# 21/07/2026
+# 28/07/2026
 # public_key_inmutable: 3JBT7LrYkydYPS3upQhJwB8pEi12nEfi2rbSTVIw/cs=
 
 ////////////// POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
@@ -23,7 +23,7 @@ $configFile = '.htconfig.php'; //obligatorio cambiar el archivo config pero siem
 
 
 //-- LISTA DE VARIABLES GENERALES --
-$fversion="4.4.7.9";
+$fversion="4.4.8.0";
 $nombreMaquina = gethostname();
 $hashCompleto = hash('sha256', $nombreMaquina);
 $tokenhost = substr($hashCompleto, 0, 10);
@@ -1793,6 +1793,7 @@ if (!$verificado) {
     $furlskin11 = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/fmstyle_steam.css';
     $furlskin12 = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/fmstyle_vbulletin.css';
     $furlskin13 = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/fmstyle_whatsapp.css';
+    $furlskin14 = 'https://raw.githubusercontent.com/zidrave/filemanager_1filephp/main/fmstyle_zidcora.css';
 
     $rutaArchivoLocal = isset($_GET['updatefile']) ? $_GET['updatefile'] . ".php" : "$scriptfile.php";
 
@@ -1814,6 +1815,7 @@ if (!$verificado) {
     $fcontenidoskin11 = @file_get_contents($furlskin11);
     $fcontenidoskin12 = @file_get_contents($furlskin12);
     $fcontenidoskin13 = @file_get_contents($furlskin13);
+    $fcontenidoskin14 = @file_get_contents($furlskin14);
 
     if ($fcontenido === FALSE) {
         die(" $alertaini ⚠️ No se pudo descargar el archivo desde GitHub. Revisa la conexión del servidor. $alertafin ");
@@ -1867,6 +1869,7 @@ if (!$verificado) {
     if ($fcontenidoskin11) file_put_contents("fmstyle_steam.css", $fcontenidoskin11);
     if ($fcontenidoskin12) file_put_contents("fmstyle_vbulletin.css", $fcontenidoskin12);
     if ($fcontenidoskin13) file_put_contents("fmstyle_whatsapp.css", $fcontenidoskin13);
+    if ($fcontenidoskin14) file_put_contents("fmstyle_whatsapp.css", $fcontenidoskin14);
     
 
     echo " $alertaini ⚠️ " . $tl['okupdate'] . " $alertafin";
