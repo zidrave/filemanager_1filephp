@@ -1869,7 +1869,7 @@ if (!$verificado) {
     if ($fcontenidoskin11) file_put_contents("fmstyle_steam.css", $fcontenidoskin11);
     if ($fcontenidoskin12) file_put_contents("fmstyle_vbulletin.css", $fcontenidoskin12);
     if ($fcontenidoskin13) file_put_contents("fmstyle_whatsapp.css", $fcontenidoskin13);
-    if ($fcontenidoskin14) file_put_contents("fmstyle_whatsapp.css", $fcontenidoskin14);
+    if ($fcontenidoskin14) file_put_contents("fmstyle_zidcora.css", $fcontenidoskin14);
     
 
     echo " $alertaini ⚠️ " . $tl['okupdate'] . " $alertafin";
