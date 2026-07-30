@@ -6,7 +6,7 @@
 # │   █████╗  ██║██║     █████╗  ███████║        Monolitico                    │
 # │   ██╔══╝  ██║██║     ██╔══╝  ╚════██║        by zIDRAvE                    │
 # │   ██║     ██║███████╗███████╗     ██║                                      │
-# │   ╚═╝     ╚═╝╚══════╝╚══════╝     ╚═╝        Version: 4.4.8.1              │
+# │   ╚═╝     ╚═╝╚══════╝╚══════╝     ╚═╝        Version: 4.4.8.2              │
 # │                                                                            │
 # │   Web : https://file4-manager.pages.dev/                                   │
 # │   Date   : 2026-07-29                                                      │
@@ -30,7 +30,7 @@ $configFile = '.htconfig.php'; //obligatorio cambiar el archivo config pero siem
 
 
 //-- LISTA DE VARIABLES GENERALES --
-$fversion="4.4.8.1";
+$fversion="4.4.8.2";
 $nombreMaquina = gethostname();
 $hashCompleto = hash('sha256', $nombreMaquina);
 $tokenhost = substr($hashCompleto, 0, 10);
@@ -942,7 +942,7 @@ if (!empty($_FILES['files']['name'][0])) {
         $targetFile = $uploadDir . $fileName;
 
         if (move_uploaded_file($tmpName, $targetFile)) {
-            echo "Archivo subido: $fileName\n";
+            echo " ✅ Archivo subido: $fileName\n";
         } else {
             echo "Error al subir el archivo: $fileName\n";
         }
@@ -998,6 +998,7 @@ if (!csrf_validar('save', $_POST['miCSRF'] ?? '')) {
         fclose($fp);
         #echo "Texto guardado correctamente en $archivo - ---- $carpeta/$filename ---- el contenido que dice : $texto ";
         //echo "Texto guardado correctamente.";
+        //echo "✅";
         echo $tl['msgsavefile']; 
     } else {
         echo "El texto está vacío.";
@@ -1742,10 +1743,15 @@ if (!is_dir($uploadDir)) {
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['fileToUpload'])) {
     $targetFile = $uploadDir . basename($_FILES['fileToUpload']['name']);
 
-    if (!hash_equals($_SESSION['csrf'], $_POST['csrf'] ?? '')) {
-        http_response_code(403);
-        exit('CSRF inválido');
-    }
+    //if (!hash_equals($_SESSION['csrf'], $_POST['csrf'] ?? '')) {
+    //    http_response_code(403);
+    //    exit('CSRF inválido');
+    // }
+////CSRF v2
+if (!csrf_validar('Subir', $_POST['csrf'] ?? '')) {
+    die("Error: Token inválido o expirado. Recargá la página.");
+}
+
 
     if (move_uploaded_file($_FILES['fileToUpload']['tmp_name'], $targetFile)) {
 
@@ -2358,24 +2364,39 @@ $items = scandir($uploadDir);
     margin-left: 50px;
     margin-bottom: -25px;
 }
+
+.headerfijo{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 2;
+}
+body{
+    padding-top:72px;
+}
 </style>
 
+<div class="headerfijo">
     <header>
         <h1> 🌀 File Manager   -  <?php echo "$scriptfm";?>   
  
 
 
- <a href='?'>🏠</a>   <a href='?c=<?php echo "$carpetazSafe";?>/../'>↩️</a>   <a href='?mod=creartexto&c=<?php echo "$carpetazSafe";?>/'>📝</a> <a href='?mod=crearcarpeta&c=<?php echo "$carpetazSafe";?>/'> 🗂️ </a>  <a href='?mod=eliminarcarpeta&c=<?php echo "$carpetazSafe";?>/'>❌</a> <a href='?mod=config&c=<?php echo "$carpetazSafe";?>/'>⚙️ </a> <a href='?mod=update&c=<?php echo "$carpetazSafe";?>/'> 🔄 </a></h1>
+ <a href='?'>🏠</a>   <a href='?c=<?php echo "$carpetazSafe";?>/../'>↩️</a>  |  <a href='?mod=creartexto&c=<?php echo "$carpetazSafe";?>/'>📝</a> <a href='?mod=crearcarpeta&c=<?php echo "$carpetazSafe";?>/'> 🗂️ </a>   <a href='?mod=config&c=<?php echo "$carpetazSafe";?>/'>⚙️ </a> <a href='?mod=update&c=<?php echo "$carpetazSafe";?>/'> 🔄 </a></h1>
 <small class="version">V:<?= $fversion ?></small>
+
+
     </header>
-
-
-
 
 <div style="width:100%; height:5px; background-color:<?php echo "$colorHex";?>;"></div>
 
+
+<div style="height:31px; background-color:var(--bg-main); padding-left:10px;">
+
 <a href='<?php echo "$scriptfile";?>.php' class='enlacez' role='button'>
 <?php echo $tl['home'];?>:  </a> /
+
 
 
 
@@ -2395,6 +2416,9 @@ foreach ($partes as $parte) {
         }
     }
 ?>
+   </div>
+</div>
+
 <br>
 
 <?php
@@ -2407,10 +2431,15 @@ foreach ($partes as $parte) {
 ///////////////////////////// SUBIR ARCHIVOS AL SISTEMA 2 MODOS CLASICO Y MULTIPLE ////////////////////
 if (isset($_GET['uploadmultiple']) && $_GET['uploadmultiple'] === '1') {
 
-    if (!hash_equals($_SESSION['csrf'], $_GET['csrf'] ?? '')) {
-        http_response_code(403);
-        exit('CSRF inválido');
-    }
+ //   if (!hash_equals($_SESSION['csrf'], $_GET['csrf'] ?? '')) {
+ //       http_response_code(403);
+ //       exit('CSRF inválido');
+ //   }
+
+////CSRF v2
+if (!csrf_validar('Subir', $_GET['csrf'] ?? '')) {
+    die("Error: Token inválido o expirado. Recargá la página.");
+}
     
 ?>
 
@@ -2532,7 +2561,7 @@ if (isset($_GET['uploadmultiple']) && $_GET['uploadmultiple'] === '1') {
 
             xhr.onload = () => {
                 if (xhr.status === 200) {
-                    alert('Archivos subidos con éxito!');
+                    alert(' ✅ Archivos subidos con éxito!');
                     console.log(xhr.responseText);
                 } else {
                     alert('Error al subir los archivos.');
@@ -2547,18 +2576,20 @@ if (isset($_GET['uploadmultiple']) && $_GET['uploadmultiple'] === '1') {
 
 <?php
 } else {
+
+$tokenSubir = csrf_token('Subir');
 ?>
 <div class="upload-section">
     <form action="" method="post" enctype="multipart/form-data" class="upload-form">
         
 <div class="file-input-wrapper">
         <input type="file" name="fileToUpload" id="fileToUpload"  >
-        <input type="hidden" name="csrf" value="<?php echo "$_SESSION[csrf]";?>"  >
+        <input type="hidden" name="csrf" value="<?php echo "$tokenSubir";?>"  >
 </div>
 
 
         <input type="submit" value=" ⬆️ <?php echo $tl['uploadfile'];?>" name="submit" class="btn btn-primary">
-      <a href="?c=<?php echo "$carpetazSafe/";?>&uploadmultiple=1&csrf=<?php echo "$_SESSION[csrf]";?>" class="btn btn-warning"> <?php echo $tl['uploadmultiplefiles'];?> </a>
+      <a href="?c=<?php echo "$carpetazSafe/";?>&uploadmultiple=1&csrf=<?php echo "$tokenSubir";?>" class="btn btn-warning"> <?php echo $tl['uploadmultiplefiles'];?> </a>
     </form>
 </div>
 
@@ -3347,6 +3378,9 @@ if (isset($is_authenticated) && $is_authenticated === true) {
     echo "🙋‍♂️ ".$tl['welcome']." <b>$master / [<a href=\"?fexit=1\">".$tl['exit']."</a>]</b>";
   }
 
+ 
+//PARCEADOR ...
+ob_start();
 //preparando parceo de ruta real del server//////////////////
 // 1. Definiciones de ruta absoluta (Mantenemos la lógica de base)
 $baseReal = realpath(__DIR__ . "/uploads"); 
@@ -3361,14 +3395,12 @@ array_unshift($arrExplo, "");
 
 ?>
 
-        <br>
+         
 	<div class="tabla">
 		<div class="filasinfx">
-			<div class="celda"> <?php echo $tl['foldercontent']; ?>: <b> 
+			<div class="celda">   <?php echo $tl['foldercontent']; ?>: <b> 
 <?php 
 
-//echo "$rutarealserver/"; 
-//parceador///
 $totalPartes = count($arrExplo);
 
             foreach ($arrExplo as $indice => $nombre) {
@@ -3428,11 +3460,17 @@ $totalPartes = count($arrExplo);
 
 
 ?>
-
-                 </b>
+ </b>
 			</div>
 		</div>
-	</div> <br>
+	</div> 
+
+
+<?php
+$breadcrumbBox = ob_get_clean();
+echo $breadcrumbBox;
+?>
+
 
   
    <div class="tabla">
@@ -3697,7 +3735,10 @@ echo "
     <!-- fin del bucle -->
 </div>  
 
-
+<?php
+//breadcrumb
+echo $breadcrumbBox;
+?>
 
 <br>
 	<div class="tabla">
