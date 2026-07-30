@@ -1,11 +1,18 @@
 <?php
-#          ,______________________________________       
-#   - - - |_________________,----------._ [____]  ""-,__  __....-----=====
-#                        (_(||||||||||||)___________/   ""                |
-#                           `----------' zIDRAvE[ ))"-,                   |
-#                     FILE MANAGER V4.4.8.0       ""    `,  _,--....___    |
-#                     https://github.com/zidrave/        `/           """"
-# 28/07/2026
+# ┌────────────────────────────────────────────────────────────────────────────┐
+# │                                                                            │
+# │   ███████╗██╗██╗     ███████╗██╗  ██╗        FILE4                         │
+# │   ██╔════╝██║██║     ██╔════╝██║  ██║        PHP File Manager              │
+# │   █████╗  ██║██║     █████╗  ███████║        Monolitico                    │
+# │   ██╔══╝  ██║██║     ██╔══╝  ╚════██║        by zIDRAvE                    │
+# │   ██║     ██║███████╗███████╗     ██║                                      │
+# │   ╚═╝     ╚═╝╚══════╝╚══════╝     ╚═╝        Version: 4.4.8.1              │
+# │                                                                            │
+# │   Web : https://file4-manager.pages.dev/                                   │
+# │   Date   : 2026-07-29                                                      │
+# │                                                                            │
+# └────────────────────────────────────────────────────────────────────────────┘
+#
 # public_key_inmutable: 3JBT7LrYkydYPS3upQhJwB8pEi12nEfi2rbSTVIw/cs=
 
 ////////////// POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
@@ -23,7 +30,7 @@ $configFile = '.htconfig.php'; //obligatorio cambiar el archivo config pero siem
 
 
 //-- LISTA DE VARIABLES GENERALES --
-$fversion="4.4.8.0";
+$fversion="4.4.8.1";
 $nombreMaquina = gethostname();
 $hashCompleto = hash('sha256', $nombreMaquina);
 $tokenhost = substr($hashCompleto, 0, 10);
@@ -51,7 +58,6 @@ $archivo_registro_unlock = 'unlocks_hist.log'; // Registro de timestamps, no hac
 $limite_horas = 24 * 3600; // 24 horas en segundos
 $master_key = substr($tokenplus, 0, 5); //estoy servira para el unlock
 $publicKeyBase64 = '3JBT7LrYkydYPS3upQhJwB8pEi12nEfi2rbSTVIw/cs='; //codigo inmutable
-
 
 $totalArchivos = 0;
 $totalCarpetas = 0;
@@ -87,6 +93,9 @@ $isHttpOnly = true; // ACTIVADO: Protege contra robo por JavaScript
 
 // SESSION PHP - PREPARACION TIEMPO EXTENDIDO
 ob_start(); // 1. Siempre primero para evitar Error 500
+// ===== proteccion antiframe=====
+header("X-Frame-Options: DENY");
+header("Content-Security-Policy: frame-ancestors 'none'");
 // Configuración de duración: 1 meses en segundos
 $duracion = 5 * 60; // 5 minutos -- session PHPSESSION SERVER 
 // $isSecure debe calcularse ANTES de este bloque (moverlo desde donde está más abajo)
@@ -107,6 +116,11 @@ session_set_cookie_params([
 // 3. Iniciamos la sesión
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
+//creando un token csrf
+if (!isset($_SESSION['csrf'])) {
+    $_SESSION['csrf'] = bin2hex(random_bytes(32));
+}
+$csrftest = bin2hex(random_bytes(32));
 
 
 
@@ -325,6 +339,28 @@ function audit($action, $target = '') {
     );
 }
 
+
+
+//funcion csrf token 24 horas
+function csrf_token(string $accion): string {
+    global $tokenplus;
+    $ventana = floor(time() / 86400); // Cambia una vez al día (medianoche UTC)
+    return hash_hmac('sha256', $accion . '|' . $ventana, $tokenplus);
+}
+
+function csrf_validar(string $accion, string $tokenRecibido): bool {
+    $ventanaHoy = floor(time() / 86400);
+    $ventanaAyer = $ventanaHoy - 1;
+    
+    foreach ([$ventanaHoy, $ventanaAyer] as $ventana) {
+        $esperado = hash_hmac('sha256', $accion . '|' . $ventana, $GLOBALS['tokenplus']);
+        if (hash_equals($esperado, $tokenRecibido)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 ////////////////EOF-FUNCIONES///////////////
 
 
@@ -332,7 +368,7 @@ function audit($action, $target = '') {
 if (isset($_GET['msge'])) {
     $msgext = trim($_GET['msge']);
     // Limitar longitud para evitar abusos
-    $msgext = mb_substr($msgext, 0, 50);
+    $msgext = mb_substr($msgext, 0, 90);
     // Escapar HTML para prevenir XSS
     $mensajeAlerta = htmlspecialchars($msgext, ENT_QUOTES | ENT_HTML5, 'UTF-8');
     $colorFondo = '#008000'; // Verde
@@ -542,8 +578,9 @@ if (isset($_POST['unlock'])) {
 
         // --- VALIDACIÓN LÓGICA PRIVADA ---
         // Solo si el token coincide exactamente con los primeros 5 caracteres de $tokenplus
-        // file4.php?unlockmode
-        if ($_POST['unlock'] === $master_key) {
+        // file4.php?bypass
+        // if ($_POST['unlock'] === $master_key) {
+           if (hash_equals($master_key, $_POST['unlock'])) {
 
 
        // SOLUCIÓN CAMBIO GET A POST: Guardamos el bypass en la sesión para que dure en la siguiente recarga
@@ -663,7 +700,7 @@ if (file_exists($configFile)) {
             echo " $newseguridadcabeza 
 
     <div class='auth-card'>
-        <div class='auth-header'>🌀 File4 Manager</div>
+        <div class='auth-header'>🌀 File Manager</div>
         <div class='auth-body'>
         <label><b>⏳ Acceso Controlado</b></label>
 
@@ -673,7 +710,7 @@ if (file_exists($configFile)) {
                
              
             <div class='auth-footer'>
-                <small>Seguridad File4 - V$fversion</small>
+                <small>Seguridad File4 </small>
             </div>
         </div>
     </div>
@@ -747,11 +784,11 @@ $loginzone = <<<EOD
                     <label>Contraseña</label>
                     <input type="password" name="fpass" class="form-input" required placeholder="Ingrese su contraseña" autocomplete="current-password">
                 </div>
-                <input type="submit" value="Acceso">
+                <input type="submit" value="Entrar">
                 <div style="display:none;"><input type="text" name="fhemail" value=""></div>
             </form>
             <div class="auth-footer">
-                <small>Seguridad File4 - V$fversion</small>
+                <small>Seguridad File4  </small>
             </div>
         </div>
     </div>
@@ -882,6 +919,12 @@ if (isset($_GET['varios'])) {
         exit("Error: Acceso no autorizado.");
     }
 
+    //csrf protection
+    if (!hash_equals($_SESSION['csrf'], $_GET['csrf'] ?? '')) {
+        http_response_code(403);
+        exit('CSRF inválido');
+    }
+    
 
 
 
@@ -933,11 +976,15 @@ if (isset($_GET['guardax'])) {
         header('HTTP/1.1 403 Forbidden');
         exit("Acceso denegado."); 
     }
-  
+//proteccion CSRF V2 ajax guardar
+if (!csrf_validar('save', $_POST['miCSRF'] ?? '')) {
+    die("Error: Token inválido o expirado. Recargá la página.");
+}  
   
  if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     #$texto = filter_var($_POST['texto'], FILTER_SANITIZE_STRING); // Sanitizar el texto
     $texto = $_POST['texto'];
+
     // Sanitizar el nombre del archivo (mantiene el texto limpio de etiquetas HTML/Scripts)
     $filename = htmlspecialchars($_POST['miArchivo'] ?? '', ENT_QUOTES, 'UTF-8');
 
@@ -1059,6 +1106,12 @@ exit;
 
 ////// BORRAR Configuración (CON PROTECCIÓN DE IDENTIDAD) /////////////////////////////////
 if (isset($_GET['fborrarconfiguracion'])) {
+
+//proteccion CSRF
+    if (!hash_equals($_SESSION['csrf'], $_GET['csrf'] ?? '')) {
+        http_response_code(403);
+        exit('CSRF inválido');
+    }
     
     // Si ya envió la contraseña de confirmación vía POST
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_pass'])) {
@@ -1131,6 +1184,12 @@ if (isset($_GET['fborrarconfiguracion'])) {
 /////// Guardar Configuración /////////////////////////////////
 // Detectamos el parámetro GET que envía tu formulario
 if (isset($_GET["fconfiguracion"])) {
+
+//proteccion CSRF
+    if (!hash_equals($_SESSION['csrf'], $_GET['csrf'] ?? '')) {
+        http_response_code(403);
+        exit('CSRF inválido');
+    }
 
 if (!file_exists('.htaccess')) {
     $htaccess = <<<EOT
@@ -1216,13 +1275,13 @@ setcookie('fm_theme_'.$hash_mini_id.'', $themex, $theme_options);
         // 6. Guardado Atómico con Bloqueo
         if (cfg_save($config, $configFile)) {
             //echo "$seguridadcabeza $alertaini ✅ Configuración guardada correctamente. $alertafin";
-    //$mensajeAlerta = "✅ Configuración guardada exitosamente.";
+    //$mensajeAlerta = "✅ Configuración guardada correctamente.";
     //$colorFondo = '#008000'; //verde 
         } else {
             echo "$seguridadcabeza $alertaini ❌ Error crítico: No se pudo escribir en el archivo JSON. $alertafin";
         }
 
-            header("Location: $scriptfile.php?mod=config&msge=Guardado Exitosamente");
+            header("Location: $scriptfile.php?mod=config&msge=Configuración Guardada");
             exit;
     }
 }
@@ -1683,6 +1742,11 @@ if (!is_dir($uploadDir)) {
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['fileToUpload'])) {
     $targetFile = $uploadDir . basename($_FILES['fileToUpload']['name']);
 
+    if (!hash_equals($_SESSION['csrf'], $_POST['csrf'] ?? '')) {
+        http_response_code(403);
+        exit('CSRF inválido');
+    }
+
     if (move_uploaded_file($_FILES['fileToUpload']['tmp_name'], $targetFile)) {
 
     $mensajeAlerta = "⚠️ El archivo <b> <span style='color:yellow;'>". htmlspecialchars(basename($_FILES['fileToUpload']['name'])). " </span> ha sido subido exitosamente.";
@@ -1705,7 +1769,7 @@ if (isset($_GET['fupdate'])) {
     // 1. Interfaz de Confirmación (Prevención CSRF)
     if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['confirm_update_pass'])) {
         echo "$seguridadcabeza";
-        echo "<div class='mensajex'>
+        echo "<div class='mensajex'>    
                 <h2>🚀 Actualizar Sistema ($fversion)</h2>
                 <p>Esta acción descargará la última versión desde GitHub y sobrescribirá el archivo actual.</p>
                 <p style='color:#ffeb3b;'>⚠️ <b>Nota:</b> El sistema parchará automáticamente el nuevo archivo para mantener tus archivos de Configuración y Seguridad actuales.</p>
@@ -1714,7 +1778,7 @@ if (isset($_GET['fupdate'])) {
                     <input type='submit' value='INICIAR ACTUALIZACIÓN SEGURA' style='background:#04ab8a;'>
                     <a href='?c=$carpetazSafe/' class='naranja'>CANCELAR</a>
                 </form>
-              </div>";
+              </div>   ";
         exit;
     }
 
@@ -1892,6 +1956,25 @@ if (isset($_GET['deleteFile'])) {
         header('HTTP/1.1 403 Forbidden');
         exit("Error: Acceso no autorizado.");
     }
+////proteccion CSRF v1
+//    if (!hash_equals($_SESSION['csrf'], $_GET['csrf'] ?? '')) {
+//        //http_response_code(403);
+//        //exit('CSRF inválido');
+//echo "<h2>CSRF inválido o expiro la session, intentalo de nuevo </h2><br>";
+//echo " <a href='?c=$carpetazSafe/' class='naranja' role='button'> <b> " . $tl['reload'] . " </b></a>";
+//echo "";
+//exit;
+//   }
+
+//Proteccion CSRF v2
+if (!csrf_validar('delete', $_GET['csrf'] ?? '')) {
+//    die("Error: Token inválido o expirado. Recargá la página.");
+echo "<h2>CSRF inválido o expiro la session, intentalo de nuevo </h2><br>";
+echo " <a href='?c=$carpetazSafe/' class='naranja' role='button'> <b> " . $tl['reload'] . " </b></a>";
+exit;
+}
+
+
 audit('DELETE_FILE', $_GET['deleteFile'] ?? ''); //registrar acciones
 
 
@@ -1918,7 +2001,7 @@ $colorFondo = '#ff4d4d'; // Rojo por defecto para errores o avisos
 if (file_exists($fileToDelete)) {
     if (unlink($fileToDelete)) {
         // Éxito al eliminar
-        $mensajeAlerta = "⚠️ ¡Archivo <b> <span style='color:yellow;'> " . htmlspecialchars($archivonameSafe) . " </span> </b>  Eliminado!";
+        $mensajeAlerta = "⚠️ ¡Archivo  " . htmlspecialchars($archivonameSafe) . "    Eliminado!";
         //$colorFondo = '#28a745'; // Verde para éxito (opcional) o déjalo en #ff4d4d si prefieres rojo
     } else {
         // Error al intentar eliminar
@@ -1926,10 +2009,12 @@ if (file_exists($fileToDelete)) {
     }
 } else {
     // Archivo no encontrado
-    $mensajeAlerta = "⚠️ El archivo <b> <span style='color:yellow;'> " . htmlspecialchars($archivonameSafe) . " </span> </b> no fue encontrado.";
+    $mensajeAlerta = "⚠️ El archivo   " . htmlspecialchars($archivonameSafe) . "  no fue encontrado.";
     $colorFondo = '#000000';
 }
-
+//
+            header("Location: $scriptfile.php?c=$carpetazSafe/&msge=$mensajeAlerta");
+            exit;
     }
 }
  
@@ -1992,10 +2077,20 @@ if (isset($_GET['editFile'])) {
         $fileContent = '';
     }
 audit('EDIT_FILE', $_GET['editFile'] ?? '');
+
+$tokenGuardar = csrf_token('save');
+
 }
 
 // Guardar archivo editado
 if (isset($_POST['saveFile'])) {
+
+//proteccion CSRF v2
+if (!csrf_validar('save', $_POST['csrf'] ?? '')) {
+echo "<h2>CSRF inválido o expiro la session, intentalo de nuevo </h2><br>";
+echo " <a href='?c=$carpetazSafe/' class='naranja' role='button'> <b> " . $tl['reload'] . " </b></a>";
+exit;
+}
 
     $fileToSave = $_POST['fileName'];
     $fileToSave = "uploads$carpetaz/$fileToSave";
@@ -2013,7 +2108,14 @@ if (isset($_POST['saveFile'])) {
 
 // Renombrar archivo
 if (isset($_POST['renameFile'])) {
+
     audit('RENAME_FILE', $_POST['oldName'] . ' -> ' . $_POST['newName']);
+//proteccion CSRF v2
+if (!csrf_validar('rename', $_POST['csrf'] ?? '')) {
+echo "<h2>CSRF inválido o expiro la session, intentalo de nuevo </h2><br>";
+echo " <a href='?c=$carpetazSafe/' class='naranja' role='button'> <b> " . $tl['reload'] . " </b></a>";
+exit;
+}
     $oldName = $uploadDir . $_POST['oldName'];
     $newName = $uploadDir . $_POST['newName'];
     $oldNameBase = basename($_POST['oldName']);
@@ -2055,7 +2157,16 @@ if (isset($_POST['renameFile'])) {
 if (isset($_POST['copyFile'])) {
     $oldName = $uploadDir . $_POST['oldName'];
     $newName = $uploadDir . $_POST['newName'];
+
     audit('COPY_FILE', $_POST['oldName'] . ' -> ' . $_POST['newName']);
+
+//proteccion CSRF v2
+if (!csrf_validar('copy', $_POST['csrf'] ?? '')) {
+echo "<h2>CSRF inválido o expiro la session, intentalo de nuevo </h2><br>";
+echo " <a href='?c=$carpetazSafe/' class='naranja' role='button'> <b> " . $tl['reload'] . " </b></a>";
+exit;
+
+}
     if (file_exists($oldName)) {
         if (copy($oldName, $newName)) {
 
@@ -2174,6 +2285,7 @@ if (isset($_POST['compressFile'])) {
            // echo "$alertaini ⚠️ La carpeta <b>$namefilecSafe.zip</b>  se ha creado correctamente. $alertafin";
      $mensajeAlerta = "⚠️ La carpeta se comprimio en: <b> <span style='color:yellow;'>  $namefilecSafe.zip </span> </b>  se ha creado correctamente.  ";
      $colorFondo = '#000000';
+       audit('COMPRESS_FOLDER', $namefilecSafe . '.zip');
 
         } else {
             $rutaSafe = htmlspecialchars($ruta, ENT_QUOTES, 'UTF-8');
@@ -2181,12 +2293,14 @@ if (isset($_POST['compressFile'])) {
             //exit;
      $mensajeAlerta = " ⚠️ La ruta especificada no es válida $rutaSafe . ";
      $colorFondo = '#000000';
+    audit('COMPRESS_ERROR - Ruta Invalida', $namefilecSafe . '.zip');
         }
     } else {
         //echo "No se especificó ningún archivo o carpeta.";
         //exit;
      $mensajeAlerta = " ⚠️ No se especificó ningún archivo o carpeta. ";
      $colorFondo = '#000000';
+    audit('COMPRESS_ERROR - No se especificó archivo/carpeta', $namefilecSafe . '.zip');
     }
 
     // Agregar un comentario al archivo ZIP
@@ -2196,7 +2310,9 @@ if (isset($_POST['compressFile'])) {
             $zip->setArchiveComment($descripcion);
             $zip->close();
         } else {
-            echo " $alertaini ⚠️ No se pudo abrir el archivo ZIP para agregar el comentario. $alertafin ";
+            //echo " $alertaini ⚠️ No se pudo abrir el archivo ZIP para agregar el comentario. $alertafin ";
+     $mensajeAlerta = " ⚠️ No se pudo abrir el archivo ZIP para agregar el comentario. ";
+     $colorFondo = '#000000';
         }
     }
 
@@ -2261,6 +2377,8 @@ $items = scandir($uploadDir);
 <a href='<?php echo "$scriptfile";?>.php' class='enlacez' role='button'>
 <?php echo $tl['home'];?>:  </a> /
 
+
+
 <?php
 foreach ($partes as $parte) {
     if ($parte !== "") {
@@ -2278,10 +2396,10 @@ foreach ($partes as $parte) {
     }
 ?>
 <br>
+
 <?php
-//echo realpath(__FILE__);
-//echo __DIR__;
-//echo "$rutarealserver ";
+//echo $_SESSION['csrf'] . "<br>";
+//echo $csrftest;
 ?>
 <hr>
 <div style="margin:0 10px;">
@@ -2289,6 +2407,11 @@ foreach ($partes as $parte) {
 ///////////////////////////// SUBIR ARCHIVOS AL SISTEMA 2 MODOS CLASICO Y MULTIPLE ////////////////////
 if (isset($_GET['uploadmultiple']) && $_GET['uploadmultiple'] === '1') {
 
+    if (!hash_equals($_SESSION['csrf'], $_GET['csrf'] ?? '')) {
+        http_response_code(403);
+        exit('CSRF inválido');
+    }
+    
 ?>
 
 
@@ -2397,7 +2520,7 @@ if (isset($_GET['uploadmultiple']) && $_GET['uploadmultiple'] === '1') {
 
             // Enviar archivos al servidor con barra de progreso
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', 'file4.php?varios=1&c=<?php echo "$carpetax";?>', true);
+            xhr.open('POST', 'file4.php?varios=1&c=<?php echo "$carpetax";?>&csrf=<?php echo "$_SESSION[csrf]";?>', true);
 
             xhr.upload.addEventListener('progress', (event) => {
                 if (event.lengthComputable) {
@@ -2430,11 +2553,12 @@ if (isset($_GET['uploadmultiple']) && $_GET['uploadmultiple'] === '1') {
         
 <div class="file-input-wrapper">
         <input type="file" name="fileToUpload" id="fileToUpload"  >
+        <input type="hidden" name="csrf" value="<?php echo "$_SESSION[csrf]";?>"  >
 </div>
 
 
         <input type="submit" value=" ⬆️ <?php echo $tl['uploadfile'];?>" name="submit" class="btn btn-primary">
-      <a href="?c=<?php echo "$carpetazSafe/";?>&uploadmultiple=1" class="btn btn-warning"> <?php echo $tl['uploadmultiplefiles'];?> </a>
+      <a href="?c=<?php echo "$carpetazSafe/";?>&uploadmultiple=1&csrf=<?php echo "$_SESSION[csrf]";?>" class="btn btn-warning"> <?php echo $tl['uploadmultiplefiles'];?> </a>
     </form>
 </div>
 
@@ -2529,7 +2653,9 @@ if (isset($_COOKIE['editor']) && $_COOKIE['editor'] === 'true') {
 
             <input id="miArchivo" type="" name="miArchivo" value="<?php echo htmlspecialchars($_GET['editFile']); ?>" class="formtext">
             <input id="miCarpeta"  type="hidden" name="miCarpeta" value='<?php echo "$carpetazSafe";?>' >
+            <input id="miCSRF"  type="hidden" name="csrf" value='<?= $tokenGuardar ?>' >
             <button onclick="guardarTexto()"> <?php echo $tl['savefile'];?></button> <a href="?mod=oneditor&editFile=<?php echo htmlspecialchars($_GET['editFile']); ?>&c=<?php echo "$carpetazSafe";?>/" class="azulin2"> <?php echo $tl['discardchanges'];?> </a>  <a href="?c=<?php echo "$carpetazSafe";?>/" class="azulin2"> <?php echo $tl['close'];?> </a> <br>
+
  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 
 
@@ -2539,6 +2665,7 @@ if (isset($_COOKIE['editor']) && $_COOKIE['editor'] === 'true') {
       var texto = $('#codeEditor').val();
       var miArchivo = $('#miArchivo').val();
       var miCarpeta = $('#miCarpeta').val(); 
+      var miCSRF = $('#miCSRF').val(); 
 
       $.ajax({
         type: "POST",
@@ -2546,7 +2673,8 @@ if (isset($_COOKIE['editor']) && $_COOKIE['editor'] === 'true') {
         data: {
           texto: texto,
           miArchivo: miArchivo,
-          miCarpeta: miCarpeta
+          miCarpeta: miCarpeta,
+          miCSRF: miCSRF
         },
         success: function(response) {
           alert(response); // Puedes mostrar un mensaje de éxito o error
@@ -2596,6 +2724,7 @@ if (isset($_COOKIE['editor']) && $_COOKIE['editor'] === 'true') {
 </div>
             <input type="hiddenx" name="fileName" value="<?php echo htmlspecialchars($_GET['editFile']); ?>" class="formtext">
             <input type="hidden" name="c" value='<?php echo "$carpetazSafe";?>' >
+            <input type="hidden" name="csrf" value='<?php echo "$tokenGuardar";?>' >
             <input type="submit" name="saveFile" value="<?php echo $tl['savefile'];?>"> <a href="?mod=oneditor&editFile=<?php echo htmlspecialchars($_GET['editFile']); ?>&c=<?php echo "$carpetazSafe";?>/" class="azulin2"><?php echo $tl['discardchanges'];?> </a>  <a href="?c=<?php echo "$carpetazSafe";?>/" class="azulin2"> <?php echo $tl['close'];?> </a>
         </form>
 
@@ -2685,6 +2814,7 @@ $mod = isset($_GET['mod']) ? $_GET['mod'] : '';
 	<div class="tabla">
 		<div class="filasinfx">
 			<div class="celda"> 
+                               <div style='margin:0 10px;'> 
 
    <h2> 🔄 <?php echo $tl['update'];?>: </h2>
 
@@ -2702,7 +2832,9 @@ $mod = isset($_GET['mod']) ? $_GET['mod'] : '';
      <br>
 			</div>
 		</div>
-	</div> <br>
+	</div> 
+    </div> 
+<br>
 
 
 <?php endif; ?>
@@ -2726,7 +2858,7 @@ $mod = isset($_GET['mod']) ? $_GET['mod'] : '';
 			<div > 
 
    <div class="infotitle"><h2> ⚙️ <?php echo $tl['configuration'];?> </h2></div>
-     <form action="?fconfiguracion=ok" method="POST"> 
+     <form action="?fconfiguracion=ok&csrf=<?php echo "$_SESSION[csrf]";?>" method="POST"> 
 
         <?php echo $tl['msgconfiguration'];?>. <br><br>
         <input type="text" name="afuser" required class="formtext" value="<?php echo "$master";?>"> <?php echo $tl['user'];?> <br>
@@ -2768,7 +2900,7 @@ sort($skinpalabras);
 
 
 <select name="fskin" class="formtext">
-    <option value="">🎨 Seleccionar tema _______</option>
+    <option value="">🎨 Seleccionar tema ____</option>
     <?php foreach ($skinpalabras as $theme): ?>
         <option value="<?= htmlspecialchars($theme) ?>"
             <?= $theme === $themeActivo ? 'selected' : '' ?>>
@@ -2780,7 +2912,7 @@ sort($skinpalabras);
         <input type="text" name="flanguaje" required class="formtext" value="spanish" readonly> <?php echo $tl['language'];?> <br><br>
 
         <input type="submit" value="<?php echo $tl['saveconfiguration'];?>"> <br><br>
-        <a href='?fborrarconfiguracion=1&c=<?php echo "$carpetazSafe";?>/' class='azulin'> <?php echo $tl['deleteconfiguration'];?> </a><br>
+        <a href='?fborrarconfiguracion=1&c=<?php echo "$carpetazSafe";?>/&csrf=<?php echo "$_SESSION[csrf]";?>' class='azulin'> <?php echo $tl['deleteconfiguration'];?> </a><br>
 
 
     </form>
@@ -2809,7 +2941,9 @@ sort($skinpalabras);
        <br>
 	<div class="tabla">
 		<div class="filasinfx">
-			<div class="celda"> 
+                 
+			<div class="celda">
+ <div style='margin:0 10px;'>  
 
    <h2> 🗂️  <?php echo $tl['createfolder'];?></h2>
     <form action="" method="post">
@@ -2822,7 +2956,9 @@ sort($skinpalabras);
      <br>
 			</div>
 		</div>
-	</div> <br>
+	</div> 
+       </div>
+<br>
 
 
 <?php endif; ?>
@@ -2841,6 +2977,7 @@ $creartexto=$_GET['creartexto'] ?? '';
 	<div class="tabla">
 		<div class="filasinfx">
 			<div class="celda"> 
+                           <div style='margin:0 10px;'> 
 
     <h2> 📝 <?php echo $tl['createfile'];?></h2>
     <form action="" method="get">
@@ -2854,7 +2991,9 @@ $creartexto=$_GET['creartexto'] ?? '';
      <br>
 			</div>
 		</div>
-	</div> <br>
+	</div> 
+     </div>
+<br>
 
 
 <?php endif; ?>
@@ -2876,6 +3015,7 @@ $creartexto=$_GET['creartexto'] ?? '';
 	<div class="tabla">
 		<div class="filasinfx">
 			<div class="celda"> 
+                            <div style='margin:0 10px;'> 
        <h2> ❌ <?php echo $tl['deletefolder'];?> (<?php echo $tl['onlyempty'];?>)</h2>
     <form action="" method="get">
         <?php echo $tl['foldername'];?>:
@@ -2886,7 +3026,9 @@ $creartexto=$_GET['creartexto'] ?? '';
      <br>
 			</div>
 		</div>
-	</div> <br>
+	</div> 
+      </div>
+<br>
 
 
 <?php endif; ?>
@@ -3107,7 +3249,8 @@ $fileinfoSafe = htmlspecialchars($fileinfo, ENT_QUOTES, 'UTF-8');
 
 
  
-
+$tokenRename = csrf_token('rename');
+$tokenCopy = csrf_token('copy');
 ?>
     </div>
     <div class="column">
@@ -3119,6 +3262,7 @@ $fileinfoSafe = htmlspecialchars($fileinfo, ENT_QUOTES, 'UTF-8');
          
         <input type="text" name="newName" value="<?php echo "$archivoacambiarnombreSafe";?>" required class="formtext" style='width: 250px;'>
         <input type="hidden" name="c" value="<?php echo "$carpetapSafe";?>" >
+        <input type="hidden" name="csrf" value="<?php echo "$tokenRename";?>" >
         <input type="submit" value="<?php echo $tl['renamefile'];?>" name="renameFile">
     </form>
 <hr>
@@ -3128,6 +3272,7 @@ $fileinfoSafe = htmlspecialchars($fileinfo, ENT_QUOTES, 'UTF-8');
         
         <input type="text" name="newName" value="<?php echo "$archivoacambiarnombreSafe";?>" required class="formtext" style='width: 250px;'>
         <input type="hidden" name="c" value="<?php echo "$carpetapSafe";?>" >
+        <input type="hidden" name="csrf" value="<?php echo "$tokenCopy";?>" >
         <input type="submit" value="<?php echo $tl['copyfile'];?>" name="copyFile">
     </form>
 <hr>
@@ -3173,8 +3318,11 @@ if (in_array($extension, ['jpg', 'bmp', 'tiff', 'gif', 'jfif', 'jpeg', 'png', 'w
 <?php if (empty($comprimible) || $comprimible !== "ok"): ?>
              <a href="?comprimir=<?php echo "$archivoacambiarnombreSafe";?>&c=<?php echo "$carpetapSafe";?>" class='verde'>   <?php echo $tl['compress'];?> </a>     
 <?php endif; ?>
-
-  <a href="?c=<?php echo "$carpetapSafe";?>" class='azulin'>  <?php echo $tl['close'];?>  </a>       <a href='?deleteFile=uploads<?php echo "$carpetapSafe";?><?php echo "$archivoacambiarnombreSafe";?>&c=<?php echo "$carpetapSafe";?>' class='rojito' onclick="return confirm('¿Estás seguro de que deseas eliminar este archivo?');">  <?php echo $tl['delete'];?> </a> </center>
+<?php
+//Proteccion CSRF v2
+$tokenBorrar = csrf_token('delete');
+?>
+  <a href="?c=<?php echo "$carpetapSafe";?>" class='azulin'>  <?php echo $tl['close'];?>  </a>       <a href='?deleteFile=uploads<?php echo "$carpetapSafe";?><?php echo "$archivoacambiarnombreSafe";?>&c=<?php echo "$carpetapSafe";?>&csrf=<?= $tokenBorrar ?>' class='rojito' onclick="return confirm('¿Estás seguro de que deseas eliminar este archivo?');">  <?php echo $tl['delete'];?> </a> </center>
 
 <br>
 
@@ -3510,13 +3658,15 @@ echo "  <div class='celda'> <div class='fileperms'> " . formatSize($fileSize) . 
  ";
 
 //zona de confirmaciones para eliminacion 
-
+//csrf
+$tokenBorrar = csrf_token('delete');
+//$_SESSION[csrf];
  echo "
         <div id='eliminar_$itemSafe' class='mensaje'>
             <center>
                 <p><b>¿ ".$tl['qdelete']." ?</b></p><br>
                 <p><h2>$itemSafe</h2></p><br>
-                <a class='cerrar' href='?deleteFile=$uploadDir$itemSafe&c=$carpetazSafe/'>".$tl['deletenow']."</a> 
+                <a class='cerrar' href='?deleteFile=$uploadDir$itemSafe&c=$carpetazSafe/&csrf=$tokenBorrar'>".$tl['deletenow']."</a> 
                 <a class='cerrar' href='#'>".$tl['cancel']."</a>
             </center>
         </div>";
@@ -3673,17 +3823,17 @@ $os = php_uname('s') . ' ' . php_uname('r');
 
 echo " <div style='margin:0 10px;'>  <div  class='infotitle'> <h2> 🖥️ ".$tl['systeminformation']." </h2> </div> \n";
 echo " \n";
-echo " ✅ ".$tl['usedspace'].": " . formatSize($diskUsed) . "<br>\n";
-echo " ✅ ".$tl['availablespace'].": " . formatSize($diskFree) . "<br>\n";
-echo " ✅ ".$tl['usedmemory'].": <b> " . formatSize($memUsed) . " </b><br>\n";
-echo " ✅ ".$tl['totalmemory'].": <b>" . formatSize($memTotal) . " </b><br>\n";
-#echo "<li>Uso del procesador: " . $cpuLoad . " (carga promedio)<br>\n";
-//echo " ✅ ".$tl['processorusage'].": <b> " . $cpuLoad . " (".$tl['averageload'].") - " . $cpuUsage . " </b><br>\n";
-echo " ✅ " . ($tl['processorusage'] ?? 'Carga CPU') . ": <b> " . $cpuLoad . " (" . ($tl['averageload'] ?? 'Promedio') . ") - " . $cpuUsage . " (" . $numCores . " Cores)</b><br>\n";
-echo " ✅ ".$tl['coretemperature'].": <b> " . $coreTemp . "  </b><br>\n";
-//echo " ⏱️ ".$tl['uptime'].": <b>" . getUptime() . "</b><br>\n";
-echo " ⏱️ Online: <b>" . getUptime() . "</b><br>\n";
-echo " ✴️ ".$tl['operatingsystem'].": " . $os . "</li>\n";
+echo " ✅ ".$tl['usedspace'].":  <span style='color: var(--table-header-text);'> " . formatSize($diskUsed) . " </span> <br>\n";
+echo " ✅ ".$tl['availablespace'].":  <span style='color: var(--table-header-text);'> " . formatSize($diskFree) . " </span> <br>\n";
+echo " ✅ ".$tl['usedmemory'].": <b>  <span style='color: var(--table-header-text);'> " . formatSize($memUsed) . " </b> </span> <br>\n";
+echo " ✅ ".$tl['totalmemory'].": <b> <span style='color: var(--table-header-text);'> " . formatSize($memTotal) . " </span> </b><br>\n";
+
+
+echo " ✅ " . ($tl['processorusage'] ?? 'Carga CPU') . ": <b> " . $cpuLoad . " (" . ($tl['averageload'] ?? 'Promedio') . ") -  <span style='color: var(--table-header-text);'>  " . $cpuUsage . " (" . $numCores . " Cores) </span> </b><br>\n";
+echo " ✅ ".$tl['coretemperature'].": <b> <span style='color: var(--table-header-text);'> " . $coreTemp . "  </span> </b><br>\n";
+
+echo " ⏱️ Online: <b> <span style='color: var(--table-header-text);'> " . getUptime() . " </span> </b><br>\n";
+echo " ✴️ ".$tl['operatingsystem'].": <span style='color: var(--table-header-text);'> " . $os . " </span></li>\n";
 echo " <hr> </div>\n";
 
 ?>
