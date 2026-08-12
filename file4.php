@@ -6,10 +6,10 @@
 # │   █████╗  ██║██║     █████╗  ███████║        Monolitico                    │
 # │   ██╔══╝  ██║██║     ██╔══╝  ╚════██║        by zIDRAvE                    │
 # │   ██║     ██║███████╗███████╗     ██║                                      │
-# │   ╚═╝     ╚═╝╚══════╝╚══════╝     ╚═╝        Version: 4.4.8.2              │
+# │   ╚═╝     ╚═╝╚══════╝╚══════╝     ╚═╝        Version: 4.4.8.3              │
 # │                                                                            │
 # │   Web : https://file4-manager.pages.dev/                                   │
-# │   Date   : 2026-07-29                                                      │
+# │   Date   : 2026-07-30                                                      │
 # │                                                                            │
 # └────────────────────────────────────────────────────────────────────────────┘
 #
@@ -30,7 +30,7 @@ $configFile = '.htconfig.php'; //obligatorio cambiar el archivo config pero siem
 
 
 //-- LISTA DE VARIABLES GENERALES --
-$fversion="4.4.8.2";
+$fversion="4.4.8.3";
 $nombreMaquina = gethostname();
 $hashCompleto = hash('sha256', $nombreMaquina);
 $tokenhost = substr($hashCompleto, 0, 10);
@@ -96,6 +96,9 @@ ob_start(); // 1. Siempre primero para evitar Error 500
 // ===== proteccion antiframe=====
 header("X-Frame-Options: DENY");
 header("Content-Security-Policy: frame-ancestors 'none'");
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Pragma: no-cache");
+header("Expires: 0");
 // Configuración de duración: 1 meses en segundos
 $duracion = 5 * 60; // 5 minutos -- session PHPSESSION SERVER 
 // $isSecure debe calcularse ANTES de este bloque (moverlo desde donde está más abajo)
@@ -300,9 +303,10 @@ function loadTranslations($lang) {
 
 //funciones nuevas para mejorar la seguridad del config file
 function cfg_load(string $file): array {
+    clearstatcache(true, $file);
     if (!file_exists($file)) return [];
     $fm_cfg = [];
-    include $file;
+    @include $file;
     return $fm_cfg;
 }
 
@@ -620,7 +624,7 @@ if (isset($_SESSION['bypass_active']) && $_SESSION['bypass_active'] === true) {
 
 // 4. MOSTRAR FORMULARIO DE DESBLOQUEO UNLOCK o BYPASS
 if (isset($_GET['bypass'])) {
-   // echo "$newseguridadcabeza";
+
     echo "
     <div style='
         max-width: 320px; 
@@ -650,7 +654,7 @@ if (isset($_GET['bypass'])) {
 
 //////// VERIFICAR SEGURIDAD (FLUJO UNIFICADO Y GLOBAL) /////////////////////////
 
-
+clearstatcache(true, $configFile);
 if (file_exists($configFile)) {
     $configData = cfg_load($configFile);
     $seguridadcabeza = "$stylealert <header> <h1> 🌀 File Manager </h1></header> <br>";
@@ -663,23 +667,29 @@ if (file_exists($configFile)) {
     $tokenhash_valid = hash('sha256', "$tokenplus$tokenhost$tokenhash_db");
 
     // 1. AUTO-LOGIN (Sincronizar Cookie con Sesión)
-    if (!isset($_SESSION['user_auth']) || $_SESSION['user_auth'] !== true) {
+   if (!isset($_SESSION['user_auth'], $_SESSION['user_name']) 
+    || $_SESSION['user_auth'] !== true 
+    || trim((string)$_SESSION['user_name']) === '') {
 
-
-//------Debug zone-----// 
-// include "debug.php";
-
-
-
-
-        if (isset($_COOKIE['Hash']) && hash_equals($tokenhash_valid, $_COOKIE['Hash']) && hash_equals($configData['fhash'], $haship)) {
-            session_regenerate_id(true);
-            $_SESSION['user_auth'] = true;
-            $_SESSION['user_name'] = $master;
-        }
+    if (isset($_COOKIE['Hash']) && hash_equals($tokenhash_valid, $_COOKIE['Hash']) && hash_equals($configData['fhash'], $haship)) {
+        session_regenerate_id(true);
+        $_SESSION['user_auth'] = true;
+        $_SESSION['user_name'] = $master;
+    } else {
+        // Sesión corrupta/parcial y sin cookie válida de respaldo: límpiala del todo
+        unset($_SESSION['user_auth'], $_SESSION['user_name']);
     }
+}
 
-    $is_authenticated = (isset($_SESSION['user_auth']) && $_SESSION['user_auth'] === true);
+
+
+//$is_authenticated = (isset($_SESSION['user_auth']) && $_SESSION['user_auth'] === true);
+$is_authenticated = (
+    isset($_SESSION['user_auth'], $_SESSION['user_name'])
+    && $_SESSION['user_auth'] === true
+    && is_string($_SESSION['user_name'])
+    && trim($_SESSION['user_name']) !== ''
+);
 
     // 2. MURO DE BLOQUEO (Solo para no autenticados)
     if (!$is_authenticated && file_exists($archivo_bloqueo) && !$acceso_emergencia) {
@@ -1634,9 +1644,12 @@ if (file_exists($externalStyle)) {
 
 
 <?php
-// Verificar session de usuario
-if (empty($master)) {
-?>
+if ($master === "") {
+?> 
+<br>
+<br>
+<br>
+<br>
 <table style="width: 100%; background-color: red;">
     <tr>
         <td style="text-align: left; padding: 10px; color: white;">
@@ -1653,7 +1666,12 @@ if (empty($master)) {
 if ($is_authenticated && hay_conexion_internet()) {
     $version_remota = obtener_version_remota($furlVersionCheck, $version_cache_file, $version_cache_segundos);
     if ($version_remota !== null && version_compare($version_remota, $fversion, '>')) {
-        echo "<table style='width:100%;background-color:#04ab8a;'>
+        echo "
+<br>
+<br>
+<br>
+<br>
+              <table style='width:100%;background-color:#04ab8a;'>
                 <tr><td style='text-align:left;padding:10px;color:white;'>
                     <b>🚀 Versión nueva $version_remota disponible</b> (tienes $fversion instalada) —
                     <a href='?mod=update' style='color:#fff;text-decoration:underline;'>Actualizar ahora</a>
