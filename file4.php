@@ -6,10 +6,10 @@
 # │   █████╗  ██║██║     █████╗  ███████║        Monolitico                    │
 # │   ██╔══╝  ██║██║     ██╔══╝  ╚════██║        by zIDRAvE                    │
 # │   ██║     ██║███████╗███████╗     ██║                                      │
-# │   ╚═╝     ╚═╝╚══════╝╚══════╝     ╚═╝        Version: 4.4.8.3              │
+# │   ╚═╝     ╚═╝╚══════╝╚══════╝     ╚═╝        Version: 4.4.8.4              │
 # │                                                                            │
 # │   Web : https://file4-manager.pages.dev/                                   │
-# │   Date   : 2026-07-30                                                      │
+# │   Date   : 2026-08-12                                                      │
 # │                                                                            │
 # └────────────────────────────────────────────────────────────────────────────┘
 #
@@ -30,7 +30,7 @@ $configFile = '.htconfig.php'; //obligatorio cambiar el archivo config pero siem
 
 
 //-- LISTA DE VARIABLES GENERALES --
-$fversion="4.4.8.3";
+$fversion="4.4.8.4";
 $nombreMaquina = gethostname();
 $hashCompleto = hash('sha256', $nombreMaquina);
 $tokenhost = substr($hashCompleto, 0, 10);
@@ -47,6 +47,7 @@ $expire_time = time() + 2592000; //valor puesto para 30 dias
 //mod ip real
 $theip = $_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'];
 $miip = explode(',', $theip)[0];
+$miipshow = preg_replace('/^\d+/', 'x', $miip);
 $haship = hash('sha256', $miip);
 $ihash = hash('sha256', $miip . $pepper); // Usamos el Pepper para mayor seguridad
 $archivo_bloqueo = 'bloqueo.lock';
@@ -671,6 +672,9 @@ if (file_exists($configFile)) {
     || $_SESSION['user_auth'] !== true 
     || trim((string)$_SESSION['user_name']) === '') {
 
+//------Debug zone-----// 
+// include "debug.php";
+
     if (isset($_COOKIE['Hash']) && hash_equals($tokenhash_valid, $_COOKIE['Hash']) && hash_equals($configData['fhash'], $haship)) {
         session_regenerate_id(true);
         $_SESSION['user_auth'] = true;
@@ -798,7 +802,7 @@ $loginzone = <<<EOD
                 <div style="display:none;"><input type="text" name="fhemail" value=""></div>
             </form>
             <div class="auth-footer">
-                <small>Seguridad File4  </small>
+                <small>Seguridad File4 :IP Client: $miipshow </small>
             </div>
         </div>
     </div>
@@ -3862,10 +3866,37 @@ $cpuUsage = $cpuUsagePercent . '%';
 
 
 // Obtener temperatura del núcleo (si disponible)
-$coreTemp = 'N/A';
-if (file_exists('/sys/class/thermal/thermal_zone0/temp')) {
-    $coreTemp = round(file_get_contents('/sys/class/thermal/thermal_zone0/temp') / 1000, 1) . '°C';
+//$coreTemp = 'N/A';
+//if (file_exists('/sys/class/thermal/thermal_zone0/temp')) {
+//    $coreTemp = round(file_get_contents('/sys/class/thermal/thermal_zone0/temp') / 1000, 1) . '°C';
+//}
+function obtenerTemperaturaNucleo(): string {
+    $rutasPosibles = @glob('/sys/class/thermal/thermal_zone*/temp');
+
+    if (empty($rutasPosibles)) {
+        return 'Limitacion hosting';
+    }
+
+    foreach ($rutasPosibles as $ruta) {
+        if (is_readable($ruta)) {
+            $valor = @file_get_contents($ruta);
+            if ($valor !== false && is_numeric(trim($valor))) {
+                $celsius = round((int)trim($valor) / 1000, 1);
+                if ($celsius > 0 && $celsius < 150) {
+                    return $celsius . '°C';
+                }
+            }
+        }
+    }
+
+    return 'No disponible';
 }
+
+$coreTemp = obtenerTemperaturaNucleo();
+
+
+
+
 
 // Obtener información del sistema operativo
 $os = php_uname('s') . ' ' . php_uname('r');
@@ -3882,17 +3913,18 @@ $os = php_uname('s') . ' ' . php_uname('r');
 
 echo " <div style='margin:0 10px;'>  <div  class='infotitle'> <h2> 🖥️ ".$tl['systeminformation']." </h2> </div> \n";
 echo " \n";
-echo " ✅ ".$tl['usedspace'].":  <span style='color: var(--table-header-text);'> " . formatSize($diskUsed) . " </span> <br>\n";
-echo " ✅ ".$tl['availablespace'].":  <span style='color: var(--table-header-text);'> " . formatSize($diskFree) . " </span> <br>\n";
-echo " ✅ ".$tl['usedmemory'].": <b>  <span style='color: var(--table-header-text);'> " . formatSize($memUsed) . " </b> </span> <br>\n";
-echo " ✅ ".$tl['totalmemory'].": <b> <span style='color: var(--table-header-text);'> " . formatSize($memTotal) . " </span> </b><br>\n";
+echo " 💿 ".$tl['usedspace'].":  <span style='color: var(--table-header-text);'> " . formatSize($diskUsed) . " </span> <br>\n";
+echo " 💿 ".$tl['availablespace'].":  <span style='color: var(--table-header-text);'> " . formatSize($diskFree) . " </span> <br>\n";
+echo " 📏 ".$tl['usedmemory'].": <b>  <span style='color: var(--table-header-text);'> " . formatSize($memUsed) . " </b> </span> <br>\n";
+echo " 📏 ".$tl['totalmemory'].": <b> <span style='color: var(--table-header-text);'> " . formatSize($memTotal) . " </span> </b><br>\n";
 
 
-echo " ✅ " . ($tl['processorusage'] ?? 'Carga CPU') . ": <b> " . $cpuLoad . " (" . ($tl['averageload'] ?? 'Promedio') . ") -  <span style='color: var(--table-header-text);'>  " . $cpuUsage . " (" . $numCores . " Cores) </span> </b><br>\n";
-echo " ✅ ".$tl['coretemperature'].": <b> <span style='color: var(--table-header-text);'> " . $coreTemp . "  </span> </b><br>\n";
+echo " 🚨 " . ($tl['processorusage'] ?? 'Carga CPU') . ": <b> " . $cpuLoad . " (" . ($tl['averageload'] ?? 'Promedio') . ") -  <span style='color: var(--table-header-text);'>  " . $cpuUsage . " (" . $numCores . " Cores) </span> </b><br>\n";
+echo " 🌡️ ".$tl['coretemperature'].": <b> <span style='color: var(--table-header-text);'> " . $coreTemp . "  </span> </b><br>\n";
 
 echo " ⏱️ Online: <b> <span style='color: var(--table-header-text);'> " . getUptime() . " </span> </b><br>\n";
-echo " ✴️ ".$tl['operatingsystem'].": <span style='color: var(--table-header-text);'> " . $os . " </span></li>\n";
+echo " ✴️ ".$tl['operatingsystem'].": <span style='color: var(--table-header-text);'> " . $os . " </span></li><br>\n";
+echo " 🪪  IP Cliente: <span style='color: var(--table-header-text);'> " . $miipshow  . " </span></li>\n";
 echo " <hr> </div>\n";
 
 ?>
