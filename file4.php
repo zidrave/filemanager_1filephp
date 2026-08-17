@@ -6,10 +6,10 @@
 # │   █████╗  ██║██║     █████╗  ███████║        Monolitico                    │
 # │   ██╔══╝  ██║██║     ██╔══╝  ╚════██║        by zIDRAvE                    │
 # │   ██║     ██║███████╗███████╗     ██║                                      │
-# │   ╚═╝     ╚═╝╚══════╝╚══════╝     ╚═╝        Version: 4.4.8.4              │
+# │   ╚═╝     ╚═╝╚══════╝╚══════╝     ╚═╝        Version: 4.4.8.5              │
 # │                                                                            │
 # │   Web : https://file4-manager.pages.dev/                                   │
-# │   Date   : 2026-08-12                                                      │
+# │   Date   : 2026-08-16                                                      │
 # │                                                                            │
 # └────────────────────────────────────────────────────────────────────────────┘
 #
@@ -30,7 +30,7 @@ $configFile = '.htconfig.php'; //obligatorio cambiar el archivo config pero siem
 
 
 //-- LISTA DE VARIABLES GENERALES --
-$fversion="4.4.8.4";
+$fversion="4.4.8.5";
 $nombreMaquina = gethostname();
 $hashCompleto = hash('sha256', $nombreMaquina);
 $tokenhost = substr($hashCompleto, 0, 10);
@@ -4008,48 +4008,121 @@ echo "<a href='?editFile=/../$scriptfile.php'  class='naranja' role='button'><b>
 
 
 
+
+
 <script>
     const modal = document.getElementById('image-modal');
 
-    document.querySelectorAll('.image-link').forEach(link => {
+    const imageLinks = Array.from(document.querySelectorAll('.image-link'));
+    const imagenes = imageLinks.map(link => link.dataset.file);
+    let indiceActual = -1;
+    let zoomActual = 1;
+    let posX = 0;
+    let posY = 0;
+    let arrastrando = false;
+    let inicioX = 0;
+    let inicioY = 0;
+
+    function aplicarTransformacion() {
+        const img = modal.querySelector('img');
+        if (img) {
+            img.style.transform = `translate(${posX}px, ${posY}px) scale(${zoomActual})`;
+            img.style.cursor = zoomActual > 1 ? 'grab' : 'default';
+        }
+    }
+
+    function mostrarImagenEnModal(indice) {
+
+
+
+
+
+        if (indice < 0 || indice >= imagenes.length) return;
+
+        indiceActual = indice;
+        zoomActual = 1;
+        posX = 0;
+        posY = 0;
+        const fileUrl = imagenes[indiceActual];
+
+        modal.innerHTML = `
+            <img src="${fileUrl}" alt="Vista previa" style="transition: transform 0.1s ease; user-select:none;" draggable="false">
+            <input type="text" class="copy-path-input" value="<?php echo "$wbaseurl";?>${fileUrl}" readonly>
+            <p style="color: #22c55e; font-weight: bold; margin:0; display:none;" id="copy-msg">¡Copiado al portapapeles!</p>
+            <p style="color:#ccc; font-size:13px; margin:0;">${indiceActual + 1} / ${imagenes.length} — ← → navegar · + − zoom · arrastra para mover</p>
+        `;
+
+        modal.style.display = 'flex';
+        aplicarTransformacion();
+
+        const img = modal.querySelector('img');
+
+        // ── Arrastre con clic izquierdo ──
+        img.addEventListener('mousedown', (e) => {
+            if (zoomActual <= 1) return; // solo arrastra si hay zoom
+            e.preventDefault();
+            arrastrando = true;
+            inicioX = e.clientX - posX;
+            inicioY = e.clientY - posY;
+            img.style.transition = 'none'; // sin transición mientras arrastras, para que sea fluido
+            img.style.cursor = 'grabbing';
+        });
+
+        // ── Mover verticalmente con el scroll del mouse ──
+        img.addEventListener('wheel', (e) => {
+            if (zoomActual <= 1) return; // solo se mueve si hay zoom activo
+            e.preventDefault();
+            const velocidad = 40; // píxeles por "click" de scroll, ajustable
+            posY -= e.deltaY > 0 ? velocidad : -velocidad;
+            aplicarTransformacion();
+        }, { passive: false });
+
+
+        const input = modal.querySelector('.copy-path-input');
+        const msg = modal.querySelector('#copy-msg');
+
+        input.addEventListener('click', (event) => {
+            event.stopPropagation();
+            input.select();
+            input.setSelectionRange(0, 99999);
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(input.value).then(() => {
+                    confirmarCopiado(input, msg);
+                });
+            } else {
+                try {
+                    document.execCommand('copy');
+                    confirmarCopiado(input, msg);
+                } catch (err) {
+                    alert("Error al copiar. Por favor, copia manualmente.");
+                }
+            }
+        });
+    }
+
+    // ── Movimiento y liberación del arrastre (a nivel global, no solo sobre la imagen) ──
+    document.addEventListener('mousemove', (e) => {
+        if (!arrastrando) return;
+        posX = e.clientX - inicioX;
+        posY = e.clientY - inicioY;
+        aplicarTransformacion();
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (!arrastrando) return;
+        arrastrando = false;
+        const img = modal.querySelector('img');
+        if (img) {
+            img.style.transition = 'transform 0.1s ease';
+            img.style.cursor = zoomActual > 1 ? 'grab' : 'default';
+        }
+    });
+
+    imageLinks.forEach((link, indice) => {
         link.addEventListener('click', e => {
             e.preventDefault();
-            const fileUrl = link.dataset.file;
-            
-            modal.innerHTML = `
-                <img src="${fileUrl}" alt="Vista previa">
-                <input type="text" class="copy-path-input" value="<?php echo "$wbaseurl";?>${fileUrl}" readonly>
-                <p style="color: #22c55e; font-weight: bold; margin:0; display:none;" id="copy-msg">¡Copiado al portapapeles!</p>
-
-            `;
-            
-            modal.style.display = 'flex';
-
-            const input = modal.querySelector('.copy-path-input');
-            const msg = modal.querySelector('#copy-msg');
-
-            input.addEventListener('click', (event) => {
-                event.stopPropagation();
-                
-                // 1. Seleccionar el texto
-                input.select();
-                input.setSelectionRange(0, 99999); 
-
-                // 2. Intentar copiar con API moderna
-                if (navigator.clipboard && window.isSecureContext) {
-                    navigator.clipboard.writeText(input.value).then(() => {
-                        confirmarCopiado(input, msg);
-                    });
-                } else {
-                    // 3. Fallback: Método antiguo para sitios sin HTTPS o locales
-                    try {
-                        document.execCommand('copy');
-                        confirmarCopiado(input, msg);
-                    } catch (err) {
-                        alert("Error al copiar. Por favor, copia manualmente.");
-                    }
-                }
-            });
+            mostrarImagenEnModal(indice);
         });
     });
 
@@ -4057,18 +4130,53 @@ echo "<a href='?editFile=/../$scriptfile.php'  class='naranja' role='button'><b>
         const originalColor = el.style.borderColor;
         el.style.borderColor = "var(--success)";
         msg.style.display = "block";
-        
+
         setTimeout(() => {
             el.style.borderColor = originalColor;
             msg.style.display = "none";
         }, 2000);
     }
 
-    modal.addEventListener('click', () => {
+    modal.addEventListener('click', (e) => {
+        if (e.target.tagName === 'IMG' && zoomActual > 1) return; // no cerrar si estás interactuando con zoom
         modal.style.display = 'none';
-        modal.innerHTML = ''; 
+        modal.innerHTML = '';
+        indiceActual = -1;
+        zoomActual = 1;
+        posX = 0;
+        posY = 0;
+    });
+
+       document.addEventListener('keydown', (e) => {
+        if (indiceActual === -1) return;
+
+        if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            mostrarImagenEnModal(indiceActual + 1);
+        } else if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            mostrarImagenEnModal(indiceActual - 1);
+        } else if (e.key === 'Escape') {
+            modal.style.display = 'none';
+            modal.innerHTML = '';
+            indiceActual = -1;
+            zoomActual = 1;
+            posX = 0;
+            posY = 0;
+        } else if (e.key === '+' || e.key === '=') {
+            e.preventDefault();
+            zoomActual = Math.min(zoomActual + 0.25, 5);
+            if (zoomActual === 1) { posX = 0; posY = 0; }
+            aplicarTransformacion();
+        } else if (e.key === '-') {
+            e.preventDefault();
+            zoomActual = Math.max(zoomActual - 0.25, 0.25);
+            if (zoomActual <= 1) { posX = 0; posY = 0; }
+            aplicarTransformacion();
+        }
     });
 </script>
+
 </div>
 </body>
 </html>
