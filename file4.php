@@ -1331,10 +1331,33 @@ if (file_exists($externalStyle)) {
 ?>
 
 <style>
-        body {
-	    background-color: #f0f0f0; /* Fondo gris claro */
-            font-family: Arial, sans-serif; /* Tipo de letra Arial */
+
+        :root {
+            /* Taringa! Clásico Palette */
+            --primary: #004a95; 
+            --primary-dark: #00356b;
+            --secondary: #f6f6f6;
+            --success: #67a53b; 
+            --danger: #ff4141;
+            --warning: #ffdc00;
+            --bg-main: #f4f4f4; 
+            --bg-secondary: #ffffff;
+            --bg-secondary2: #fafafa;
+            --bg-card: #f0f0f0;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --border: #ccc;
+            --hover: #e1eaf3;
+            --navigation: #004a95;
         }
+ 
+    body {
+        background-color: #f4f4f4; /* Gris muy claro  */
+        font-family: "Segoe UI", Tahoma, Arial, sans-serif; /* Tipografía más moderna */
+        color: #333;
+        margin: 0;
+        padding: 0;
+    }
         a {
             text-decoration: none;
             color: #436074; /* Color azul para enlaces */
@@ -1346,56 +1369,68 @@ if (file_exists($externalStyle)) {
         .tabla {
             display: table;
             width: 1000px;
-            border-collapse: collapse;
-            background-color: white; /* Fondo blanco para la tabla */
+            border-collapse: separate;
+            border-spacing: 0;
+            background-color: var(--bg-secondary);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border);
+            margin: 10px 0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+
+        hr {
+            border: none;
+            height: 1px;
+            width: 100%;
+            max-width: 1000px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+            margin: 24px 0;
         }
 
 
 
 
 
+     .filasinfx {
+        display: table-row;
+        border-bottom: 3px solid #e1e1e1;
+    }
 
+    .fila {
+        display: table-row;
+        border-bottom: 1px solid #eee;
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+    }
 
+    /* Efecto de relleno Softpedia al hacer hover */
+    .fila::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        height: 100%;
+        width: 100%;
+        background-color: #dee2e3; /* Azul pálido de selección */
+        //transition: left 0.3s ease-in-out;
+        z-index: 0;
+    }
 
-.filasinfx {
-    display: table-row;
-    border-bottom: 1px solid #ddd;
- }
+    .fila:hover::before {
+        left: 0;
+    }
 
-.fila {
-    display: table-row;
-    border-bottom: 1px solid #ddd;
-    position: relative; /* Necesario para pseudo-elementos */
-    overflow: hidden;
-    z-index: 1; /* Asegura que el contenido de la fila esté por encima del fondo */
-}
+    .fila:nth-child(even):hover::before {
+        background-color: #dee2e3 !important;
+    }
 
-.fila::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    height: 100%;
-    width: 100%;
-    background-color: #d5dfe2; /* Color de relleno */
-    transition: left 0.4s ease-in-out;
-    z-index: 0; /* El pseudo-elemento está por debajo del contenido */
-}
-
-.fila:hover::before {
-    left: 0; /* Efecto de relleno desde la izquierda */
-}
-
-.fila:nth-child(even):hover::before {
-    background-color: #d5dfe2 !important; /* Asegura el mismo color en filas pares */
-}
-
-/* Asegura que el contenido de la fila esté en el nivel superior */
-.fila * {
-    position: relative;
-    z-index: 1; /* Asegura que el texto, íconos, etc. se muestren por encima del fondo */
-}
-
+    .fila * {
+        position: relative;
+        z-index: 1;
+    }
 
 
 
@@ -1429,6 +1464,20 @@ if (file_exists($externalStyle)) {
             background-color: #f1f6f9; /* Color de fondo para filas pares */
         }
 
+    .celdab, .celda2b, .celda3b, .celda4b {
+        display: table-cell;
+        background-color: #d2dbe0; 
+        padding: 2px 2px; /* Más aire para legibilidad */
+        border: 1px solid #eee;
+        vertical-align: middle;
+    }
+
+    .celda2b { width: 190px; }
+    .celda3b { width: 85px; }
+    .celda4b { width: 390px; }
+
+.infotitle{padding:5px 5px;vertical-align:middle; color: #5a808c;}
+
     /* Estilo para los botones de formulario */
     button, input[type="submit"] {
         background-color: #FFA500; /* Fondo naranja */
@@ -1460,7 +1509,7 @@ if (file_exists($externalStyle)) {
     background-image: linear-gradient(to bottom,  #dee4e8 , #b9cad4); /
     color: #000; /* Texto blanco */
     text-align: left; /* alineacion */
-    width: 99%; /* Ocupa todo el ancho */
+    width: 1000px;
     padding: 10px; /* Añade un poco de espacio interno */
     }
 
@@ -1599,7 +1648,7 @@ if (file_exists($externalStyle)) {
             border: 1px solid #ccc;
             overflow: hidden;
             height: 450px; /* Altura ajustada */
-            width: 1200px; /* Anchura ajustada */
+            width: 1000px; /* Anchura ajustada */
         }
 .line-numbers {
     background-color: #5e737d;
@@ -1632,6 +1681,66 @@ if (file_exists($externalStyle)) {
             width: 100%;
             height: 100%;
         }
+
+
+        /* Upload Section */
+        .upload-section {
+            width: 1000px;
+            background: var(--bg-secondary2);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border);
+        }
+
+        .upload-form {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .file-input-wrapper {
+            position: relative;
+            flex: 1;
+            min-width: 280px;
+        }
+        input[type="file"] {
+            width: 450px;
+            padding: 12px 15px;
+            background: var(--bg-card);
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        input[type="file"]:hover {
+            border-color: var(--primary);
+            background: var(--bg-main);
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            border: none;
+        }
+
+        .btn-primary { background: linear-gradient(to bottom, #0056ad, #06305b); } 
+        .btn-success { background: linear-gradient(to bottom, #7cbd43, #67a53b); }
+        .btn-danger { background: linear-gradient(to bottom, #ff5e5e, #ff4141); }
+        .btn-warning { background: linear-gradient(to bottom, #ffb433, #d26232); color: #ffffff; }
+
+        .btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+
 
 </style>
 
