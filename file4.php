@@ -6,10 +6,10 @@
 # │   █████╗  ██║██║     █████╗  ███████║        Monolitico                    │
 # │   ██╔══╝  ██║██║     ██╔══╝  ╚════██║        by zIDRAvE                    │
 # │   ██║     ██║███████╗███████╗     ██║                                      │
-# │   ╚═╝     ╚═╝╚══════╝╚══════╝     ╚═╝        Version: 4.4.8.5              │
+# │   ╚═╝     ╚═╝╚══════╝╚══════╝     ╚═╝        Version: 4.4.8.6              │
 # │                                                                            │
 # │   Web : https://file4-manager.pages.dev/                                   │
-# │   Date   : 2026-08-16                                                      │
+# │   Date   : 2026-08-17                                                      │
 # │                                                                            │
 # └────────────────────────────────────────────────────────────────────────────┘
 #
@@ -30,7 +30,7 @@ $configFile = '.htconfig.php'; //obligatorio cambiar el archivo config pero siem
 
 
 //-- LISTA DE VARIABLES GENERALES --
-$fversion="4.4.8.5";
+$fversion="4.4.8.6";
 $nombreMaquina = gethostname();
 $hashCompleto = hash('sha256', $nombreMaquina);
 $tokenhost = substr($hashCompleto, 0, 10);
@@ -4256,7 +4256,7 @@ echo "<a href='?editFile=/../$scriptfile.php'  class='naranja' role='button'><b>
         posY = 0;
     });
 
-       document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', (e) => {
         if (indiceActual === -1) return;
 
         if (e.key === 'ArrowRight') {
@@ -4265,6 +4265,18 @@ echo "<a href='?editFile=/../$scriptfile.php'  class='naranja' role='button'><b>
         } else if (e.key === 'ArrowLeft') {
             e.preventDefault();
             mostrarImagenEnModal(indiceActual - 1);
+        } else if (e.key === 'ArrowDown') {
+            if (zoomActual <= 1) return; // sin zoom, no hay nada que mover
+            e.preventDefault();
+            const velocidad = 40; // mismo valor que usa el scroll, para que se sienta consistente
+            posY -= velocidad;
+            aplicarTransformacion();
+        } else if (e.key === 'ArrowUp') {
+            if (zoomActual <= 1) return;
+            e.preventDefault();
+            const velocidad = 40;
+            posY += velocidad;
+            aplicarTransformacion();
         } else if (e.key === 'Escape') {
             modal.style.display = 'none';
             modal.innerHTML = '';
