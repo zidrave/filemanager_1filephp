@@ -6,7 +6,7 @@
 # │   █████╗  ██║██║     █████╗  ███████║        Monolitico                    │
 # │   ██╔══╝  ██║██║     ██╔══╝  ╚════██║        by zIDRAvE                    │
 # │   ██║     ██║███████╗███████╗     ██║                                      │
-# │   ╚═╝     ╚═╝╚══════╝╚══════╝     ╚═╝        Version: 4.4.8.6              │
+# │   ╚═╝     ╚═╝╚══════╝╚══════╝     ╚═╝        Version: 4.4.8.7              │
 # │                                                                            │
 # │   Web : https://file4-manager.pages.dev/                                   │
 # │   Date   : 2026-08-17                                                      │
@@ -17,9 +17,9 @@
 
 ////////////// POR SEGURIDAD CAMBIE ESTOS VALORES ///////////
 ////////////// ANTES DE GUARDAR LA PRIMERA CONFIGURACION ///////////////////
-$tokenplus = 'pvt0zwwwwuFoewwwCpPZDq'; // Cambie este valor es para darle mas seguridad a su script, desde aqui obtenemos el masterkey 
+$tokenplus = 'pvt0zwwx6x6x6xx6x6xZDq'; // Cambie este valor es para darle mas seguridad a su script, desde aqui obtenemos el masterkey 
                                        // En caso de DDOS al login, acceder sin esperar: file4.php?bypass y la clave seria pvt0z,las primeras 5 letras del tokenplus
-$pepper = 'e%OrrrrpPZDq_U7tXz9#mK2@pL4wN'; // Cambie este valor es para darle mas seguridad a su script
+$pepper = 'e%Orrk9k9k9kk9#mK2@pL4wN'; // Cambie este valor es para darle mas seguridad a su script
 
 $configFile = '.htconfig.php'; //obligatorio cambiar el archivo config pero siempre con .ht al inicio ejemplo: .htconfx9x.php
 
@@ -30,7 +30,7 @@ $configFile = '.htconfig.php'; //obligatorio cambiar el archivo config pero siem
 
 
 //-- LISTA DE VARIABLES GENERALES --
-$fversion="4.4.8.6";
+$fversion="4.4.8.7";
 $nombreMaquina = gethostname();
 $hashCompleto = hash('sha256', $nombreMaquina);
 $tokenhost = substr($hashCompleto, 0, 10);
@@ -4118,7 +4118,6 @@ echo "<a href='?editFile=/../$scriptfile.php'  class='naranja' role='button'><b>
 
 
 
-
 <script>
     const modal = document.getElementById('image-modal');
 
@@ -4128,6 +4127,7 @@ echo "<a href='?editFile=/../$scriptfile.php'  class='naranja' role='button'><b>
     let zoomActual = 1;
     let posX = 0;
     let posY = 0;
+    let rotacionActual = 0;
     let arrastrando = false;
     let inicioX = 0;
     let inicioY = 0;
@@ -4135,30 +4135,30 @@ echo "<a href='?editFile=/../$scriptfile.php'  class='naranja' role='button'><b>
     function aplicarTransformacion() {
         const img = modal.querySelector('img');
         if (img) {
-            img.style.transform = `translate(${posX}px, ${posY}px) scale(${zoomActual})`;
+            img.style.transform = `translate(${posX}px, ${posY}px) scale(${zoomActual}) rotate(${rotacionActual}deg)`;
             img.style.cursor = zoomActual > 1 ? 'grab' : 'default';
         }
     }
 
-    function mostrarImagenEnModal(indice) {
-
-
-
-
-
-        if (indice < 0 || indice >= imagenes.length) return;
-
-        indiceActual = indice;
+    function resetearVista() {
         zoomActual = 1;
         posX = 0;
         posY = 0;
+        rotacionActual = 0;
+    }
+
+    function mostrarImagenEnModal(indice) {
+        if (indice < 0 || indice >= imagenes.length) return;
+
+        indiceActual = indice;
+        resetearVista();
         const fileUrl = imagenes[indiceActual];
 
         modal.innerHTML = `
             <img src="${fileUrl}" alt="Vista previa" style="transition: transform 0.1s ease; user-select:none;" draggable="false">
             <input type="text" class="copy-path-input" value="<?php echo "$wbaseurl";?>${fileUrl}" readonly>
             <p style="color: #22c55e; font-weight: bold; margin:0; display:none;" id="copy-msg">¡Copiado al portapapeles!</p>
-            <p style="color:#ccc; font-size:13px; margin:0;">${indiceActual + 1} / ${imagenes.length} — ← → navegar · + − zoom · arrastra para mover</p>
+            <p style="color:#ccc; font-size:13px; margin:0;">${indiceActual + 1} / ${imagenes.length} — ← → navegar · + − zoom · 0 reset · R rotar · F pantalla completa</p>
         `;
 
         modal.style.display = 'flex';
@@ -4166,26 +4166,23 @@ echo "<a href='?editFile=/../$scriptfile.php'  class='naranja' role='button'><b>
 
         const img = modal.querySelector('img');
 
-        // ── Arrastre con clic izquierdo ──
         img.addEventListener('mousedown', (e) => {
-            if (zoomActual <= 1) return; // solo arrastra si hay zoom
+            if (zoomActual <= 1) return;
             e.preventDefault();
             arrastrando = true;
             inicioX = e.clientX - posX;
             inicioY = e.clientY - posY;
-            img.style.transition = 'none'; // sin transición mientras arrastras, para que sea fluido
+            img.style.transition = 'none';
             img.style.cursor = 'grabbing';
         });
 
-        // ── Mover verticalmente con el scroll del mouse ──
         img.addEventListener('wheel', (e) => {
-            if (zoomActual <= 1) return; // solo se mueve si hay zoom activo
+            if (zoomActual <= 1) return;
             e.preventDefault();
-            const velocidad = 40; // píxeles por "click" de scroll, ajustable
+            const velocidad = 40;
             posY -= e.deltaY > 0 ? velocidad : -velocidad;
             aplicarTransformacion();
         }, { passive: false });
-
 
         const input = modal.querySelector('.copy-path-input');
         const msg = modal.querySelector('#copy-msg');
@@ -4210,7 +4207,6 @@ echo "<a href='?editFile=/../$scriptfile.php'  class='naranja' role='button'><b>
         });
     }
 
-    // ── Movimiento y liberación del arrastre (a nivel global, no solo sobre la imagen) ──
     document.addEventListener('mousemove', (e) => {
         if (!arrastrando) return;
         posX = e.clientX - inicioX;
@@ -4246,44 +4242,51 @@ echo "<a href='?editFile=/../$scriptfile.php'  class='naranja' role='button'><b>
         }, 2000);
     }
 
-    modal.addEventListener('click', (e) => {
-        if (e.target.tagName === 'IMG' && zoomActual > 1) return; // no cerrar si estás interactuando con zoom
+    function cerrarModal() {
+        if (document.fullscreenElement) {
+            document.exitFullscreen().catch(() => {});
+        }
         modal.style.display = 'none';
         modal.innerHTML = '';
         indiceActual = -1;
-        zoomActual = 1;
-        posX = 0;
-        posY = 0;
+        resetearVista();
+    }
+
+    modal.addEventListener('click', (e) => {
+        if (e.target.tagName === 'IMG' && zoomActual > 1) return;
+        cerrarModal();
     });
 
     document.addEventListener('keydown', (e) => {
         if (indiceActual === -1) return;
 
-        if (e.key === 'ArrowRight') {
+        if (e.key === 'ArrowRight' || e.key === ' ') {
             e.preventDefault();
             mostrarImagenEnModal(indiceActual + 1);
         } else if (e.key === 'ArrowLeft') {
             e.preventDefault();
             mostrarImagenEnModal(indiceActual - 1);
         } else if (e.key === 'ArrowDown') {
-            if (zoomActual <= 1) return; // sin zoom, no hay nada que mover
+            if (zoomActual <= 1) return;
             e.preventDefault();
-            const velocidad = 40; // mismo valor que usa el scroll, para que se sienta consistente
-            posY -= velocidad;
+            posY -= 40;
             aplicarTransformacion();
         } else if (e.key === 'ArrowUp') {
             if (zoomActual <= 1) return;
             e.preventDefault();
-            const velocidad = 40;
-            posY += velocidad;
+            posY += 40;
             aplicarTransformacion();
+        } else if (e.key === 'Home') {
+            e.preventDefault();
+            mostrarImagenEnModal(0);
+        } else if (e.key === 'End') {
+            e.preventDefault();
+            mostrarImagenEnModal(imagenes.length - 1);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            window.open(imagenes[indiceActual], '_blank');
         } else if (e.key === 'Escape') {
-            modal.style.display = 'none';
-            modal.innerHTML = '';
-            indiceActual = -1;
-            zoomActual = 1;
-            posX = 0;
-            posY = 0;
+            cerrarModal();
         } else if (e.key === '+' || e.key === '=') {
             e.preventDefault();
             zoomActual = Math.min(zoomActual + 0.25, 5);
@@ -4294,6 +4297,21 @@ echo "<a href='?editFile=/../$scriptfile.php'  class='naranja' role='button'><b>
             zoomActual = Math.max(zoomActual - 0.25, 0.25);
             if (zoomActual <= 1) { posX = 0; posY = 0; }
             aplicarTransformacion();
+        } else if (e.key === '0') {
+            e.preventDefault();
+            resetearVista();
+            aplicarTransformacion();
+        } else if (e.key === 'r' || e.key === 'R') {
+            e.preventDefault();
+            rotacionActual = (rotacionActual + 90) % 360;
+            aplicarTransformacion();
+        } else if (e.key === 'f' || e.key === 'F') {
+            e.preventDefault();
+            if (!document.fullscreenElement) {
+                modal.requestFullscreen().catch(() => {});
+            } else {
+                document.exitFullscreen().catch(() => {});
+            }
         }
     });
 </script>
