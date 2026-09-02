@@ -134,9 +134,9 @@ server {
 
 
 
-#guardas y actualizas con:
-#Pero antes no olvidar poner el archivo globalindex.php en tu carpeta principal ejemplo /var/www/files.zidrave.net/html/globalindex.php
-
+# Guardas
+# Pero antes no olvidar poner el archivo globalindex.php en tu carpeta principal ejemplo /var/www/files.zidrave.net/html/globalindex.php
+# Actualizas el nginx con:
 
 
 
