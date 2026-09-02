@@ -143,6 +143,35 @@ server {
 sudo systemctl restart nginx
 
 
+/////////////////////////////////
+si deseas crear carpetas con contraseña en globalindex es simple solo debes crear un archivo dentro de una carpeta llamado:
+gi-security.php
+///contenido///////
+ <?php
+//PLUGIN DE SEGURIDAD EXTRA PARA DIFERENTE CARPETA //////
+// archivo gi-security.php , donde pongas esto si pedira clave! 
+//y puede ser una clave diferente por carpeta pero con que 
+//logees alguna de las carpetas ya entrara a las demas 
+//carpetas con contraseña asi que precaucion.
+
+// 1 = pedirá contraseña, 0 = acceso libre
+$versinclave = 1;  
+// 0 = clave simple, 1 = clave avanzada con hash (En esta opcion tienes q crear tu hash ejem: $2y$12$RcgZxApBg/cXAcpXcaZ0QuUf3hBjmcl4bZ....)
+$passwordadvance = 1;  
+// Modo básico (clave visible)
+$password = "1111";
+// Modo avanzado (clave hasheada con bcrypt)
+$password_hashed = '$2y$12$L3mx.HrQlMemO2.HuOTMPeMj.p/ZqOWNpvhV/Qv9nORpx6YQ4LVnW';
+/////////////////////////////////////////////////////////
+?>
+
+El  $password_hashed = '$2y$12$L3mx.HrQlMemO2.HuOTMPeMj.p/ZqOWNpvhV/Qv9nORpx6YQ4LVnW'; lo cambias generandolo con:
+
+?passgen=on
+
+y pones una clave q se encriptara y copias y pegas esa pass hasheada
+
+
 
 
 
