@@ -51,3 +51,100 @@ A - hub - ip-server
 // que es la raiz de nuestro web server y bueno asi funciona y todo bien
 
 
+
+
+
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////
+Ahora para version NGINX desde el server linux seria maso menos asi:
+#subdominio en tu nginx usaremos el files.zidrave.net como ejemplo
+
+sudo nano /etc/nginx/sites-available/files.zidrave.net
+
+
+server {
+
+    client_max_body_size 100M;
+
+    server_name files.zidrave.net;
+
+    root /var/www/files.zidrave.net/html;
+    index index.php index.html;
+
+
+    # ==========================================
+    # RAÍZ /
+    # Si existe index.php → ejecutarlo con PHP
+    # Si no existe → usar globalindex.php
+    # ==========================================
+    location = / {
+        try_files /index.php @globalindex_root;
+    }
+
+    location @globalindex_root {
+        rewrite ^ /globalindex.php?path=/&$query_string last;
+    }
+
+
+    # ==========================================
+    # RESTO DE RUTAS
+    # ==========================================
+    location / {
+        try_files $uri $uri/index.php $uri/index.html /globalindex.php?path=$uri&$query_string;
+    }
+
+
+    # ==========================================
+    # PHP-FPM
+    # ==========================================
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php8.5-fpm.sock;
+    }
+
+
+    # ==========================================
+    # PROTEGER ARCHIVOS .ht*
+    # ==========================================
+    location ~ /\.ht {
+        deny all;
+    }
+
+
+    # ==========================================
+    # HTTPS
+    # ==========================================
+    listen [::]:443 ssl;
+    listen 443 ssl;
+
+    ssl_certificate /etc/letsencrypt/live/server.zidrave.net/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/server.zidrave.net/privkey.pem;
+
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+}
+
+
+
+
+
+#guardas y actualizas con:
+#Pero antes no olvidar poner el archivo globalindex.php en tu carpeta principal ejemplo /var/www/files.zidrave.net/html/globalindex.php
+
+
+
+
+sudo systemctl restart nginx
+
+
+
+
+
+
+
