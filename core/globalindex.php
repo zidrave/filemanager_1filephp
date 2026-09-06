@@ -19,6 +19,9 @@ $password_hashed = '$2y$12$RcgZxApBg/cXAcpXcaZ0QuUf3hBjmcl4bZbonIQvWLyK4.0E0hjrO
 // echo password_hash("tuclave_nueva", PASSWORD_DEFAULT); o usando la opcion /?passgen=on  de este script
 
 
+$secretKeySession = 'CAMBIA_ESTO_POR_UNA_CADENA_LARGA_Y_UNICA_1234567892';
+
+
 
 // Detectar dominio y subdominio para poner configuracion personalizada para cada subdominio o dominio
 $host = $_SERVER['HTTP_HOST']; // Esto devuelve "subdominio.dominio.com" o "dominio.com"
@@ -29,7 +32,7 @@ if ($host === "files.zidrave.net") {
 $versinclave = 0;  // 0 acceso libre sin clave o poner clave y clave personalizada para cada dominio o subdominio
 $password = "1111";
 $passwordadvance = 1;
-$password_hashed = '$2y$12$RcgZxApBg/cXAcpXcaZ0QuUf3hBjmcl4bZbonIQvWLyK4.0E0hjrO'; //otro password para este subdominio o dominio
+$password_hashed = '$2y$12$mE7Tk2WkQDhO/u.LSEtdQeGnufoQwMqhTIDguYV4.hwdqejYU6zCa'; //otro password para este subdominio o dominio
 
 }
 
@@ -160,13 +163,17 @@ function generateSecureToken() {
 }
 
 function getUserFingerprint() {
+    $theip = $_SERVER['HTTP_CF_CONNECTING_IP'] 
+          ?? $_SERVER['HTTP_X_FORWARDED_FOR'] 
+          ?? $_SERVER['REMOTE_ADDR'];
+    $realIp = explode(',', $theip)[0]; // por si X-Forwarded-For trae varias IPs encadenadas
+    
     return hash('sha256', 
         $_SERVER['HTTP_USER_AGENT'] . 
-        $_SERVER['REMOTE_ADDR'] .
+        trim($realIp) .
         'salt_secreto_unico'
     );
 }
-
  
 
 
@@ -214,20 +221,25 @@ if (isset($_GET['logout'])) {
 // PASO 1: Siempre verificar si hay sesión activa válida (independiente de $versinclave)
 $is_authenticated = false;
 
-if (isset($_COOKIE[$cookie_name]) && isset($_SESSION['auth_token'])) {
-    $current_fingerprint = getUserFingerprint();
-    $expected_cookie = hash('sha256', $_SESSION['auth_token'] . $_SESSION['auth_fingerprint']);
-    
-    // Validar cookie + fingerprint + timeout
-    if ($_COOKIE[$cookie_name] === $expected_cookie &&
-        $_SESSION['auth_fingerprint'] === $current_fingerprint &&
-        (time() - $_SESSION['auth_time']) < $cookie_duration) {
-        
-        $is_authenticated = true; // ✅ Sesión válida encontrada
+if (isset($_COOKIE[$cookie_name])) {
+    $parts = explode('|', $_COOKIE[$cookie_name]);
+
+    if (count($parts) === 3) {
+        [$token, $authTime, $signature] = $parts;
+        $current_fingerprint = getUserFingerprint();
+        $expected_signature = hash_hmac('sha256', $token . '|' . $authTime . '|' . $current_fingerprint, $secretKeySession);
+
+        if (hash_equals($expected_signature, $signature) && (time() - (int)$authTime) < $cookie_duration) {
+            $is_authenticated = true;
+            // Rehidratamos la sesión para que el resto del script siga funcionando igual
+            $_SESSION['auth_token'] = $token;
+            $_SESSION['auth_fingerprint'] = $current_fingerprint;
+            $_SESSION['auth_time'] = (int)$authTime;
+        } else {
+            setcookie($cookie_name, '', time() - 3600, '/');
+        }
     } else {
-        // Cookie inválida o sesión expirada - limpiar
         setcookie($cookie_name, '', time() - 3600, '/');
-        unset($_SESSION['auth_token'], $_SESSION['auth_fingerprint']);
     }
 }
 
@@ -261,34 +273,34 @@ if ($versinclave == 1 && !$is_authenticated) {
             if (password_verify($input_pass, $password_hashed)) $auth_ok = true;
         }
         
-        if ($auth_ok) {
-            session_regenerate_id(true);
-            // Generar token único por sesión
-            $session_token = generateSecureToken();
-            $fingerprint = getUserFingerprint();
-            
-            // Guardar en cookie: token + fingerprint
-            $cookie_val = hash('sha256', $session_token . $fingerprint);
-            
-            // Guardar token en sesión para validación
-            $_SESSION['auth_token'] = $session_token;
-            $_SESSION['auth_fingerprint'] = $fingerprint;
-            $_SESSION['auth_time'] = time();
-            
-            // Cookie con flags de seguridad
-            setcookie($cookie_name, $cookie_val, [
-                'expires' => time() + $cookie_duration,
-                'path' => '/',
-                'secure' => !empty($_SERVER['HTTPS']),
-                'httponly' => true,
-                'samesite' => 'Strict'
-            ]);
-            
-            resetAttempts();
-            $is_authenticated = true; // ✅ Marcar como autenticado
-            header("Location: " . $_SERVER['REQUEST_URI']);
-            exit;
-        } else {
+if ($auth_ok) {
+    session_regenerate_id(true);
+    $session_token = generateSecureToken();
+    $fingerprint = getUserFingerprint();
+    $authTime = time();
+
+    $_SESSION['auth_token'] = $session_token;
+    $_SESSION['auth_fingerprint'] = $fingerprint;
+    $_SESSION['auth_time'] = $authTime;
+
+    // Cookie autosuficiente: firma HMAC que no depende de que el archivo de sesión sobreviva
+    $payload = $session_token . '|' . $authTime;
+    $signature = hash_hmac('sha256', $payload . '|' . $fingerprint, $secretKeySession);
+    $cookie_val = $payload . '|' . $signature;
+
+    setcookie($cookie_name, $cookie_val, [
+        'expires' => time() + $cookie_duration,
+        'path' => '/',
+        'secure' => !empty($_SERVER['HTTPS']),
+        'httponly' => true,
+        'samesite' => 'Strict'
+    ]);
+
+    resetAttempts();
+    $is_authenticated = true;
+    header("Location: " . $_SERVER['REQUEST_URI']);
+    exit;
+} else {
             $login_error = "Contraseña incorrecta";
             recordFailedAttempt();
             error_log("Login fallido desde: " . $_SERVER['REMOTE_ADDR']);
@@ -2264,8 +2276,9 @@ function folderSize($dir) {
 // Obtener lista de archivos y carpetas
 $files = scandir($targetDir);
 
-// Filtrar "." y ".."
-$files = array_diff($files, ['.', '..']);
+// Filtrar "." y ".." y ocultar globalindex.php de la vista
+$files = array_diff($files, ['.', '..', 'globalindex.php']);
+
 
 // Separar carpetas y archivos
 $folders = [];
@@ -2598,7 +2611,7 @@ fetch(file + "?_=" + Date.now()) // ← fuerza a no usar caché
 
     <p class="copyright">© <?php echo date("Y"); ?> zIDLAB Corporation - Todos los derechos reservados - <a href="?passgen=on" class="link-link">Generar Password</a></p>
     <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEicRrhs4L2BvhDfxiyrZGCWUYcCiDrKTOskZSwIsjvVZx7AQMNG6huy2DoX0An7ywtr8iOxm26Qo2r03DBLcHNCCMV67sC2e9Cvj5wqQHtibqCBZEC2X-0A9Rh3sb9TTlj8M_lpuZb_4hziIPBE-2Zh54Ie6O1cF5Is-hLHKVeSxSz_tJDc3J0jC_UDkg8/s320/logoskull2.png" alt="Logo" />
-    <p style="font-size:12px; opacity:0.8;">Explorador de Carpetas de Zidrave - <a href='https://zidrave.net/?p=4641'  class='link-link' target='_black'><b>Ver Proyecto</b></a></p>
+    <p style="font-size:12px; opacity:0.8;">Explorador de Carpetas de Zidrave - <a href='https://zidrave.net/?p=4641'  class='link-link' target='_black'><b>Ver Proyecto</b></a> Otros Proyectos:  <a href='https://file4-manager.pages.dev/'  class='link-link' target='_black'><b>File4 Manager</b></a> - <a href='https://wiki.zidrave.net/'  class='link-link' target='_black'><b>Wiki Zidrave</b></a> </p>
 </footer>
 
 <?php
@@ -2609,4 +2622,3 @@ function formatBytes($bytes,$precision=2){$units=['B','KB','MB','GB','TB'];$byte
 
 
 </body>
-
