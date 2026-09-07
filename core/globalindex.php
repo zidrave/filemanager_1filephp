@@ -14,7 +14,7 @@ $passwordadvance = 1;
 // Modo básico (clave visible)
 $password = "1111";
 // Modo avanzado (clave hasheada con bcrypt)
-$password_hashed = '$2y$12$RcgZxApBg/cXAcpXcaZ0QuUf3hBjmcl4bZbonIQvWLyK4.0E0hjrO'; 
+$password_hashed = '$2y$12$YG7Be5tX8l2DPAN0TNR7fO9ZWBGWdhNR97LDsSKwOSSLlVv4L5Eoq'; 
 // corresponde a la clave "*******" //ahora es secreta pero puedes crear la tuya con: 
 // echo password_hash("tuclave_nueva", PASSWORD_DEFAULT); o usando la opcion /?passgen=on  de este script
 
