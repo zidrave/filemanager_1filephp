@@ -8,7 +8,7 @@
 // session_start();
 
 // 1 = pedirá contraseña, 0 = acceso libre
-$versinclave = 1;  
+$versinclave = 0;  
 // 0 = clave simple, 1 = clave avanzada con hash (En esta opcion tienes q crear tu hash ejem: $2y$12$RcgZxApBg/cXAcpXcaZ0QuUf3hBjmcl4bZ....)
 $passwordadvance = 1;  
 // Modo básico (clave visible)
@@ -19,7 +19,7 @@ $password_hashed = '$2y$12$RcgZxApBg/cXAcpXcaZ0QuUf3hBjmcl4bZbonIQvWLyK4.0E0hjrO
 // echo password_hash("tuclave_nueva", PASSWORD_DEFAULT); o usando la opcion /?passgen=on  de este script
 
 
-$secretKeySession = 'CAMBIA_ESTO_POR_UNA_CADENA_LARGA_Y_UNICA_1234567892';
+$secretKeySession = 'CAMBIA_ESTO_POR_UNA_CADENA_LARGA_Y_UNICA_123452525420';
 
 
 
@@ -32,7 +32,7 @@ if ($host === "files.zidrave.net") {
 $versinclave = 0;  // 0 acceso libre sin clave o poner clave y clave personalizada para cada dominio o subdominio
 $password = "1111";
 $passwordadvance = 1;
-$password_hashed = '$2y$12$mE7Tk2WkQDhO/u.LSEtdQeGnufoQwMqhTIDguYV4.hwdqejYU6zCa'; //otro password para este subdominio o dominio
+$password_hashed = '$2y$12$RcgZxApBg/cXAcpXcaZ0QuUf3hBjmcl4bZbonIQvWLyK4.0E0hjrO'; //otro password para este subdominio o dominio
 
 }
 
@@ -174,6 +174,7 @@ function getUserFingerprint() {
         'salt_secreto_unico'
     );
 }
+
  
 
 
@@ -2487,20 +2488,91 @@ if ($requestedPath !== "." && $requestedPath !== "") {
 <script>
 
 
-document.querySelectorAll('.image-link').forEach(link => {
-    link.addEventListener('click', e => {
-        e.preventDefault();
-        const file = link.dataset.file;
-        const modal = document.getElementById('image-modal');
-        modal.innerHTML = `<img src="${file}" style="max-width:90%; max-height:90%;">`;
-        modal.style.display = 'flex';
-    });
-});
+(function() {
+    const modal = document.getElementById('image-modal');
+    const imageLinks = Array.from(document.querySelectorAll('.image-link'));
+    const imagenes = imageLinks.map(link => link.dataset.file);
+    let indiceActual = -1;
+    let zoomActual = 1;
+    let posY = 0;
 
-// Para cerrar el modal
-document.getElementById('image-modal').addEventListener('click', () => {
-    document.getElementById('image-modal').style.display = 'none';
-});
+    function aplicarTransformacion() {
+        const img = modal.querySelector('img');
+        if (img) img.style.transform = `translateY(${posY}px) scale(${zoomActual})`;
+    }
+
+    function mostrarImagen(indice) {
+        if (indice < 0 || indice >= imagenes.length) return;
+
+        indiceActual = indice;
+        zoomActual = 1;
+        posY = 0;
+        const fileUrl = imagenes[indiceActual];
+
+        modal.innerHTML = `
+            <img src="${fileUrl}" style="max-width:90%; max-height:90%; transition: transform 0.15s ease;">
+            <p style="position:absolute; bottom:20px; color:#fff; font-size:13px; background:rgba(0,0,0,0.5); padding:6px 14px; border-radius:20px;">
+                ${indiceActual + 1} / ${imagenes.length} — ← → cambiar · + − zoom · ↑ ↓ mover · Esc cerrar
+            </p>
+        `;
+        modal.style.display = 'flex';
+        aplicarTransformacion();
+    }
+
+    function cerrarModal() {
+        modal.style.display = 'none';
+        modal.innerHTML = '';
+        indiceActual = -1;
+        zoomActual = 1;
+        posY = 0;
+    }
+
+    imageLinks.forEach((link, indice) => {
+        link.addEventListener('click', e => {
+            e.preventDefault();
+            mostrarImagen(indice);
+        });
+    });
+
+    modal.addEventListener('click', (e) => {
+        if (e.target.tagName === 'IMG' && zoomActual > 1) return;
+        cerrarModal();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (indiceActual === -1) return;
+
+        if (e.key === 'ArrowRight' || e.key === ' ') {
+            e.preventDefault();
+            mostrarImagen(indiceActual + 1);
+        } else if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            mostrarImagen(indiceActual - 1);
+        } else if (e.key === 'ArrowDown') {
+            if (zoomActual <= 1) return; // sin zoom no hay nada que mover
+            e.preventDefault();
+            posY -= 40;
+            aplicarTransformacion();
+        } else if (e.key === 'ArrowUp') {
+            if (zoomActual <= 1) return;
+            e.preventDefault();
+            posY += 40;
+            aplicarTransformacion();
+        } else if (e.key === 'Escape') {
+            cerrarModal();
+        } else if (e.key === '+' || e.key === '=') {
+            e.preventDefault();
+            zoomActual = Math.min(zoomActual + 0.25, 5);
+            if (zoomActual === 1) posY = 0; // recentra si vuelve a 100%
+            aplicarTransformacion();
+        } else if (e.key === '-') {
+            e.preventDefault();
+            zoomActual = Math.max(zoomActual - 0.25, 0.25);
+            if (zoomActual <= 1) posY = 0;
+            aplicarTransformacion();
+        }
+    });
+})();
 
 
 
