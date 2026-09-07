@@ -8,7 +8,7 @@
 // session_start();
 
 // 1 = pedirá contraseña, 0 = acceso libre
-$versinclave = 0;  
+$versinclave = 1;  
 // 0 = clave simple, 1 = clave avanzada con hash (En esta opcion tienes q crear tu hash ejem: $2y$12$RcgZxApBg/cXAcpXcaZ0QuUf3hBjmcl4bZ....)
 $passwordadvance = 1;  
 // Modo básico (clave visible)
@@ -1504,23 +1504,100 @@ if (isset($_POST['compressFile'])) {
 
 
 // ==============================
-// HTML PRINCIPAL
-// ==============================
+ // SEO Y DATOS SEMÁNTICOS DE LA PÁGINA
+ // ==============================
+$seoPath = str_replace($baseDir, "", $targetDir) ?: "/";
+$seoPath = '/' . trim($seoPath, '/') . (trim($seoPath, '/') !== '' ? '/' : '');
+$seoPathLabel = $seoPath === '/' ? 'directorio raíz' : trim($seoPath, '/');
+$pageTitle = 'Explorador de Archivos' . ($seoPath === '/' ? '' : ' - ' . $seoPathLabel);
+$pageDescription = 'Explorador de archivos y directorios de Zidrave. Consulta, organiza y gestiona archivos disponibles en ' . ($seoPath === '/' ? 'el directorio raíz' : $seoPathLabel) . '.';
+$canonicalUrl = 'https://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . strtok($_SERVER['REQUEST_URI'], '?');
+$canonicalUrl = rtrim($canonicalUrl, '/') . ($seoPath === '/' ? '/' : '/');
+$seoPathEsc = htmlspecialchars($seoPath, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+$pageTitleEsc = htmlspecialchars($pageTitle, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+$pageDescriptionEsc = htmlspecialchars($pageDescription, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+$canonicalUrlEsc = htmlspecialchars($canonicalUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Index of: <?php echo str_replace($baseDir,"",$targetDir); ?>/</title>
+
+<title><?php echo $pageTitleEsc; ?></title>
+<meta name="description" content="<?php echo $pageDescriptionEsc; ?>">
+<meta name="robots" content="noindex, follow">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="theme-color" content="#1e3a5f">
+
+<link rel="canonical" href="<?php echo $canonicalUrlEsc; ?>">
+
+<meta property="og:title" content="<?php echo $pageTitleEsc; ?>">
+<meta property="og:description" content="<?php echo $pageDescriptionEsc; ?>">
+<meta property="og:type" content="website">
+<meta property="og:url" content="<?php echo $canonicalUrlEsc; ?>">
+<meta property="og:image" content="https://files.zidrave.net/logzidxx2.png">
+<meta property="og:site_name" content="Zidrave File Manager">
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="<?php echo $pageTitleEsc; ?>">
+<meta name="twitter:description" content="<?php echo $pageDescriptionEsc; ?>">
+<meta name="twitter:image" content="https://files.zidrave.net/logzidxx2.png">
+
+<script type="application/ld+json">
+<?php
+echo json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => 'WebPage',
+    'name' => $pageTitle,
+    'description' => $pageDescription,
+    'url' => $canonicalUrl,
+    'isPartOf' => [
+        '@type' => 'WebSite',
+        'name' => 'Zidrave File Manager',
+        'url' => 'https://files.zidrave.net/'
+    ]
+], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+?>
+</script>
+
 <style>
 <?php echo getThemeStyles($current_theme); ?>
+
+/* Mejoras semánticas y de accesibilidad que no alteran las funciones existentes */
+.sr-only {
+    position:absolute !important;
+    width:1px !important;
+    height:1px !important;
+    padding:0 !important;
+    margin:-1px !important;
+    overflow:hidden !important;
+    clip:rect(0,0,0,0) !important;
+    white-space:nowrap !important;
+    border:0 !important;
+}
+.table-wrapper {
+    width:100%;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+}
+.file-link {
+    min-width:0;
+}
+.file-link b {
+    overflow-wrap:anywhere;
+}
+@media (max-width:768px) {
+    .table-wrapper table {
+        min-width:620px;
+    }
+}
 </style>
 </head>
 <body>
 
 <?php if ($current_theme === 'joomla'): ?>
-<nav class="top-nav">
+<nav class="top-nav" aria-label="Navegación principal">
     <div class="top-menu">
         <a href="/" class="top-menu-item">🏠 Inicio</a>
         <a href="#" class="top-menu-item">📁 Explorador</a>
@@ -1530,16 +1607,16 @@ if (isset($_POST['compressFile'])) {
 </nav>
 <?php endif; ?>
 
-<header>
+<header role="banner">
     <?php if ($current_theme === 'joomla'): ?>
     <div class="header-content">
-        <h1 class="title">Explorador de Archivos</h1>
+        <div class="title">Explorador de Archivos</div>
    <?php if ($versinclave == 1): ?>
         <a href="?logout" class="logout-btn">Cerrar Sesión x</a>
     <?php endif; ?>
     </div>
     <?php else: ?>
-    <div class="title"><span class="folder-icon">📁</span> Explorador de Archivos</div>
+    <div class="title" aria-label="Zidrave File Manager"><span class="folder-icon" aria-hidden="true">📁</span> Explorador de Archivos</div>
        <?php if ($versinclave == 1): ?>
     <a href="?logout" class="logout-btn">Cerrar Sesión</a>
        <?php endif; ?>
@@ -1554,15 +1631,15 @@ $urlsindom = $_SERVER['REQUEST_URI'];
 ?>
 
 
-<div class="breadcrumb <?php echo $current_theme === 'joomla' ? '' : ''; ?>">
+<nav class="breadcrumb" aria-label="Ruta de navegación">
     <?php if ($current_theme === 'joomla'): ?>
     <div class="breadcrumb-content">
-   <h2> 🌎 <?php echo $urlactual; ?>  </h2> 
+        <h1>🌎 <?php echo htmlspecialchars($urlactual, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h1>
     </div>
     <?php else: ?>
-   <h2> 🌎 <?php echo $urlactual; ?>  </h2> 
+    <h1>🌎 <?php echo htmlspecialchars($urlactual, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h1>
     <?php endif; ?>
-</div>
+</nav>
 <?php
 $path = str_replace($baseDir, "", $targetDir) ?: "/";
 $path2 = $path; 
@@ -1585,26 +1662,29 @@ foreach ($segments as $index => $segment) {
 //        $ultimodir = $segment;
         $ultimodir = "<a href='$currentPath/' class='link-link' >$segment </a>";
     } else {
-        $breadcrumb .= "<a href='$currentPath/' class='link-link' > $segment </a><b>/</b>";
+        $safeSegment = htmlspecialchars($segment, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $safeCurrentPath = htmlspecialchars($currentPath . '/', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $breadcrumb .= "<a href='$safeCurrentPath' class='link-link'>$safeSegment</a><b>/</b>";
         
     }
 }
 ?>
 
-<div class="main-content">
-<div class="info-box">
+<main id="main-content" class="main-content">
+<section class="info-box" aria-labelledby="directory-info-title">
+    <h2 id="directory-info-title" class="sr-only">Información del directorio</h2>
     <p><strong>📂 Directorio :</strong>  <a href='/'>🏠 </a> <b>/</b> <?php echo "$breadcrumb"; ?> </p> 
     <p><strong>📊 Elementos:</strong> <span style="background-color: #b85900; color: #ffffff;"> <b> <?php echo $file_count; ?> </b> </span>  archivos en este directorio</p>
 
 <?php
   if ($is_authenticated) {
 ?>
-<a href="?new=folder" class="logout-btn"> 📂 Crear Carpeta</a>  <a href="?new=file" class="logout-btn">  📝 Crear Archivo</a>   <a href="?new=uploads" class="logout-btn">  🔄  Subir Archivos</a>
+<a href="?new=folder" class="logout-btn" aria-label="Crear una nueva carpeta">📂 Crear Carpeta</a>  <a href="?new=file" class="logout-btn" aria-label="Crear un nuevo archivo">📝 Crear Archivo</a>   <a href="?new=uploads" class="logout-btn" aria-label="Subir archivos">🔄 Subir Archivos</a>
 
 <?php 
 }
 ?>
-</div>
+</section>
 
 
 
@@ -2238,15 +2318,17 @@ $bodyHtml = implode("\n", $parts);
 
 
 
-<div class="content-box">
-    <div class="box-header">📄 Listado de Archivos</div>
+<section class="content-box" aria-labelledby="file-list-title">
+    <div class="box-header"><h2 id="file-list-title">📄 Listado de Archivos</h2></div>
+    <div class="table-wrapper">
     <table>
+        <caption class="sr-only">Archivos y carpetas disponibles en <?php echo $seoPathEsc; ?></caption>
         <thead>
             <tr>
-                <th>Nombre</th>
-                <th>Tipo</th>
-                <th>Tamaño</th>
-                <th>Modificado</th>
+                <th scope="col">Nombre</th>
+                <th scope="col">Tipo</th>
+                <th scope="col">Tamaño</th>
+                <th scope="col">Modificado</th>
             </tr>
         </thead>
         <tbody>
@@ -2255,7 +2337,8 @@ $bodyHtml = implode("\n", $parts);
 if ($requestedPath !== "." && $requestedPath !== "") {
     $parent = dirname($requestedPath);
     $parent = $parent === "." ? "/" : "/" . $parent . "/";
-    echo "<tr><td colspan='4'><a href='$parent' class='file-link'><span class='file-icon'>🔺</span><b> Subir al directorio anterior </b></a></td></tr>";
+    $safeParent = htmlspecialchars($parent, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+echo "<tr><td colspan='4'><a href='$safeParent' class='file-link' aria-label='Subir al directorio anterior'><span class='file-icon' aria-hidden='true'>🔺</span><b> Subir al directorio anterior </b></a></td></tr>";
 }
 
 
@@ -2322,7 +2405,7 @@ $type = "🗂️ |
 $type = "📄 | 
 <a href=\"?edit=$file\" class='link-link'>📝 </a>
 <a href=\"?fconfig=$file\" class='link-link'>⚙️ </a>
-<a href=\"?download=$file\" class='link-link' target='_black'> ⬇️  </a>
+<a href=\"?download=$file\" class='link-link' target='_blank' rel='noopener noreferrer'> ⬇️  </a>
 <a href=\"?new=compress&f=$file\" class='link-link'>📚 </a>
 <a href=\"?delete=$file\" class='link-link'  onclick=\"return confirm('🗑 ¿Seguro que deseas eliminar \\n el archivo $file ❓');\">❌ </a>";
 }
@@ -2337,8 +2420,10 @@ $type = "📄 |
 
     $size = $isDir ? "-" : formatBytes(filesize($fullPath)); //en caso de ser carpeta mostrara - en ves de su tamaño, es mas lite asi.
     $size = preg_replace('/([\d\.]+)/', '<strong class="link-link">$1</strong>', $size);
-    $modTime = date("d/m/Y H:i:s", filemtime($fullPath));
+    $fileMtime = filemtime($fullPath);
+    $modTime = date("d/m/Y H:i:s", $fileMtime);
     $modTime = preg_replace('/^(\d{2}\/\d{2}\/\d{4})/', '<strong class="link-link">$1</strong>', $modTime);
+    $modTimeHtml = '<time datetime="' . date('c', $fileMtime) . '">' . $modTime . '</time>';
 
     $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 
@@ -2380,7 +2465,9 @@ $type = "📄 |
 if ($isDir) {
   $numerocarpeta = $carpetaNum++;
     // CARPETAS siempre van a enlace normal
-    echo "<td>  <a href='$link' class='file-link' title='$numerocarpeta'>  <span class='file-icon'>   $icon <b>$file</b> </span> </a> </td>";
+    $safeLink = htmlspecialchars($link, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+$safeFile = htmlspecialchars($file, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+echo "<td><a href='$safeLink' class='file-link' title='Carpeta $safeFile' aria-label='Abrir carpeta $safeFile'><span class='file-icon' aria-hidden='true'>$icon</span> <b>$safeFile</b></a></td>";
 } else {
 $numeroarchivo = $archivoNum++;
 //recortar el nombre de los archivos que sean muy largos
@@ -2392,11 +2479,17 @@ if (strlen($itemr) > 33) {
 
     // ARCHIVOS aplican lógica especial
     if (in_array($ext, $textExts)) {
-        echo "<td><a href='' title='$numeroarchivo' class='file-link txt-link' data-file='" . htmlspecialchars($link) . "'><span class='file-icon'>$icon</span> <b>$file</b> 🔹</a></td>";
+        $safeLink = htmlspecialchars($link, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+$safeFile = htmlspecialchars($file, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+echo "<td><a href='$safeLink' title='Archivo $safeFile' class='file-link txt-link' data-file='$safeLink' aria-label='Abrir archivo $safeFile'><span class='file-icon' aria-hidden='true'>$icon</span> <b>$safeFile</b> 🔹</a></td>";
     } elseif (in_array($ext, $imageExts)) {
-        echo "<td><a href='' title='$numeroarchivo' class='file-link image-link' data-file='" . htmlspecialchars($link) . "'><span class='file-icon'> $icon</span> <b>$file</b> 🔹</a></td>";
+        $safeLink = htmlspecialchars($link, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+$safeFile = htmlspecialchars($file, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+echo "<td><a href='$safeLink' title='Vista previa de $safeFile' class='file-link image-link' data-file='$safeLink' aria-label='Ver imagen $safeFile'><span class='file-icon' aria-hidden='true'> $icon</span> <b>$safeFile</b> 🔹</a></td>";
     } else {
-        echo "<td><a href='$link' title='$numeroarchivo' class='file-link'><span class='file-icon'> $icon</span> <b>$file</b></a></td>";
+        $safeLink = htmlspecialchars($link, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+$safeFile = htmlspecialchars($file, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+echo "<td><a href='$safeLink' title='Abrir $safeFile' class='file-link' aria-label='Abrir $safeFile'><span class='file-icon' aria-hidden='true'> $icon</span> <b>$safeFile</b></a></td>";
     }
 }
 
@@ -2404,7 +2497,7 @@ if (strlen($itemr) > 33) {
 
     echo "<td>$type</td>";
     echo "<td>$size</td>";
-    echo "<td>$modTime</td>";
+    echo "<td>$modTimeHtml</td>";
     echo "</tr>";
 }
 
@@ -2418,16 +2511,18 @@ if (strlen($itemr) > 33) {
 if ($requestedPath !== "." && $requestedPath !== "") {
     $parent = dirname($requestedPath);
     $parent = $parent === "." ? "/" : "/" . $parent . "/";
-    echo "<tr><td colspan='4'><a href='$parent' class='file-link'><span class='file-icon'>🔺</span> <b> Subir al directorio anterior </b></a></td></tr>";
+    $safeParent = htmlspecialchars($parent, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+echo "<tr><td colspan='4'><a href='$safeParent' class='file-link' aria-label='Subir al directorio anterior'><span class='file-icon' aria-hidden='true'>🔺</span> <b> Subir al directorio anterior </b></a></td></tr>";
 }
 
 ?>
         </tbody>
     </table>
-</div>
+    </div>
+</section>
 
-<div class="content-box">
-    <div class="box-header">📊 Información del Sistema</div>
+<section class="content-box" aria-labelledby="system-info-title">
+    <div class="box-header"><h2 id="system-info-title">📊 Información del Sistema</h2></div>
     <div style="padding:20px;">
         <div class="stats-grid">
             <div class="stat-item">
@@ -2467,13 +2562,13 @@ if ($requestedPath !== "." && $requestedPath !== "") {
             </div>
         </div>
     </div>
-</div>
-</div>
+</section>
+</main>
 
 <!-- Selector de Temas -->
-<div class="theme-selector">
-    <label style="font-size:12px; color:#666; display:block; margin-bottom:8px; font-weight:bold;">🎨 Tema:</label>
-    <select onchange="window.location.href='?change_theme='+this.value">
+<aside class="theme-selector" aria-label="Selector de temas">
+    <label for="theme-select" style="font-size:12px; color:#666; display:block; margin-bottom:8px; font-weight:bold;">🎨 Tema:</label>
+    <select id="theme-select" aria-label="Seleccionar tema visual" onchange="window.location.href='?change_theme='+this.value">
         <option value="zidrave-skin" <?php echo $current_theme === 'zidrave-skin' ? 'selected' : ''; ?>>Zidrave Skin</option>
         <option value="taringa" <?php echo $current_theme === 'taringa' ? 'selected' : ''; ?>>Taringa</option>
         <option value="joomla" <?php echo $current_theme === 'joomla' ? 'selected' : ''; ?>>Joomla</option>
@@ -2481,7 +2576,7 @@ if ($requestedPath !== "." && $requestedPath !== "") {
         <option value="leonardo" <?php echo $current_theme === 'leonardo' ? 'selected' : ''; ?>>Leonardo</option>
 
     </select>
-</div>
+</aside>
 
 
 
@@ -2510,7 +2605,7 @@ if ($requestedPath !== "." && $requestedPath !== "") {
         const fileUrl = imagenes[indiceActual];
 
         modal.innerHTML = `
-            <img src="${fileUrl}" style="max-width:90%; max-height:90%; transition: transform 0.15s ease;">
+            <img src="${fileUrl}" alt="Vista previa de imagen ${indiceActual + 1}" style="max-width:90%; max-height:90%; transition: transform 0.15s ease;">
             <p style="position:absolute; bottom:20px; color:#fff; font-size:13px; background:rgba(0,0,0,0.5); padding:6px 14px; border-radius:20px;">
                 ${indiceActual + 1} / ${imagenes.length} — ← → cambiar · + − zoom · ↑ ↓ mover · Esc cerrar
             </p>
@@ -2683,7 +2778,7 @@ fetch(file + "?_=" + Date.now()) // ← fuerza a no usar caché
 
     <p class="copyright">© <?php echo date("Y"); ?> zIDLAB Corporation - Todos los derechos reservados - <a href="?passgen=on" class="link-link">Generar Password</a></p>
     <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEicRrhs4L2BvhDfxiyrZGCWUYcCiDrKTOskZSwIsjvVZx7AQMNG6huy2DoX0An7ywtr8iOxm26Qo2r03DBLcHNCCMV67sC2e9Cvj5wqQHtibqCBZEC2X-0A9Rh3sb9TTlj8M_lpuZb_4hziIPBE-2Zh54Ie6O1cF5Is-hLHKVeSxSz_tJDc3J0jC_UDkg8/s320/logoskull2.png" alt="Logo" />
-    <p style="font-size:12px; opacity:0.8;">Explorador de Carpetas de Zidrave - <a href='https://zidrave.net/?p=4641'  class='link-link' target='_black'><b>Ver Proyecto</b></a> Otros Proyectos:  <a href='https://file4-manager.pages.dev/'  class='link-link' target='_black'><b>File4 Manager</b></a> - <a href='https://wiki.zidrave.net/'  class='link-link' target='_black'><b>Wiki Zidrave</b></a> </p>
+    <p style="font-size:12px; opacity:0.8;">Explorador de Carpetas de Zidrave - <a href='https://zidrave.net/?p=4641'  class='link-link' target='_blank'><b>Ver Proyecto</b></a> Otros Proyectos:  <a href='https://file4-manager.pages.dev/'  class='link-link' target='_blank'><b>File4 Manager</b></a> - <a href='https://wiki.zidrave.net/'  class='link-link' target='_blank'><b>Wiki Zidrave</b></a> </p>
 </footer>
 
 <?php
