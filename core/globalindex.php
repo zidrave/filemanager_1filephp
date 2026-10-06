@@ -19,7 +19,8 @@ $password_hashed = '$2y$12$YG7Be5tX8l2DPAN0TNR7fO9ZWBGWdhNR97LDsSKwOSSLlVv4L5Eoq
 // echo password_hash("tuclave_nueva", PASSWORD_DEFAULT); o usando la opcion /?passgen=on  de este script
 
 
-$secretKeySession = 'CAMBIA_ESTO_POR_UNA_CADENA_LARGA_Y_UNICA_123452525420';
+
+$secretKeySession = 'CAMBIA_ESTO_POR_UNA_CADENA_LARGA_Y_UNICA_1234567890';
 
 
 
@@ -1141,6 +1142,15 @@ if($_GET["new"]=="uploads"){
 // LÓGICA DE DESCARGA DE ARCHIVOS
 // ==============================
 if (isset($_GET['download'])) {
+
+    // Requiere autenticación SIEMPRE (sin importar $versinclave)
+    if (!$is_authenticated) {
+         // die($alertasegura); // usaremos exit; para agregar un registro de logs a futuro
+          echo "$alertasegura";
+          //codigo para registrar actividad - falta
+          exit;
+    }
+
     $fileToDownload = basename($_GET['download']);
     $filePath = $targetDir . '/' . $fileToDownload;
     
