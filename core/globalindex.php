@@ -33,7 +33,7 @@ if ($host === "files.zidrave.net") {
 $versinclave = 0;  // 0 acceso libre sin clave o poner clave y clave personalizada para cada dominio o subdominio
 $password = "1111";
 $passwordadvance = 1;
-$password_hashed = '$2y$12$RcgZxApBg/cXAcpXcaZ0QuUf3hBjmcl4bZbonIQvWLyK4.0E0hjrO'; //otro password para este subdominio o dominio
+$password_hashed = '$2y$12$YG7Be5tX8l2DPAN0TNR7fO9ZWBGWdhNR97LDsSKwOSSLlVv4L5Eoq'; //otro password para este subdominio o dominio
 
 }
 
